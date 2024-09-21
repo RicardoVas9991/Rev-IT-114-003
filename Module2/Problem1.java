@@ -21,11 +21,14 @@ public class Problem1 {
     static void processArray(int[] arr){
         System.out.println("Processing Array:" + Arrays.toString(arr));
         System.out.println("Odds output:");
-        //hint: use the arr variable; don't diretly use the a1-a4 variables
-        // Goal: output only add *values* of each passed array
-        //TODO add/edit code here
         
-        //end add/edit section
+        // rev - 9/21/2024 - loop through the array and checks for odd numbers then prints
+        for (int num : arr) {
+            if (num % 2 != 0) {
+                System.out.print(num + " ");
+            }
+        }
+
         System.out.println();
         System.out.println("End process");
     }
