@@ -22,7 +22,7 @@ public class Problem1 {
         System.out.println("Processing Array:" + Arrays.toString(arr));
         System.out.println("Odds output:");
         
-        // rev - 9/21/2024 - loop through the array and checks for odd numbers then prints
+        // rev - 9/21/2024
         for (int num : arr) {
             if (num % 2 != 0) {
                 System.out.print(num + " ");
