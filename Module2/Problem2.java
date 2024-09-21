@@ -21,16 +21,14 @@ public class Problem2 {
     static void getTotal(double[] arr){
         System.out.println("Processing Array:" + Arrays.toString(arr));
         double total = 0;
-        String totalOutput = "";
-        //hint: use the arr variable; don't diretly use the a1-a4 variables
-        // Goal 1: Sum all the values inside the passed in array
-        // Goal 2: Ensure the resulting total is represented in currency format (without the $) (i.e., two decimal places always present)
-        //TODO add/edit code here
-       
-        //set the double to a string variable
-        //TODO ensure rounding is to two decimal places (i.e., 0.10, 0.01, 1.00)
-        totalOutput = total+"";
-        //end add/edit section
+        
+        // rev - 9/21/2024
+        for (double num : arr) {
+            total += num;
+        }
+
+        String totalOutput = String.format("%.2f", total);
+        
         System.out.println("Total is " + totalOutput);
         System.out.println("End process");
     }
