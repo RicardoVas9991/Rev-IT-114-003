@@ -1,4 +1,4 @@
-
+package Module3;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -106,7 +106,6 @@ public class NumberGuesser4 {
             System.out.println("Tired of playing? No problem, see you next time.");
             processed = true;
         }
-        // TODO add other conditions here
         return processed;
     }
 
@@ -131,6 +130,14 @@ public class NumberGuesser4 {
         } else {
             System.out.println("That's wrong");
             strikes++;
+            // rev - 9/28/2024 - provide a hint if guessed wronged before losing
+            if (strikes < maxStrikes) {
+                if (guess < number) {
+                    System.out.println("Hint: The number is higher!");
+                } else {
+                    System.out.println("Hint: The number is lower!");
+                }
+            }
             if (strikes >= maxStrikes) {
                 lose();
                 pickNewRandom = true;
@@ -151,10 +158,34 @@ public class NumberGuesser4 {
         return guess;
     }
 
+    // rev - 9/28/2024 - Set the difficulty level
+    private void selectDifficulty(Scanner input) {
+        System.out.println("Select difficulty: easy, medium, or hard:");
+        String difficulty = input.nextLine().trim().toLowerCase();
+        switch (difficulty) {
+            case "easy":
+                maxStrikes = 10;
+                System.out.println("You've selected Easy difficulty. You have 10 strikes per level.");
+                break;
+            case "medium":
+                maxStrikes = 5;
+                System.out.println("You've selected Medium difficulty. You have 5 strikes per level.");
+                break;
+            case "hard":
+                maxStrikes = 3;
+                System.out.println("You've selected Hard difficulty. You have 3 strikes per level.");
+                break;
+            default:
+                System.out.println("Invalid input. Defaulting to Medium difficulty.");
+                maxStrikes = 5;
+        }
+    }
+
     public void start() {
         try (Scanner input = new Scanner(System.in);) {
             System.out.println("Welcome to NumberGuesser4.0");
             System.out.println("To exit, type the word 'quit'.");
+            selectDifficulty(input);
             loadState();
             do {
                 if (pickNewRandom) {
