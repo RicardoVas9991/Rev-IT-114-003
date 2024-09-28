@@ -1,4 +1,4 @@
-package Module3;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -185,6 +185,7 @@ public class NumberGuesser4 {
         try (Scanner input = new Scanner(System.in);) {
             System.out.println("Welcome to NumberGuesser4.0");
             System.out.println("To exit, type the word 'quit'.");
+            // rev - 9/28/2024
             selectDifficulty(input);
             loadState();
             do {
