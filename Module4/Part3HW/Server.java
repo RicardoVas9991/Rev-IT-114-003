@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Random;
 
 public class Server {
     private int port = 3000;
@@ -120,7 +121,44 @@ public class Server {
             }
             return true;
         }
-        // add more "else if" as needed
+        
+        //  Rev - 10/2/2024 - Coin toss command: /flip or /toss
+        if ("/flip".equalsIgnoreCase(message) || "/toss".equalsIgnoreCase(message)) {
+            String result = new Random().nextBoolean() ? "heads" : "tails";
+            String senderString = String.format("User[%s]", sender.getClientId());
+            relay(String.format("%s flipped a coin and got %s!", senderString, result), null);
+            return true;
+            }
+        
+        // Rev - 10/2/2024 - Dice roll command: /roll #d#
+            if (message.startsWith("/roll ")) {
+            try {
+                String[] parts = message.substring(6).split("d");
+                int diceCount = Integer.parseInt(parts[0]);
+                int diceSides = Integer.parseInt(parts[1]);
+    
+                int total = 0;
+                Random rand = new Random();
+                StringBuilder rollResults = new StringBuilder();
+                
+                for (int i = 0; i < diceCount; i++) {
+                    int roll = rand.nextInt(diceSides) + 1;
+                    total += roll;
+                    rollResults.append(roll);
+                    if (i < diceCount - 1) {
+                        rollResults.append(", ");
+                    }
+                }
+    
+                String senderString = String.format("User[%s]", sender.getClientId());
+                relay(String.format("%s rolled %sd%s and got: [%s] (Total: %d)", senderString, diceCount, diceSides, rollResults, total), null);
+                return true;
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                sender.send("Invalid format! Use /roll #d# (e.g., /roll 2d6)");
+                return true;
+            }
+        }
+        
         return false;
     }
 
