@@ -48,7 +48,6 @@ public class Client {
             // channel to send to server
             out = new PrintWriter(server.getOutputStream(), true);
             // channel to list to server
-            // TODO
             System.out.println("Client connected");
         } catch (UnknownHostException e) {
             e.printStackTrace();
