@@ -21,6 +21,7 @@ public enum Server {
         }));
     }
 
+    //rev - 10/14/2024 - Show the Server Code that listens for connections
     private void start(int port) {
         this.port = port;
         // server listening

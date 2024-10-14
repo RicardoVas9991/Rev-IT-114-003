@@ -112,7 +112,8 @@ public enum Client {
      * @param text
      * @return true if the text was a command or triggered a command
      */
-    private boolean processClientCommand(String text) {
+    // rev - 10/14/2024 - Show the code related to Clients connecting to the Server (including the two needed commands)
+     private boolean processClientCommand(String text) {
         if (isConnection(text)) {
             if (myData.getClientName() == null || myData.getClientName().length() == 0) {
                 System.out.println(TextFX.colorize("Name must be set first via /name command", Color.RED));
@@ -289,6 +290,7 @@ public enum Client {
     /**
      * Listens for keyboard input from the user
      */
+    // rev - 10/14/2024 - Show the Client Code that prepares the client and waits for user input
     private void listenToInput() {
         try (Scanner si = new Scanner(System.in)) {
             System.out.println("Waiting for input"); // moved here to avoid console spam
