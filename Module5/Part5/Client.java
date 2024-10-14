@@ -372,24 +372,24 @@ public enum Client {
         try {
             System.out.println("Received Payload: " + payload);
             switch (payload.getPayloadType()) {
-                case CLIENT_ID: // get id assigned
+                case PayloadType.CLIENT_ID: // get id assigned
                     ConnectionPayload cp = (ConnectionPayload) payload;
                     processClientData(cp.getClientId(), cp.getClientName());
                     break;
-                case SYNC_CLIENT: // silent add
+                case PayloadType.SYNC_CLIENT: // silent add
                     cp = (ConnectionPayload) payload;
                     processClientSync(cp.getClientId(), cp.getClientName());
                     break;
-                case DISCONNECT: // remove a disconnected client (mostly for the specific message vs leaving
+                case PayloadType.DISCONNECT: // remove a disconnected client (mostly for the specific message vs leaving
                                              // a room)
                     cp = (ConnectionPayload) payload;
                     processDisconnect(cp.getClientId(), cp.getClientName());
                     // note: we want this to cascade
-                case ROOM_JOIN: // add/remove client info from known clients
+                case PayloadType.ROOM_JOIN: // add/remove client info from known clients
                     cp = (ConnectionPayload) payload;
                     processRoomAction(cp.getClientId(), cp.getClientName(), cp.getMessage(), cp.isConnect());
                     break;
-                case MESSAGE: // displays a received message
+                case PayloadType.MESSAGE: // displays a received message
                     processMessage(payload.getClientId(), payload.getMessage());
                     break;
                 default:
