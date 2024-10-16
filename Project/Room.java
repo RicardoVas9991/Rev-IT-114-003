@@ -167,6 +167,7 @@ public class Room implements AutoCloseable{
             return failedToSend;
         });
     }
+     // rev - 10/16/2024 - Show the ServerThread/Room code handling the create/join process
 
     /**
      * Sends a basic String message from the sender to all connectedClients
@@ -181,6 +182,7 @@ public class Room implements AutoCloseable{
      * @param sender  ServerThread (client) sending the message or null if it's a
      *                server-generated message
      */
+     // rev - 10/16/2024 - Show the code related to the Server-side receiving the message and relaying it to each connected Client
     protected synchronized void sendMessage(ServerThread sender, String message) {
         if (!isRunning) { // block action if Room isn't running
             return;

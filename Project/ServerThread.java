@@ -139,6 +139,7 @@ public class ServerThread extends BaseServerThread {
      * @param message
      * @return @see {@link #send(Payload)}
      */
+     // rev - 10/16/2024 - Show the code related to the Server-side receiving the message and relaying it to each connected Client
     public boolean sendMessage(long senderId, String message) {
         Payload p = new Payload();
         p.setClientId(senderId);
@@ -156,6 +157,7 @@ public class ServerThread extends BaseServerThread {
      * @param isJoin     true for join, false for leaivng
      * @return success of sending the payload
      */
+    // rev - 10/16/2024 - Show the ServerThread/Room code handling the create/join process
     public boolean sendRoomAction(long clientId, String clientName, String room, boolean isJoin) {
         ConnectionPayload cp = new ConnectionPayload();
         cp.setPayloadType(PayloadType.ROOM_JOIN);
@@ -173,6 +175,7 @@ public class ServerThread extends BaseServerThread {
      * @param clientName their name
      * @return success of sending the payload
      */
+     // rev - 10/16/2024 - Show the Server code related to handling termination
     public boolean sendDisconnect(long clientId, String clientName) {
         ConnectionPayload cp = new ConnectionPayload();
         cp.setPayloadType(PayloadType.DISCONNECT);
@@ -181,6 +184,7 @@ public class ServerThread extends BaseServerThread {
         cp.setClientName(clientName);
         return send(cp);
     }
+    
 
     /**
      * Sends (and sets) this client their id (typically when they first connect)
