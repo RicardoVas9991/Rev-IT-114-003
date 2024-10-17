@@ -139,7 +139,7 @@ public class ServerThread extends BaseServerThread {
      * @param message
      * @return @see {@link #send(Payload)}
      */
-     // rev - 10/16/2024 - Show the code related to the Server-side receiving the message and relaying it to each connected Client
+     // rev - 10/16/2024 - Show the code related to the Client receiving messages from the Server-side and presenting them
     public boolean sendMessage(long senderId, String message) {
         Payload p = new Payload();
         p.setClientId(senderId);

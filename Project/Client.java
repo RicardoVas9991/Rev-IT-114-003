@@ -63,6 +63,7 @@ public enum Client {
      * @param port
      * @return true if connection was successful
      */
+    // rev - 10/14/2024 - Show the code related to Clients connecting to the Server (including the two needed commands)
     private boolean connect(String address, int port) {
         try {
             server = new Socket(address, port);
@@ -112,7 +113,6 @@ public enum Client {
      * @param text
      * @return true if the text was a command or triggered a command
      */
-    // rev - 10/14/2024 - Show the code related to Clients connecting to the Server (including the two needed commands)
      private boolean processClientCommand(String text) {
         if (isConnection(text)) {
             if (myData.getClientName() == null || myData.getClientName().length() == 0) {
@@ -318,6 +318,7 @@ public enum Client {
     /**
      * Closes the client connection and associated resources
      */
+    // rev - 10/16/2024 -  Show the code related to Clients disconnecting
     private void close() {
         isRunning = false;
         closeServerConnection();
@@ -328,6 +329,7 @@ public enum Client {
     /**
      * Closes the server connection and associated resources
      */
+    // rev - 10/16/2024 -  Show the code related to Clients disconnecting
     private void closeServerConnection() {
         myData.reset();
         knownClients.clear();
