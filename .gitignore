@@ -33,3 +33,6 @@ config.*
 *.conf
 .vscode
 .DS_Store
+*.lck
+*.log*
+sources.txt
