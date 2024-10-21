@@ -63,7 +63,6 @@ public enum Client {
      * @param port
      * @return true if connection was successful
      */
-    // rev - 10/14/2024 - Show the code related to Clients connecting to the Server (including the two needed commands)
     private boolean connect(String address, int port) {
         try {
             server = new Socket(address, port);
@@ -113,6 +112,7 @@ public enum Client {
      * @param text
      * @return true if the text was a command or triggered a command
      */
+    // rev - 10/14/2024 - Show the code related to Clients connecting to the Server (including the two needed commands)
      private boolean processClientCommand(String text) {
         if (isConnection(text)) {
             if (myData.getClientName() == null || myData.getClientName().length() == 0) {
@@ -173,7 +173,6 @@ public enum Client {
     }
 
     // send methods to pass data to the ServerThread
-     // rev - 10/16/2024 - Show the Client code related to the create/join room commands
 
     /**
      * Sends the room name we intend to create
@@ -202,7 +201,6 @@ public enum Client {
     /**
      * Tells the server-side we want to disconnect
      */
-     // rev - 10/16/2024 -  Show the code related to Clients disconnecting
     private void sendDisconnect() {
         Payload p = new Payload();
         p.setPayloadType(PayloadType.DISCONNECT);
@@ -214,7 +212,6 @@ public enum Client {
      * 
      * @param message
      */
-     // rev - 10/14/2024 - Show the code related to the Client-side of getting a user message and sending it over the socket
     private void sendMessage(String message) {
         Payload p = new Payload();
         p.setPayloadType(PayloadType.MESSAGE);
@@ -318,7 +315,6 @@ public enum Client {
     /**
      * Closes the client connection and associated resources
      */
-    // rev - 10/16/2024 -  Show the code related to Clients disconnecting
     private void close() {
         isRunning = false;
         closeServerConnection();
@@ -329,7 +325,6 @@ public enum Client {
     /**
      * Closes the server connection and associated resources
      */
-    // rev - 10/16/2024 -  Show the code related to Clients disconnecting
     private void closeServerConnection() {
         myData.reset();
         knownClients.clear();
