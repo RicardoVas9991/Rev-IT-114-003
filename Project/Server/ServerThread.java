@@ -9,6 +9,7 @@ import Project.Common.PayloadType;
 import Project.Common.Phase;
 import Project.Common.ReadyPayload;
 import Project.Common.RoomResultsPayload;
+import Project.Common.XYPayload;
 import Project.Common.Payload;
 
 import Project.Common.ConnectionPayload;
@@ -102,8 +103,22 @@ public class ServerThread extends BaseServerThread {
                     ConnectionPayload cp = (ConnectionPayload) payload;
                     setClientName(cp.getClientName());
                     break;
-                case MESSAGE:
-                    currentRoom.sendMessage(this, payload.getMessage());
+                    case MESSAGE:
+                    String message = payload.getMessage();
+                    if (message.startsWith("/answer")) {
+                        // Extract the answer content
+                        String answer = message.substring(8).trim();  // 8 skips "/answer " part
+                
+                        // Send answer to GameRoom for processing
+                        try {
+                            ((GameRoom) currentRoom).handleAnswer(this, answer);
+                        } catch (Exception e) {
+                            sendMessage("You must be in a GameRoom to submit an answer");
+                        }
+                    } else {
+                        // Regular message broadcast
+                        currentRoom.sendMessage(this, message);
+                    }
                     break;
                 case ROOM_CREATE:
                     currentRoom.handleCreateRoom(this, payload.getMessage());
@@ -126,6 +141,23 @@ public class ServerThread extends BaseServerThread {
                         sendMessage("You must be in a GameRoom to do the ready check");
                     }
                     break;
+                case MOVE:
+                    try {
+                        // cast to GameRoom as the subclass will handle all Game logic
+                        XYPayload movePayload = (XYPayload)payload;
+                        ((GameRoom) currentRoom).handleMove(this, movePayload.getX(), movePayload.getY());
+                    } catch (Exception e) {
+                        sendMessage("You must be in a GameRoom to move");
+                    }
+                    break;
+                case ANSWER: // rev/11-02-2024: Added ANSWER payload type handling
+                    String answer = payload.getMessage();
+                    if (currentRoom instanceof GameRoom) {
+                        ((GameRoom) currentRoom).handleAnswer(this, answer);
+                    } else {
+                        sendMessage("Answer command can only be used in a GameRoom.");
+                    }
+                    break;
                 default:
                     break;
             }
@@ -134,35 +166,59 @@ public class ServerThread extends BaseServerThread {
 
         }
     }
-    // send methods specific to non-chatroom projects
 
-    public boolean sendCurrentPhase(Phase phase){
+    // send methods specific to non-chatroom projects
+    public boolean sendMove(long clientId, int x, int y){
+        XYPayload p = new XYPayload(x, y);
+        p.setPayloadType(PayloadType.MOVE);
+        p.setClientId(clientId);
+        return send(p);
+    }
+
+    public boolean sendTurnStatus(long clientId, boolean didTakeTurn){
+        ReadyPayload rp = new ReadyPayload();
+        rp.setPayloadType(PayloadType.TURN);
+        rp.setReady(didTakeTurn);
+        rp.setClientId(clientId);
+        return send(rp);
+    }
+
+    public boolean sendGridDimensions(int x, int y) {
+        XYPayload p = new XYPayload(x, y);
+        p.setPayloadType(PayloadType.GRID_DIMENSION);
+        return send(p);
+    }
+
+    public boolean sendCurrentPhase(Phase phase) {
         Payload p = new Payload();
         p.setPayloadType(PayloadType.PHASE);
         p.setMessage(phase.name());
         return send(p);
     }
-    public boolean sendResetReady(){
+
+    public boolean sendResetReady() {
         ReadyPayload rp = new ReadyPayload();
         rp.setPayloadType(PayloadType.RESET_READY);
         return send(rp);
     }
 
-    public boolean sendReadyStatus(long clientId, boolean isReady){
+    public boolean sendReadyStatus(long clientId, boolean isReady) {
         return sendReadyStatus(clientId, isReady, false);
     }
+
     /**
      * Sync ready status of client id
+     * 
      * @param clientId who
-     * @param isReady ready or not
-     * @param quiet silently mark ready
+     * @param isReady  ready or not
+     * @param quiet    silently mark ready
      * @return
      */
-    public boolean sendReadyStatus(long clientId, boolean isReady, boolean quiet){
+    public boolean sendReadyStatus(long clientId, boolean isReady, boolean quiet) {
         ReadyPayload rp = new ReadyPayload();
         rp.setClientId(clientId);
         rp.setReady(isReady);
-        if(quiet){
+        if (quiet) {
             rp.setPayloadType(PayloadType.SYNC_READY);
         }
         return send(rp);
@@ -201,7 +257,6 @@ public class ServerThread extends BaseServerThread {
      * @param message
      * @return @see {@link #send(Payload)}
      */
-     // rev - 10/16/2024 - Show the code related to the Client receiving messages from the Server-side and presenting them
     public boolean sendMessage(long senderId, String message) {
         Payload p = new Payload();
         p.setClientId(senderId);
@@ -219,7 +274,6 @@ public class ServerThread extends BaseServerThread {
      * @param isJoin     true for join, false for leaivng
      * @return success of sending the payload
      */
-    // rev - 10/16/2024 - Show the ServerThread/Room code handling the create/join process
     public boolean sendRoomAction(long clientId, String clientName, String room, boolean isJoin) {
         ConnectionPayload cp = new ConnectionPayload();
         cp.setPayloadType(PayloadType.ROOM_JOIN);
@@ -237,7 +291,6 @@ public class ServerThread extends BaseServerThread {
      * @param clientName their name
      * @return success of sending the payload
      */
-     // rev - 10/16/2024 - Show the Server code related to handling termination
     public boolean sendDisconnect(long clientId, String clientName) {
         ConnectionPayload cp = new ConnectionPayload();
         cp.setPayloadType(PayloadType.DISCONNECT);
@@ -246,7 +299,6 @@ public class ServerThread extends BaseServerThread {
         cp.setClientName(clientName);
         return send(cp);
     }
-    
 
     /**
      * Sends (and sets) this client their id (typically when they first connect)
