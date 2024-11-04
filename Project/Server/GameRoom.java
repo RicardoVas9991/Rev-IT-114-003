@@ -1,8 +1,7 @@
-// rev/11-02-2024
 
 package Project.Server;
 
-import Project.Common.Grid;
+import Project.Common.Grid; // rev/11-02-2024
 import Project.Common.LoggerUtil;
 import Project.Common.Phase;
 import Project.Common.Player;
@@ -17,6 +16,7 @@ public class GameRoom extends BaseGameRoom {
     // used for granular turn handling (usually turn-order turns)
     private TimedEvent turnTimer = null;
 
+    // rev/11-02-2024
     private Grid grid = null;
     
     private Map<ServerPlayer, Integer> playerPoints = new HashMap<>();
@@ -88,6 +88,7 @@ public class GameRoom extends BaseGameRoom {
     // end timer handlers
 
     // lifecycle methods
+    // rev/11-02-2024
 
     /** {@inheritDoc} */
     @Override
@@ -169,7 +170,7 @@ public class GameRoom extends BaseGameRoom {
     }
     // end lifecycle methods
 
-    // misc logic
+    // rev/11-02-2024 - misc logic
     private void checkIfAllTookTurns() {
         long ready = playersInRoom.values().stream().filter(p -> p.isReady()).count();
         long tookTurn = playersInRoom.values().stream().filter(p -> p.isReady() && p.didTakeTurn()).count();
@@ -214,7 +215,7 @@ public class GameRoom extends BaseGameRoom {
      */
     private void sendResetTurnStatus() {
         playersInRoom.values().removeIf(spInRoom -> {
-            spInRoom.setTakeTurn(false); // reset server data
+            spInRoom.setTakeTurn(false); // rev/11-02-2024 - reset server data
             // using DEFAULT_CLIENT_ID as a trigger, prevents needing a nested loop to
             // update the status of each player to each player
             boolean failedToSend = !spInRoom.sendTurnStatus(Player.DEFAULT_CLIENT_ID, false);
@@ -232,7 +233,7 @@ public class GameRoom extends BaseGameRoom {
      */
     private void sendTurnStatus(ServerPlayer sp) {
         playersInRoom.values().removeIf(spInRoom -> {
-            boolean failedToSend = !spInRoom.sendTurnStatus(sp.getClientId(), sp.didTakeTurn());
+            boolean failedToSend = !spInRoom.sendTurnStatus(sp.getClientId(), sp.didTakeTurn()); // rev/11-02-2024
             if (failedToSend) {
                 removedClient(spInRoom.getServerThread());
             }
@@ -241,12 +242,12 @@ public class GameRoom extends BaseGameRoom {
     }
 
     private void syncGridDimensions(ServerPlayer sp) {
-        sp.sendGridDimensions(grid.getRows(), grid.getCols());
+        sp.sendGridDimensions(grid.getRows(), grid.getCols()); // rev/11-02-2024
     }
 
     private void sendGridDimensions() {
         playersInRoom.values().removeIf(spInRoom -> {
-            boolean failedToSend = !spInRoom.sendGridDimensions(grid.getRows(), grid.getCols());
+            boolean failedToSend = !spInRoom.sendGridDimensions(grid.getRows(), grid.getCols()); // rev/11-02-2024
             if (failedToSend) {
                 removedClient(spInRoom.getServerThread());
             }
@@ -257,6 +258,7 @@ public class GameRoom extends BaseGameRoom {
     // end send data to ServerPlayer(s)
 
     // receive data from ServerThread (GameRoom specific)
+    // rev/11-02-2024
     protected void handleMove(ServerThread st, int x, int y) {
         try {
             checkPlayerInRoom(st);
@@ -298,7 +300,7 @@ public class GameRoom extends BaseGameRoom {
         }
     }
 
-    // Helper method to update player score
+    //  rev/11-02-2024 - Helper method to update player score
     private void updatePlayerScore(long clientId, int points) { 
         ServerPlayer sp = playersInRoom.get(clientId);
         if (sp != null) {
@@ -308,13 +310,13 @@ public class GameRoom extends BaseGameRoom {
         }
     }
 
-    // Notify all players about the updated score
+    // rev/11-02-2024 - Notify all players about the updated score
     private void broadcastScoreUpdate(ServerPlayer sp) {
         playersInRoom.values().forEach(player -> player.sendMessage(
                 sp.getClientId(), "Player " + sp.getClientId() + " has a new score: " + sp.getScore()));
     }
 
-    // Method stub for answer checking (to be implemented)
+    // rev/11-02-2024 - Method stub for answer checking (to be implemented)
     private boolean isCorrectAnswer(String answer) {
         // Implement logic here for validating the answer
         return true; // Placeholder

@@ -13,7 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import Project.Common.ConnectionPayload;
-import Project.Common.Grid; 
+import Project.Common.Grid; // rev/11-02-2024
 import Project.Common.LoggerUtil;
 import Project.Common.Payload;
 import Project.Common.PayloadType;
@@ -64,7 +64,7 @@ public enum Client {
     private final String READY = "ready";
     private final String MOVE = "move";
 
-    private Grid grid = null;
+    private Grid grid = null; // rev/11-02-2024
 
     // needs to be private now that the enum logic is handling this
     private Client() {
@@ -239,6 +239,7 @@ public enum Client {
     // send methods to pass data to the ServerThread
 
     private void sendMove(int x, int y) {
+        // rev/11-02-2024
         // check local grid first
         if (grid.getCell(x, y).isOccupied()) {
             System.out
@@ -527,7 +528,7 @@ public enum Client {
     }
 
     // payload processors
-
+    // rev/11-02-2024
     private void processMove(long clientId, int x, int y) {
         ClientPlayer cp = knownClients.get(clientId);
         grid.setCell(x, y, true);
@@ -551,7 +552,7 @@ public enum Client {
                     .println(TextFX.colorize(String.format("%s finished their turn", cp.getClientName()), Color.CYAN));
         }
     }
-
+    // rev/11-02-2024
     private void processGridDimension(int x, int y) {
         if (x > 0 && y > 0) {
             grid = new Grid(x, y);

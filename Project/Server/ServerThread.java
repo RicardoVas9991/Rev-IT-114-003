@@ -103,20 +103,20 @@ public class ServerThread extends BaseServerThread {
                     ConnectionPayload cp = (ConnectionPayload) payload;
                     setClientName(cp.getClientName());
                     break;
-                    case MESSAGE:
+                    case MESSAGE: // rev/11-02-2024
                     String message = payload.getMessage();
                     if (message.startsWith("/answer")) {
-                        // Extract the answer content
-                        String answer = message.substring(8).trim();  // 8 skips "/answer " part
+                        // rev/11-02-2024 - Extract the answer content
+                        String answer = message.substring(8).trim();  // rev/11-02-2024 - 8 skips "/answer " part
                 
-                        // Send answer to GameRoom for processing
+                        // rev/11-02-2024 - Send answer to GameRoom for processing
                         try {
                             ((GameRoom) currentRoom).handleAnswer(this, answer);
                         } catch (Exception e) {
                             sendMessage("You must be in a GameRoom to submit an answer");
                         }
                     } else {
-                        // Regular message broadcast
+                        // rev/11-02-2024 - Regular message broadcast
                         currentRoom.sendMessage(this, message);
                     }
                     break;
@@ -143,7 +143,7 @@ public class ServerThread extends BaseServerThread {
                     break;
                 case MOVE:
                     try {
-                        // cast to GameRoom as the subclass will handle all Game logic
+                        // rev/11-02-2024 - cast to GameRoom as the subclass will handle all Game logic
                         XYPayload movePayload = (XYPayload)payload;
                         ((GameRoom) currentRoom).handleMove(this, movePayload.getX(), movePayload.getY());
                     } catch (Exception e) {
@@ -175,7 +175,7 @@ public class ServerThread extends BaseServerThread {
         return send(p);
     }
 
-    public boolean sendTurnStatus(long clientId, boolean didTakeTurn){
+    public boolean sendTurnStatus(long clientId, boolean didTakeTurn){ // rev/11-02-2024
         ReadyPayload rp = new ReadyPayload();
         rp.setPayloadType(PayloadType.TURN);
         rp.setReady(didTakeTurn);
@@ -183,30 +183,31 @@ public class ServerThread extends BaseServerThread {
         return send(rp);
     }
 
-    public boolean sendGridDimensions(int x, int y) {
+    public boolean sendGridDimensions(int x, int y) { // rev/11-02-2024
         XYPayload p = new XYPayload(x, y);
         p.setPayloadType(PayloadType.GRID_DIMENSION);
         return send(p);
     }
 
-    public boolean sendCurrentPhase(Phase phase) {
+    public boolean sendCurrentPhase(Phase phase) { // rev/11-02-2024
         Payload p = new Payload();
         p.setPayloadType(PayloadType.PHASE);
         p.setMessage(phase.name());
         return send(p);
     }
 
-    public boolean sendResetReady() {
+    public boolean sendResetReady() { // rev/11-02-2024
         ReadyPayload rp = new ReadyPayload();
         rp.setPayloadType(PayloadType.RESET_READY);
         return send(rp);
     }
 
-    public boolean sendReadyStatus(long clientId, boolean isReady) {
+    public boolean sendReadyStatus(long clientId, boolean isReady) { // rev/11-02-2024
         return sendReadyStatus(clientId, isReady, false);
     }
 
     /**
+     * rev/11-02-2024
      * Sync ready status of client id
      * 
      * @param clientId who

@@ -57,4 +57,19 @@ public class ServerPlayer extends Player {
     public boolean sendCurrentPhase(Phase phase) {
         return client.sendCurrentPhase(phase);
     }
+
+    public Object sendMessage(long clientId, String string) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'sendMessage'");
+    }
+
+    public boolean didTakeTurn() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'didTakeTurn'");
+    }
+
+    public void setTakeTurn(boolean b) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setTakeTurn'");
+    }
 }
