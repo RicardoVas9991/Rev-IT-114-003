@@ -9,7 +9,6 @@ import Project.Common.PayloadType;
 import Project.Common.Phase;
 import Project.Common.ReadyPayload;
 import Project.Common.RoomResultsPayload;
-import Project.Common.XYPayload;
 import Project.Common.Payload;
 
 import Project.Common.ConnectionPayload;
@@ -103,22 +102,8 @@ public class ServerThread extends BaseServerThread {
                     ConnectionPayload cp = (ConnectionPayload) payload;
                     setClientName(cp.getClientName());
                     break;
-                    case MESSAGE: // rev/11-02-2024
-                    String message = payload.getMessage();
-                    if (message.startsWith("/answer")) {
-                        // rev/11-02-2024 - Extract the answer content
-                        String answer = message.substring(8).trim();  // rev/11-02-2024 - 8 skips "/answer " part
-                
-                        // rev/11-02-2024 - Send answer to GameRoom for processing
-                        try {
-                            ((GameRoom) currentRoom).handleAnswer(this, answer);
-                        } catch (Exception e) {
-                            sendMessage("You must be in a GameRoom to submit an answer");
-                        }
-                    } else {
-                        // rev/11-02-2024 - Regular message broadcast
-                        currentRoom.sendMessage(this, message);
-                    }
+                case MESSAGE:
+                    currentRoom.sendMessage(this, payload.getMessage());
                     break;
                 case ROOM_CREATE:
                     currentRoom.handleCreateRoom(this, payload.getMessage());
@@ -141,23 +126,6 @@ public class ServerThread extends BaseServerThread {
                         sendMessage("You must be in a GameRoom to do the ready check");
                     }
                     break;
-                case MOVE:
-                    try {
-                        // rev/11-02-2024 - cast to GameRoom as the subclass will handle all Game logic
-                        XYPayload movePayload = (XYPayload)payload;
-                        ((GameRoom) currentRoom).handleMove(this, movePayload.getX(), movePayload.getY());
-                    } catch (Exception e) {
-                        sendMessage("You must be in a GameRoom to move");
-                    }
-                    break;
-                case ANSWER: // rev/11-02-2024: Added ANSWER payload type handling
-                    String answer = payload.getMessage();
-                    if (currentRoom instanceof GameRoom) {
-                        ((GameRoom) currentRoom).handleAnswer(this, answer);
-                    } else {
-                        sendMessage("Answer command can only be used in a GameRoom.");
-                    }
-                    break;
                 default:
                     break;
             }
@@ -166,60 +134,35 @@ public class ServerThread extends BaseServerThread {
 
         }
     }
-
     // send methods specific to non-chatroom projects
-    public boolean sendMove(long clientId, int x, int y){
-        XYPayload p = new XYPayload(x, y);
-        p.setPayloadType(PayloadType.MOVE);
-        p.setClientId(clientId);
-        return send(p);
-    }
 
-    public boolean sendTurnStatus(long clientId, boolean didTakeTurn){ // rev/11-02-2024
-        ReadyPayload rp = new ReadyPayload();
-        rp.setPayloadType(PayloadType.TURN);
-        rp.setReady(didTakeTurn);
-        rp.setClientId(clientId);
-        return send(rp);
-    }
-
-    public boolean sendGridDimensions(int x, int y) { // rev/11-02-2024
-        XYPayload p = new XYPayload(x, y);
-        p.setPayloadType(PayloadType.GRID_DIMENSION);
-        return send(p);
-    }
-
-    public boolean sendCurrentPhase(Phase phase) { // rev/11-02-2024
+    public boolean sendCurrentPhase(Phase phase){
         Payload p = new Payload();
         p.setPayloadType(PayloadType.PHASE);
         p.setMessage(phase.name());
         return send(p);
     }
-
-    public boolean sendResetReady() { // rev/11-02-2024
+    public boolean sendResetReady(){
         ReadyPayload rp = new ReadyPayload();
         rp.setPayloadType(PayloadType.RESET_READY);
         return send(rp);
     }
 
-    public boolean sendReadyStatus(long clientId, boolean isReady) { // rev/11-02-2024
+    public boolean sendReadyStatus(long clientId, boolean isReady){
         return sendReadyStatus(clientId, isReady, false);
     }
-
     /**
-     * rev/11-02-2024
      * Sync ready status of client id
-     * 
      * @param clientId who
-     * @param isReady  ready or not
-     * @param quiet    silently mark ready
+     * @param isReady ready or not
+     * @param quiet silently mark ready
      * @return
      */
-    public boolean sendReadyStatus(long clientId, boolean isReady, boolean quiet) {
+    public boolean sendReadyStatus(long clientId, boolean isReady, boolean quiet){
         ReadyPayload rp = new ReadyPayload();
         rp.setClientId(clientId);
         rp.setReady(isReady);
-        if (quiet) {
+        if(quiet){
             rp.setPayloadType(PayloadType.SYNC_READY);
         }
         return send(rp);

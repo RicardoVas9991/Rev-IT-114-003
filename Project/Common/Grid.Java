@@ -1,4 +1,4 @@
-Package Project.Common;
+package Project.Common;
 
 /**
  * Represents a grid of cells.

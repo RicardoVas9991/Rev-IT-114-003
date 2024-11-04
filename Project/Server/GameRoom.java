@@ -1,50 +1,40 @@
-
 package Project.Server;
 
-import Project.Common.Grid; // rev/11-02-2024
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
 import Project.Common.LoggerUtil;
 import Project.Common.Phase;
-import Project.Common.Player;
+import Project.Common.PointsPayload;
+import Project.Common.QAPayload;
 import Project.Common.TimedEvent;
-import java.util.HashMap;
-import java.util.Map;
 
 public class GameRoom extends BaseGameRoom {
+    
     // used for general rounds (usually phase-based turns)
     private TimedEvent roundTimer = null;
 
     // used for granular turn handling (usually turn-order turns)
     private TimedEvent turnTimer = null;
 
-    // rev/11-02-2024
-    private Grid grid = null;
-    
-    private Map<ServerPlayer, Integer> playerPoints = new HashMap<>();
-    private String currentQuestion;
-    private String correctAnswer;
+    private List<Question> questions = new ArrayList<>(); // ucid/date (rev/11-02-2024): List to store questions
+    private Map<ServerPlayer, Integer> playerScores = new HashMap<>(); // ucid/date (rev/11-02-2024): Map to track scores
+    private Question currentQuestion;
     
     public GameRoom(String name) {
         super(name);
     }
-    
-    private void addPoints(ServerPlayer player, int points) {
-        playerPoints.put(player, playerPoints.getOrDefault(player, 0) + points);
-    }
-
-    private int getPoints(ServerPlayer player) {
-        return playerPoints.getOrDefault(player, 0);
-    }
-
 
     /** {@inheritDoc} */
     @Override
-    protected void onClientAdded(ServerPlayer sp) {
+    protected void onClientAdded(ServerPlayer sp){
         // sync GameRoom state to new client
         syncCurrentPhase(sp);
         syncReadyStatus(sp);
-        if (currentPhase != Phase.READY) {
-            syncGridDimensions(sp);
-        }
     }
 
     /** {@inheritDoc} */
@@ -62,13 +52,12 @@ public class GameRoom extends BaseGameRoom {
     }
 
     // timer handlers
-    private void startRoundTimer() {
-        roundTimer = new TimedEvent(30, () -> onRoundEnd());
-        roundTimer.setTickCallback((time) -> System.out.println("Round Time: " + time));
+    private void startRoundTimer(){
+        roundTimer = new TimedEvent(30, ()-> onRoundEnd());
+        roundTimer.setTickCallback((time)->System.out.println("Round Time: " + time));
     }
-
-    private void resetRoundTimer() {
-        if (roundTimer != null) {
+    private void resetRoundTimer(){
+        if(roundTimer != null){
             roundTimer.cancel();
             roundTimer = null;
         }
@@ -78,248 +67,143 @@ public class GameRoom extends BaseGameRoom {
         turnTimer = new TimedEvent(30, ()-> onTurnEnd());
         turnTimer.setTickCallback((time)->System.out.println("Turn Time: " + time));
     }
-
-    private void resetTurnTimer() {
-        if (turnTimer != null) {
+    private void resetTurnTimer(){
+        if(turnTimer != null){
             turnTimer.cancel();
             turnTimer = null;
         }
     }
     // end timer handlers
-
+    
     // lifecycle methods
-    // rev/11-02-2024
 
     /** {@inheritDoc} */
     @Override
-    protected void onSessionStart() {
+    protected void onSessionStart(){
         LoggerUtil.INSTANCE.info("onSessionStart() start");
         changePhase(Phase.IN_PROGRESS);
-        grid = new Grid(2, 2);
-        sendGridDimensions();
         LoggerUtil.INSTANCE.info("onSessionStart() end");
-        onRoundStart();
+        LoggerUtil.INSTANCE.info("onSessionStart() start");
+        loadQuestionsFromFile(); // (rev/11-02-2024): Load questions at session start
+        startNewRound();
     }
 
     /** {@inheritDoc} */
     @Override
-    protected void onRoundStart() {
+    protected void onRoundStart(){
         LoggerUtil.INSTANCE.info("onRoundStart() start");
         resetRoundTimer();
         startRoundTimer();
-        selectQuestion();  // Select and broadcast a new question at the start of each round
         LoggerUtil.INSTANCE.info("onRoundStart() end");
     }
 
-    private void selectQuestion() {
-        currentQuestion = "What is 2 + 2?";
-        correctAnswer = "4";  // Example; replace with dynamic question selection
-        sendMessage(null, "New Question: " + currentQuestion);
-    }
-
-
     /** {@inheritDoc} */
     @Override
-    protected void onTurnStart() {
+    protected void onTurnStart(){
         LoggerUtil.INSTANCE.info("onTurnStart() start");
         resetTurnTimer();
         startTurnTimer();
         LoggerUtil.INSTANCE.info("onTurnStart() end");
     }
-
-    // Note: logic between Turn Start and Turn End is typically handled via timers
-    // and user interaction
+    // Note: logic between Turn Start and Turn End is typically handled via timers and user interaction
     /** {@inheritDoc} */
     @Override
-    protected void onTurnEnd() {
+    protected void onTurnEnd(){
         LoggerUtil.INSTANCE.info("onTurnEnd() start");
         resetTurnTimer(); // reset timer if turn ended without the time expiring
 
         LoggerUtil.INSTANCE.info("onTurnEnd() end");
     }
+    // Note: logic between Round Start and Round End is typically handled via timers and user interaction
+    private void loadQuestionsFromFile() {
+        // ucid/date (rev/11-02-2024): Sample questions added. Replace with file reading logic.
+        questions.add(new Question("What is 2 + 2?", Arrays.asList("A. 3", "B. 4", "C. 5", "D. 6"), "B"));
+        questions.add(new Question("Capital of France?", Arrays.asList("A. Berlin", "B. Madrid", "C. Paris", "D. Rome"), "C"));
+        LoggerUtil.INSTANCE.info("Questions loaded.");
+    }
 
-    // Note: logic between Round Start and Round End is typically handled via timers
-    // and user interaction
+    private void startNewRound() {
+        if (questions.isEmpty()) {
+            onSessionEnd(); // End the session if no more questions
+            return;
+        }
+
+        currentQuestion = questions.remove(new Random().nextInt(questions.size()));
+        broadcastQuestion(currentQuestion);
+        startRoundTimer(); // ucid/date (rev/11-02-2024): Timer for the round start
+    }
+
+    private void broadcastQuestion(Question question) {
+        QAPayload payload = new QAPayload(question.getText(), question.getOptions()); // Use the new QAPayload
+        playersInRoom.values().forEach(player -> player.getServerThread().send(payload));
+    }
+
+    public void handleAnswer(ServerThread st, String answer) {
+        LoggerUtil.INSTANCE.info("Answer received from " + st.getClientName() + ": " + answer);
+        ServerPlayer player = playersInRoom.get(st.getClientId());
+
+        if (player != null && answer.equals(currentQuestion.getCorrectAnswer())) {
+            playerScores.put(player, playerScores.getOrDefault(player, 0) + 10); // ucid/date (rev/11-02-2024): Score logic
+            st.sendMessage("Correct answer! 10 points awarded.");
+            checkRoundEndCondition();
+        } else {
+            st.sendMessage("Incorrect answer.");
+        }
+    }
+
+    private void checkRoundEndCondition() {
+        // ucid/date (rev/11-02-2024): Check if round should end
+        if (allPlayersAnswered()) {
+            onRoundEnd();
+        }
+    }
+
+    private boolean allPlayersAnswered() {
+        return playerScores.size() == playersInRoom.size();
+    }
+
+
     /** {@inheritDoc} */
     @Override
     protected void onRoundEnd() {
         LoggerUtil.INSTANCE.info("onRoundEnd() start");
-        resetRoundTimer(); // reset timer if round ended without the time expiring
+        resetRoundTimer();
 
-        LoggerUtil.INSTANCE.info("onRoundEnd() end");
-        // example of some end session condition 2
-        sendMessage(null, "Too slow populating the grid, you all lose");
+    // Check condition to end the session; otherwise, move to the next round
+    if (/* condition to check if the session should end */) {
         onSessionEnd();
+    } else {
+        PointsPayload pointsPayload = new PointsPayload(getPlayerScores());
+        playersInRoom.values().forEach(player -> player.getServerThread().send(pointsPayload));
+        startNewRound(); // Start the next round if the session continues
     }
+
+    LoggerUtil.INSTANCE.info("onRoundEnd() end");
+}
 
     /** {@inheritDoc} */
     @Override
-    protected void onSessionEnd() {
+    protected void onSessionEnd(){
         LoggerUtil.INSTANCE.info("onSessionEnd() start");
-        StringBuilder results = new StringBuilder("Game Over! Final Scores:\n");
-        playerPoints.forEach((player, points) -> results.append(player.getClientId()).append(": ").append(points).append(" points\n"));
-        sendMessage(null, results.toString());
-        
-        grid.reset();
-        resetRoundTimer(); // just in case it's still active if we forgot to end it sooner
-        sendGridDimensions();
-        sendResetTurnStatus();
         resetReadyStatus();
         changePhase(Phase.READY);
         LoggerUtil.INSTANCE.info("onSessionEnd() end");
     }
     // end lifecycle methods
 
-    // rev/11-02-2024 - misc logic
-    private void checkIfAllTookTurns() {
-        long ready = playersInRoom.values().stream().filter(p -> p.isReady()).count();
-        long tookTurn = playersInRoom.values().stream().filter(p -> p.isReady() && p.didTakeTurn()).count();
-        if (ready == tookTurn) {
-            // example of some end session condition 2
-            if (grid.areAllCellsOccupied()) {
-                sendMessage(null, "Congrats, you filled the grid");
-                onSessionEnd();
-            } else {
-                sendResetTurnStatus();
-                onRoundStart();
-                sendMessage(null, "Move again");
-            }
-
-        }
+    private Map<String, Integer> getPlayerScores() {
+        Map<String, Integer> scores = new HashMap<>();
+        playerScores.forEach((player, points) -> scores.put(player.getClientId(), points));
+        return scores; // re
     }
-    // end misc logic
 
     // send/sync data to ServerPlayer(s)
 
-    /**
-     * Sends a movement coordinate of one Player to all Players (including
-     * themselves)
-     * 
-     * @param sp
-     * @param x
-     * @param y
-     */
-    private void sendMove(ServerPlayer sp, int x, int y) {
-        playersInRoom.values().removeIf(spInRoom -> {
-            boolean failedToSend = !spInRoom.sendMove(sp.getClientId(), x, y);
-            if (failedToSend) {
-                removedClient(spInRoom.getServerThread());
-            }
-            return failedToSend;
-        });
-    }
-
-    /**
-     * A shorthand way of telling all clients to reset their local list's turn
-     * status
-     */
-    private void sendResetTurnStatus() {
-        playersInRoom.values().removeIf(spInRoom -> {
-            spInRoom.setTakeTurn(false); // rev/11-02-2024 - reset server data
-            // using DEFAULT_CLIENT_ID as a trigger, prevents needing a nested loop to
-            // update the status of each player to each player
-            boolean failedToSend = !spInRoom.sendTurnStatus(Player.DEFAULT_CLIENT_ID, false);
-            if (failedToSend) {
-                removedClient(spInRoom.getServerThread());
-            }
-            return failedToSend;
-        });
-    }
-
-    /**
-     * Sends the turn status of one Player to all Players (including themselves)
-     * 
-     * @param sp
-     */
-    private void sendTurnStatus(ServerPlayer sp) {
-        playersInRoom.values().removeIf(spInRoom -> {
-            boolean failedToSend = !spInRoom.sendTurnStatus(sp.getClientId(), sp.didTakeTurn()); // rev/11-02-2024
-            if (failedToSend) {
-                removedClient(spInRoom.getServerThread());
-            }
-            return failedToSend;
-        });
-    }
-
-    private void syncGridDimensions(ServerPlayer sp) {
-        sp.sendGridDimensions(grid.getRows(), grid.getCols()); // rev/11-02-2024
-    }
-
-    private void sendGridDimensions() {
-        playersInRoom.values().removeIf(spInRoom -> {
-            boolean failedToSend = !spInRoom.sendGridDimensions(grid.getRows(), grid.getCols()); // rev/11-02-2024
-            if (failedToSend) {
-                removedClient(spInRoom.getServerThread());
-            }
-            return failedToSend;
-        });
-    }
-
+    
     // end send data to ServerPlayer(s)
 
     // receive data from ServerThread (GameRoom specific)
-    // rev/11-02-2024
-    protected void handleMove(ServerThread st, int x, int y) {
-        try {
-            checkPlayerInRoom(st);
-            ServerPlayer sp = playersInRoom.get(st.getClientId());
-            if(!sp.isReady()){
-                st.sendMessage("You weren't ready in time");
-                return;
-            }
-            if (sp.didTakeTurn()) {
-                st.sendMessage("You already took your turn");
-                return;
-            }
-            if (grid.getCell(x, y).isOccupied()) {
-                st.sendMessage("This cell is already occupied");
-                return;
-            }
-            grid.setCell(x, y, true);
-            sendMove(sp, x, y);
-            sp.setTakeTurn(true);
-            sendTurnStatus(sp);
-            checkIfAllTookTurns();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-    // end receive data from ServerThread (GameRoom specific)
-
-    // Method to handle answer processing
-    public void handleAnswer(ServerThread st, String answer) {
-        LoggerUtil.INSTANCE.info("Answer received from " + st.getClientName() + ": " + answer);
-        
-        if (isCorrectAnswer(answer)) { // ucid/date (rev/11-02-2024): Implemented answer checking
-            st.sendMessage("Correct answer!");
-            updatePlayerScore(st.getClientId(), 10); // ucid/date (rev/11-02-2024): Awarded points for correct answer
-        } else {
-            st.sendMessage("Incorrect answer. Try again.");
-        }
-    }
-
-    //  rev/11-02-2024 - Helper method to update player score
-    private void updatePlayerScore(long clientId, int points) { 
-        ServerPlayer sp = playersInRoom.get(clientId);
-        if (sp != null) {
-            int newScore = sp.getScore() + points;
-            sp.setScore(newScore); // ucid/date (rev/11-02-2024): Updated score
-            broadcastScoreUpdate(sp); // Notify players of the score change
-        }
-    }
-
-    // rev/11-02-2024 - Notify all players about the updated score
-    private void broadcastScoreUpdate(ServerPlayer sp) {
-        playersInRoom.values().forEach(player -> player.sendMessage(
-                sp.getClientId(), "Player " + sp.getClientId() + " has a new score: " + sp.getScore()));
-    }
-
-    // rev/11-02-2024 - Method stub for answer checking (to be implemented)
-    private boolean isCorrectAnswer(String answer) {
-        // Implement logic here for validating the answer
-        return true; // Placeholder
-    }
     
+ 
+   // end receive data from ServerThread (GameRoom specific)
 }

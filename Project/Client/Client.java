@@ -13,7 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import Project.Common.ConnectionPayload;
-import Project.Common.Grid; // rev/11-02-2024
+import Project.Common.Grid;
 import Project.Common.LoggerUtil;
 import Project.Common.Payload;
 import Project.Common.PayloadType;
@@ -239,7 +239,6 @@ public enum Client {
     // send methods to pass data to the ServerThread
 
     private void sendMove(int x, int y) {
-        // rev/11-02-2024
         // check local grid first
         if (grid.getCell(x, y).isOccupied()) {
             System.out

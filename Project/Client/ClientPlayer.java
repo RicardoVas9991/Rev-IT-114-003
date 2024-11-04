@@ -31,4 +31,9 @@ public class ClientPlayer extends Player {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'didTakeTurn'");
     }
+
+    public Object setTakeTurn(boolean b) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setTakeTurn'");
+    }
 }
