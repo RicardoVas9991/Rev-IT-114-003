@@ -1,5 +1,4 @@
-// rev/11-02-2024
-
+// rev / 11-04-2024
 package Project.Common;
 
 import java.util.Map;
@@ -14,5 +13,9 @@ public class PointsPayload extends Payload {
 
     public Map<String, Integer> getPlayerPoints() {
         return playerPoints;
+    }
+
+    public void setPlayerPoints(Map<String, Integer> playerPoints) {
+        this.playerPoints = playerPoints;
     }
 }

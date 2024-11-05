@@ -3,6 +3,13 @@ package Project.Server;
 import Project.Common.LoggerUtil;
 import Project.Common.Phase;
 import Project.Common.TimedEvent;
+import Project.Common.Payload;
+import Project.Common.QAPayload;
+import Project.Common.PointsPayload;
+import Project.Common.Question;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public class GameRoom extends BaseGameRoom {
     
@@ -11,7 +18,10 @@ public class GameRoom extends BaseGameRoom {
 
     // used for granular turn handling (usually turn-order turns)
     private TimedEvent turnTimer = null;
-    
+
+    // List to hold questions
+    private List<Question> questions;
+
     public GameRoom(String name) {
         super(name);
     }
@@ -69,6 +79,7 @@ public class GameRoom extends BaseGameRoom {
     protected void onSessionStart(){
         LoggerUtil.INSTANCE.info("onSessionStart() start");
         changePhase(Phase.IN_PROGRESS);
+        loadQuestions("questions.txt"); // Load questions from file
         LoggerUtil.INSTANCE.info("onSessionStart() end");
         onRoundStart();
     }
@@ -79,6 +90,7 @@ public class GameRoom extends BaseGameRoom {
         LoggerUtil.INSTANCE.info("onRoundStart() start");
         resetRoundTimer();
         startRoundTimer();
+        sendQuestionToClients(); // Send question to clients
         LoggerUtil.INSTANCE.info("onRoundStart() end");
     }
 
@@ -105,7 +117,7 @@ public class GameRoom extends BaseGameRoom {
     protected void onRoundEnd(){
         LoggerUtil.INSTANCE.info("onRoundEnd() start");
         resetRoundTimer(); // reset timer if round ended without the time expiring
-
+        awardPoints(); // Award points to players
         LoggerUtil.INSTANCE.info("onRoundEnd() end");
         onSessionEnd();
     }
@@ -120,14 +132,41 @@ public class GameRoom extends BaseGameRoom {
     }
     // end lifecycle methods
 
-    
+    // Load questions from file
+    private void loadQuestions(String filePath) {
+        // rev / 11-04-2024
+        // Load questions from file into memory
+    }
 
-    // send/sync data to ServerPlayer(s)
+    // Send question to clients
+    private void sendQuestionToClients() {
+        // rev / 11-04-2024
+        if (questions != null && !questions.isEmpty()) {
+            Random random = new Random();
+            Question question = questions.remove(random.nextInt(questions.size()));
+            QAPayload payload = new QAPayload(question.getText(), question.getAnswers());
+            broadcast(payload);
+        }
+    }
 
-    
-    // end send data to ServerPlayer(s)
+    // Award points to players
+    private void awardPoints() {
+        // rev / 11-04-2024
+        // Award points based on the order of correct answers
+        PointsPayload payload = new PointsPayload(calculatePoints());
+        broadcast(payload);
+    }
 
-    // receive data from ServerThread (GameRoom specific)
-    
-    // end receive data from ServerThread (GameRoom specific)
+    // Calculate points for players
+    private Map<String, Integer> calculatePoints() {
+        // rev / 11-04-2024
+        // Calculate and return points for players
+        return null;
+    }
+
+    // Broadcast payload to all clients
+    private void broadcast(Payload payload) {
+        // rev / 11-04-2024
+        // Implement the method to send payload to all clients
+    }
 }
