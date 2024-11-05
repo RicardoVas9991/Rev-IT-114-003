@@ -16,7 +16,6 @@ public enum PayloadType {
     RESET_READY, // trigger to tell the client to reset their whole local list's ready status (saves network requests)
     PHASE, // syncs current phase of session (used as a switch to only allow certain logic to execute)
     MOVE, // syncs as a point/coordinate
-    GRID_DIMENSION, // syncs grid dimension for server-side controlled grid building
     TURN, // used for syncing turn data
     QUESTION,         // New: Server sends question and options to clients
     ANSWER_SUBMIT,    // New: Client submits an answer

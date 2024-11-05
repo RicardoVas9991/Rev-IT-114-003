@@ -1,4 +1,4 @@
-// rev/11-02-2024 - ucid: Ricardo Vasquez
+// rev/11-02-2024
 
 package Project.Common;
 
