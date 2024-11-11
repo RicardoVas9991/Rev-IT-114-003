@@ -8,32 +8,14 @@ import java.util.List;
 import java.util.Map;
 
 public class RoomResultsPayload extends Payload {
-    private List<String> rooms = new ArrayList<>();
-    private Map<String, Integer> playerPoints = new HashMap<>();
+    private Map<String, Integer> playerPoints;
 
-    public RoomResultsPayload() {
-        setPayloadType(PayloadType.ROOM_LIST);
-    }
-
-    // For room management
-    public List<String> getRooms() {
-        return rooms;
-    }
-
-    public void setRooms(List<String> rooms) {
-        this.rooms = rooms;
-    }
-
-    // For points syncing
-    public Map<String, Integer> getPlayerPoints() {
-        return playerPoints;
-    }
-
-    public void setPlayerPoints(Map<String, Integer> playerPoints) {
+    public RoomResultsPayload(Map<String, Integer> playerPoints) {
+        super(PayloadType.POINT_UPDATE);
         this.playerPoints = playerPoints;
     }
 
-    public void addPlayerPoint(String playerName, int points) {
-        playerPoints.put(playerName, points);
+    public Map<String, Integer> getPlayerPoints() {
+        return playerPoints;
     }
 }

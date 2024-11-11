@@ -6,16 +6,12 @@ import java.util.Map;
 public class PointsPayload extends Payload {
     private Map<String, Integer> playerPoints;
 
-    public PointsPayload(Map<String, Integer> playerPoints) {
-        setPayloadType(PayloadType.POINT_UPDATE);
+    public PointsPayload(String clientId, Map<String, Integer> playerPoints) {
+        super(clientId, "Points Update", "PointsPayload");
         this.playerPoints = playerPoints;
     }
 
     public Map<String, Integer> getPlayerPoints() {
         return playerPoints;
-    }
-
-    public void setPlayerPoints(Map<String, Integer> playerPoints) {
-        this.playerPoints = playerPoints;
     }
 }

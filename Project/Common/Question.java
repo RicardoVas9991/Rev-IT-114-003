@@ -4,31 +4,31 @@ package Project.Common;
 import java.util.List;
 
 public class Question {
-    private String text;
+    private String questionText;
     private String category;
-    private List<String> answers;
-    private String correctAnswer;
+    private List<String> options;
+    private int correctOption;
 
-    public Question(String text, String category, List<String> answers, String correctAnswer) {
-        this.text = text;
+    public Question(String questionText, String category, List<String> options, int correctOption) {
+        this.questionText = questionText;
         this.category = category;
-        this.answers = answers;
-        this.correctAnswer = correctAnswer;
+        this.options = options;
+        this.correctOption = correctOption;
     }
 
-    public String getText() {
-        return text;
+    public String getQuestionText() {
+        return questionText;
     }
 
     public String getCategory() {
         return category;
     }
 
-    public List<String> getAnswers() {
-        return answers;
+    public List<String> getOptions() {
+        return options;
     }
 
-    public String getCorrectAnswer() {
-        return correctAnswer;
+    public int getCorrectOption() {
+        return correctOption;
     }
 }

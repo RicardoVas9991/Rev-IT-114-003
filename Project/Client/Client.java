@@ -230,7 +230,7 @@ public enum Client {
      * @param roomQuery optional partial match search String
      */
     private void sendListRooms(String roomQuery) {
-        Payload p = new Payload();
+        Payload p = new Payload(roomQuery, roomQuery, roomQuery);
         p.setPayloadType(PayloadType.ROOM_LIST);
         p.setMessage(roomQuery);
         send(p);
@@ -242,7 +242,7 @@ public enum Client {
      * @param room
      */
     private void sendCreateRoom(String room) {
-        Payload p = new Payload();
+        Payload p = new Payload(room, room, room);
         p.setPayloadType(PayloadType.ROOM_CREATE);
         p.setMessage(room);
         send(p);
@@ -254,7 +254,7 @@ public enum Client {
      * @param room
      */
     private void sendJoinRoom(String room) {
-        Payload p = new Payload();
+        Payload p = new Payload(room, room, room);
         p.setPayloadType(PayloadType.ROOM_JOIN);
         p.setMessage(room);
         send(p);
@@ -264,7 +264,7 @@ public enum Client {
      * Tells the server-side we want to disconnect
      */
     private void sendDisconnect() {
-        Payload p = new Payload();
+        Payload p = new Payload(COMMAND_CHARACTER, COMMAND_CHARACTER, COMMAND_CHARACTER);
         p.setPayloadType(PayloadType.DISCONNECT);
         send(p);
     }
@@ -275,7 +275,7 @@ public enum Client {
      * @param message
      */
     private void sendMessage(String message) {
-        Payload p = new Payload();
+        Payload p = new Payload(message, message, message);
         p.setPayloadType(PayloadType.MESSAGE);
         p.setMessage(message);
         send(p);
@@ -289,7 +289,7 @@ public enum Client {
             System.out.println(TextFX.colorize("Name must be set first via /name command", Color.RED));
             return;
         }
-        ConnectionPayload cp = new ConnectionPayload();
+        ConnectionPayload cp = new ConnectionPayload(COMMAND_CHARACTER, null);
         cp.setClientName(myData.getClientName());
         send(cp);
     }
@@ -430,23 +430,23 @@ public enum Client {
     private void processPayload(Payload payload) {
         try {
             LoggerUtil.INSTANCE.info("Received Payload: " + payload);
-            switch (payload.getPayloadType()) {
+            switch (payload.getType()) {
                 case PayloadType.CLIENT_ID: // get id assigned
                     ConnectionPayload cp = (ConnectionPayload) payload;
-                    processClientData(cp.getClientId(), cp.getClientName());
+                    processClientData(cp.getClientId(), cp.getClientId());
                     break;
                 case PayloadType.SYNC_CLIENT: // silent add
                     cp = (ConnectionPayload) payload;
-                    processClientSync(cp.getClientId(), cp.getClientName());
+                    processClientSync(cp.getClientId(), cp.getClientId());
                     break;
                 case PayloadType.DISCONNECT: // remove a disconnected client (mostly for the specific message vs leaving
                                              // a room)
                     cp = (ConnectionPayload) payload;
-                    processDisconnect(cp.getClientId(), cp.getClientName());
+                    processDisconnect(cp.getClientId(), cp.getClientId());
                     // note: we want this to cascade
                 case PayloadType.ROOM_JOIN: // add/remove client info from known clients
                     cp = (ConnectionPayload) payload;
-                    processRoomAction(cp.getClientId(), cp.getClientName(), cp.getMessage(), cp.isConnect());
+                    processRoomAction(cp.getClientId(), cp.getClientId(), cp.getMessage(), cp.isConnect());
                     break;
                 case PayloadType.ROOM_LIST:
                     RoomResultsPayload rrp = (RoomResultsPayload) payload;
@@ -502,18 +502,6 @@ public enum Client {
         }
     }
 
-    private void processRoomsList(List<String> rooms) {
-        if (rooms == null || rooms.size() == 0) {
-            System.out.println(
-                    TextFX.colorize("No rooms found matching your query",
-                            Color.RED));
-            return;
-        }
-        System.out.println(TextFX.colorize("Room Results:", Color.PURPLE));
-        System.out.println(
-                String.join("\n", rooms));
-    }
-
     private void processDisconnect(long clientId, String clientName) {
         System.out.println(
                 TextFX.colorize(String.format("*%s disconnected*",
@@ -524,9 +512,9 @@ public enum Client {
         }
     }
 
-    private void processClientData(long clientId, String clientName) {
-        if (myData.getClientId() == ClientPlayer.DEFAULT_CLIENT_ID) {
-            myData.setClientId(clientId);
+    private void processClientData(String clientId, String clientName) {
+            if (myData.getClientId() == ClientPlayer.DEFAULT_CLIENT_ID) {
+                myData.setClientId(clientId);
             myData.setClientName(clientName);
             // knownClients.put(cp.getClientId(), myData);// <-- this is handled later
         }
@@ -537,7 +525,7 @@ public enum Client {
         System.out.println(TextFX.colorize(String.format("%s: %s", name, message), Color.BLUE));
     }
 
-    private void processClientSync(long clientId, String clientName) {
+    private void processClientSync(long clientId, long clientName) {
         if (!knownClients.containsKey(clientId)) {
             ClientPlayer cd = new ClientPlayer();
             cd.setClientId(clientId);
