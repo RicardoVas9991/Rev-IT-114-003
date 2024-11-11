@@ -26,14 +26,4 @@ public class ClientPlayer extends Player {
         super.reset();
         this.clientName = "";
     }
-
-    public boolean didTakeTurn() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'didTakeTurn'");
-    }
-
-    public Object setTakeTurn(boolean b) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setTakeTurn'");
-    }
 }

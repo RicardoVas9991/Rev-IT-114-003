@@ -1,5 +1,4 @@
-// rev/11-02-2024
-
+// rev / 11-04-2024
 package Project.Common;
 
 import java.util.List;
@@ -18,7 +17,17 @@ public class QAPayload extends Payload {
         return question;
     }
 
+    public void setQuestion(String question) {
+        this.question = question;
+    }
+
     public List<String> getAnswerOptions() {
         return answerOptions;
     }
+
+    public void setAnswerOptions(List<String> answerOptions) {
+        this.answerOptions = answerOptions;
+    }
 }
+
+

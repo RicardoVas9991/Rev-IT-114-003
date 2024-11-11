@@ -1,0 +1,25 @@
+Sample Questions File:
+1. Category: Science
+   Question: What is the chemical symbol for water?
+   Answers: H2O, CO2, NaCl, O2
+   Correct Answer: H2O
+
+2. Category: History
+   Question: Who was the first President of the United States?
+   Answers: Abraham Lincoln, George Washington, Thomas Jefferson, John Adams
+   Correct Answer: George Washington
+
+3. Category: Math  
+   Question: What is the value of π (pi) to two decimal places?  
+   Answers: 3.12, 3.14, 3.15, 3.16  
+   Correct Answer: 3.14  
+
+4. Category: Reading  
+   Question: Who wrote the classic novel *Pride and Prejudice*?  
+   Answers: Jane Austen, Charles Dickens, Charlotte Brontë, Emily Brontë  
+   Correct Answer: Jane Austen  
+
+5. Category: Star Trek  
+   Question: In *Star Trek: The Next Generation*, what is the name of the android character who serves on the USS Enterprise?  
+   Answers: Spock, Riker, Worf, Data  
+   Correct Answer: Data  
