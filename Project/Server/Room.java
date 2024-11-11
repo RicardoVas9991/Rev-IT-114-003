@@ -238,4 +238,20 @@ public class Room implements AutoCloseable{
     }
 
     // end receive data from ServerThread
+
+
+    public String formatText(String input) {
+        input = input.replace("**", "<b>").replace("**", "</b>");
+        input = input.replace("*", "<i>").replace("*", "</i>");
+        input = input.replace("_", "<u>").replace("_", "</u>");
+        input = input.replace("#r", "<span style='color:red;'>").replace("r#", "</span>");
+        // Additional formatting as needed
+        return input;
+    }
+
+    public void broadcastMessage(String message) {
+        String formattedMessage = formatText(message);
+        // Send formattedMessage to all clients in the room
+    }
+
 }
