@@ -9,7 +9,7 @@ public class Payload implements Serializable {
     private String sender;
     private PayloadType type;
 
-    public Payload(PayloadType type, String sender) {
+    public Payload(PayloadType type) {
         this.type = type;
         this.sender = sender;
     }
@@ -32,8 +32,8 @@ public class Payload implements Serializable {
 
 
 
-    public void setPayloadType(PayloadType payloadType) {
-        this.payloadType = payloadType;
+    public void setPayloadType(PayloadType type) {
+        this.type = type;
     }
 
 
@@ -63,7 +63,7 @@ public class Payload implements Serializable {
 
 
     @Override
-    public String toString(){
-        return String.format("Payload[%s] Client Id [%s] Message: [%s]", getPayloadType(), getClientId(), getMessage());
+    public String toString() {
+        return "Payload Type: " + type;
     }
 }

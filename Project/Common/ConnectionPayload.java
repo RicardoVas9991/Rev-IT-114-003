@@ -4,8 +4,8 @@ public class ConnectionPayload extends Payload {
     private String clientName;
     private boolean isConnect;
 
-    public ConnectionPayload(){
-        setPayloadType(PayloadType.CLIENT_CONNECT);
+    public ConnectionPayload() {
+        super(PayloadType.CLIENT_CONNECT);  // Call to super constructor
     }
     
     public String getClientName() {
@@ -24,10 +24,8 @@ public class ConnectionPayload extends Payload {
         this.isConnect = isConnect;
     }
 
-    
-
     @Override
-    public String toString(){
-        return super.toString() + String.format(" Client Name [%s] Status [%s]", clientName, isConnect?"connect":"disconnect");
+    public String toString() {
+        return super.toString() + String.format(" Client Name [%s] Status [%s]", clientName, isConnect ? "connect" : "disconnect");
     }
 }

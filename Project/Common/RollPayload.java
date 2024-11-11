@@ -5,7 +5,7 @@ public class RollPayload extends Payload {
     private int sides;
 
     public RollPayload(String sender, int dice, int sides) {
-        super(PayloadType.ROLL, sender);
+        super(PayloadType.ROLL);
         this.dice = dice;
         this.sides = sides;
     }
