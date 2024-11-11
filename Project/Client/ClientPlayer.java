@@ -17,7 +17,7 @@ public class ClientPlayer extends Player {
         return clientName;
     }
 
-    public void setClientName(long clientId) {
+    public void setClientName(String clientId) {
         this.clientName = clientId;
     }
 

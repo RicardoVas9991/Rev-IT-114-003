@@ -18,6 +18,10 @@ public class Payload implements Serializable {
         //TODO Auto-generated constructor stub
     }
 
+    public Payload(PayloadType question) {
+        //TODO Auto-generated constructor stub
+    }
+
     public String getClientId() {
         return clientId;
     }
