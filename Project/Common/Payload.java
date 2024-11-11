@@ -4,68 +4,43 @@ import java.util.List;
 import java.util.Map;
 
 public class Payload implements Serializable {
-    private PayloadType payloadType;
-    private long clientId;
+    private String clientId;
     private String message;
+    private String type;
 
-    // rev / 11-04-2024
-    // Additional fields for QAPayload and PointsPayload
-    private String question;
-    private List<String> answers;
-    private Map<String, Integer> points;
-
-    public PayloadType getPayloadType() {
-        return payloadType;
-    }
-
-    public void setPayloadType(PayloadType payloadType) {
-        this.payloadType = payloadType;
-    }
-
-    public long getClientId() {
-        return clientId;
-    }
-
-    public void setClientId(long clientId) {
+    public Payload(String clientId, String message, String type) {
         this.clientId = clientId;
+        this.message = message;
+        this.type = type;
+    }
+
+    public Payload(String room, String room2, String room3) {
+        //TODO Auto-generated constructor stub
+    }
+
+    public Payload(PayloadType question) {
+        //TODO Auto-generated constructor stub
+    }
+
+    public String getClientId() {
+        return clientId;
     }
 
     public String getMessage() {
         return message;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public String getType() {
+        return type;
     }
 
-    // rev / 11-04-2024
-    // Getters and setters for new fields
-    public String getQuestion() {
-        return question;
+    public void setPayloadType(PayloadType roomList) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setPayloadType'");
     }
 
-    public void setQuestion(String question) {
-        this.question = question;
-    }
-
-    public List<String> getAnswers() {
-        return answers;
-    }
-
-    public void setAnswers(List<String> answers) {
-        this.answers = answers;
-    }
-
-    public Map<String, Integer> getPoints() {
-        return points;
-    }
-
-    public void setPoints(Map<String, Integer> points) {
-        this.points = points;
-    }
-
-    @Override
-    public String toString(){
-        return String.format("Payload[%s] Client Id [%s] Message: [%s]", getPayloadType(), getClientId(), getMessage());
+    public void setMessage(String roomQuery) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setMessage'");
     }
 }

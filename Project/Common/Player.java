@@ -13,8 +13,8 @@ public class Player {
         return clientId;
     }
     
-    public void setClientId(long clientId) {
-        this.clientId = clientId;
+    public void setClientId(long clientId2) {
+        this.clientId = clientId2;
     }
 
     public boolean isReady() {
