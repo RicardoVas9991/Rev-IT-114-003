@@ -11,7 +11,6 @@ public class Payload implements Serializable {
 
     public Payload(PayloadType type) {
         this.type = type;
-        this.sender = sender;
     }
 
     public PayloadType getType() { return type; }

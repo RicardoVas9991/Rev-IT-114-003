@@ -11,5 +11,5 @@ public enum PayloadType {
     ROOM_LIST, // client: query for rooms, server: result of query
     CONNECT, 
     ROLL, 
-    FLIP // Add other types as needed
+    FLIP; // Add other types as needed
 }
