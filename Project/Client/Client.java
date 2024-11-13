@@ -253,17 +253,19 @@ public enum Client {
     }
 
     /**
-     * Sends chosen client name after socket handshake
+     * Sends chosen client name after socket handshake - rev/11-13-2024
      */
     private void sendClientName() {
         if (myData.getClientName() == null || myData.getClientName().length() == 0) {
-            System.out.println(TextFX.colorize("Name must be set first via /name command", Color.RED));
+            System.out.println(TextFX.colorize("Name must be set first via /name command", TextFX.Color.RED));
             return;
         }
         ConnectionPayload cp = new ConnectionPayload();
         cp.setClientName(myData.getClientName());
+        cp.setPayloadType(PayloadType.CLIENT_CONNECT); // Ensure PayloadType is set here
         send(cp);
     }
+    
 
     /**
      * Generic send that passes any Payload over the socket (to ServerThread)
@@ -272,13 +274,16 @@ public enum Client {
      */
     private void send(Payload p) {
         try {
+            if (p.getPayloadType() == null) {
+                LoggerUtil.INSTANCE.severe("PayloadType is null for payload: " + p);
+            }
             out.writeObject(p);
             out.flush();
         } catch (IOException e) {
             LoggerUtil.INSTANCE.severe("Socket send exception", e);
         }
-
     }
+    // rev/11-13-2024
     // end send methods
 
     public void start() throws IOException {
@@ -431,6 +436,9 @@ public enum Client {
             }
         } catch (Exception e) {
             LoggerUtil.INSTANCE.severe("Could not process Payload: " + payload,e);
+        } if (payload.getPayloadType() == null) {
+            LoggerUtil.INSTANCE.severe("Received payload with null PayloadType: " + payload);
+            return;
         }
     }
 

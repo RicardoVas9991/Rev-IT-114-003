@@ -11,16 +11,20 @@ public class RollPayload extends Payload {
         this.sides = sides;
     }
 
-    public int getDice() { return dice; }
-    public int getSides() { return sides; }
+    public int getDice() { 
+        return dice; 
+    }
+    public int getSides() { 
+        return sides; 
+    }
 
     @Override
-public String toString() {
-    return "RollPayload{" +
-           "dice=" + dice +
-           ", sides=" + sides +
-           ", sender='" + getSender() + '\'' +
-           '}';
+    public String toString() {
+        return "RollPayload{" +
+            "dice=" + dice +
+            ", sides=" + sides +
+            ", sender='" + getSender() + '\'' +
+            '}';
 }
 
 }

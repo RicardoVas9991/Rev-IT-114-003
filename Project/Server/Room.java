@@ -251,7 +251,8 @@ public class Room implements AutoCloseable{
 
     public void broadcastMessage(String message) {
         String formattedMessage = formatText(message);
-        // Send formattedMessage to all clients in the room
+        sendMessage(null, formattedMessage); // Broadcast the formatted message to all clients in the room
     }
+    
 
 }
