@@ -538,11 +538,12 @@ public enum Client {
     }
 
     private void sendMessageToServer(String message) {
-        // Method to send a generic message
+        sendMessage(message);
     }
-
+    
     private void sendPayloadToServer(Payload payload) {
-        // Serialize and send payload
+        send(payload);
     }
+    
 
 }
