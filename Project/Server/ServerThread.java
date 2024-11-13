@@ -228,17 +228,9 @@ public class ServerThread extends BaseServerThread {
 
 
     private void handleRollPayload(RollPayload payload) {
-        int result = (int) (Math.random() * payload.getSides()) + 1;
-        @SuppressWarnings("unused")
-        String message = payload.getSender() + " rolled " + payload.getDice() + "d" + payload.getSides() + " and got " + result;
-        // Broadcast to all clients in the room
     }
 
     private void handleFlipPayload(FlipPayload payload) {
-        String result = Math.random() > 0.5 ? "heads" : "tails";
-        @SuppressWarnings("unused")
-        String message = payload.getSender() + " flipped a coin and got " + result;
-        // Broadcast to all clients in the room
     }
     
     public String formatText(String input) {
