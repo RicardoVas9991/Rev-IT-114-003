@@ -7,13 +7,11 @@ public class Payload implements Serializable {
     private String message;
     private String command;
     private String sender;
-    private PayloadType type;
 
-    public Payload(PayloadType type) {
-        this.type = type;
+    public Payload(PayloadType payloadType) {
+        this.payloadType = payloadType;
     }
 
-    public PayloadType getType() { return type; }
     public String getSender() { return sender; }
 
     public Payload(String command, String sender) {
@@ -31,8 +29,8 @@ public class Payload implements Serializable {
 
 
 
-    public void setPayloadType(PayloadType type) {
-        this.type = type;
+    public void setPayloadType(PayloadType payloadType) {
+        this.payloadType = payloadType;
     }
 
 
@@ -63,6 +61,6 @@ public class Payload implements Serializable {
 
     @Override
     public String toString() {
-        return "Payload Type: " + type;
+        return "Payload Type: " + payloadType;
     }
 }
