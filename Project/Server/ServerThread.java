@@ -95,7 +95,12 @@ public class ServerThread extends BaseServerThread {
 
     // handle received message from the Client
     @Override
-    protected void processPayload(Payload payload) {
+    public void processPayload(Payload payload) { 
+        if (payload == null || payload.getPayloadType() == null) { 
+            System.err.println("Invalid payload received"); 
+            return;
+        }
+        
         try {
             switch (payload.getPayloadType()) {
                 case CLIENT_CONNECT:
@@ -132,10 +137,10 @@ public class ServerThread extends BaseServerThread {
         }
         
         // Additional payload handling if needed
-        if (payload.getPayloadType() == null) {
-            System.err.println("Error: PayloadType is null in payload: " + payload);
-            return; // Or handle the null case as needed
-        }
+        // if (payload.getPayloadType() == null) {
+        //     System.err.println("Error: PayloadType is null in payload: " + payload);
+        //     return; // Or handle the null case as needed
+        // }
         
     }
 

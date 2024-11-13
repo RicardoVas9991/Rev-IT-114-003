@@ -12,4 +12,12 @@ public enum PayloadType {
     CONNECT, 
     ROLL, 
     FLIP; // Add other types as needed
+
+    public void someMethodCreatingPayload() {
+        Payload payload = new Payload(null);
+        // Some logic to determine the payload type
+        payload.setPayloadType(PayloadType.CLIENT_CONNECT);
+        System.out.println("PayloadType set to: " + payload.getPayloadType());
+    }
+    
 }
