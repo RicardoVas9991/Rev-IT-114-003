@@ -12,14 +12,18 @@ public class Payload implements Serializable {
         this.payloadType = payloadType;
     }
 
-    public String getSender() { return sender; }
+    public String getSender() { 
+        return sender;
+    }
 
     public Payload(String command, String sender) {
         this.command = command;
         this.sender = sender;
     }
 
-    public String getCommand() { return command; }
+    public String getCommand() { 
+        return command; 
+    }
 
     
 

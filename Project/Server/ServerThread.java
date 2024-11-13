@@ -130,6 +130,7 @@ public class ServerThread extends BaseServerThread {
         } else if (payload instanceof FlipPayload) {
             handleFlipPayload((FlipPayload) payload);
         }
+        
         // Additional payload handling if needed
         if (payload.getPayloadType() == null) {
             System.err.println("Error: PayloadType is null in payload: " + payload);
