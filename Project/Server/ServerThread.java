@@ -100,7 +100,7 @@ public class ServerThread extends BaseServerThread {
             System.err.println("Invalid payload received"); 
             return;
         }
-        
+
         try {
             switch (payload.getPayloadType()) {
                 case CLIENT_CONNECT:
@@ -136,11 +136,6 @@ public class ServerThread extends BaseServerThread {
             handleFlipPayload((FlipPayload) payload);
         }
         
-        // Additional payload handling if needed
-        // if (payload.getPayloadType() == null) {
-        //     System.err.println("Error: PayloadType is null in payload: " + payload);
-        //     return; // Or handle the null case as needed
-        // }
         
     }
 

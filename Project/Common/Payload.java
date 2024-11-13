@@ -25,46 +25,32 @@ public class Payload implements Serializable {
         return command; 
     }
 
-    
-
     public PayloadType getPayloadType() {
         return payloadType;
     }
-
-
 
     public void setPayloadType(PayloadType payloadType) {
         this.payloadType = payloadType;
     }
 
-
-
     public long getClientId() {
         return clientId;
     }
-
-
 
     public void setClientId(long clientId) {
         this.clientId = clientId;
     }
 
-
-
     public String getMessage() {
         return message;
     }
-
-
 
     public void setMessage(String message) {
         this.message = message;
     }
 
-
-
     @Override
-    public String toString() {
-        return "Payload Type: " + payloadType;
+    public String toString(){
+        return String.format("Payload[%s] Client Id [%s] Message: [%s]", getPayloadType(), getClientId(), getMessage());
     }
 }
