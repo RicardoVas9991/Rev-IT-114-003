@@ -16,7 +16,7 @@ public class FlipPayload extends Payload {
     @Override
     public String toString() {
         return "FlipPayload{" +
-               "sender='" + sender + '\'' +
+               "sender='" + getSender() + '\'' +
                '}';
     }
 }

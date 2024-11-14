@@ -4,6 +4,7 @@ package Project.Common;
 public class RollPayload extends Payload {
     private int dice;
     private int sides;
+    private String sender;
 
     public RollPayload(String sender, int dice, int sides) {
         super(PayloadType.ROLL);
@@ -16,6 +17,10 @@ public class RollPayload extends Payload {
     }
     public int getSides() { 
         return sides; 
+    }
+
+    public String getSender() {
+        return sender;
     }
 
     @Override

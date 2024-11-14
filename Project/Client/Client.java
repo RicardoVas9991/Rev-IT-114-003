@@ -171,7 +171,7 @@ public enum Client {
             } else {
                 System.out.println("Usage: /roll <number_of_dice> <sides_per_die>");
             }
-        } else if (text.equalsIgnoreCase("/flip")) {
+        } else if (text.equalsIgnoreCase("/flip") || text.equalsIgnoreCase("/toss")) {
             sendFlip();
             return true;
         } else { // logic previously from Room.java
@@ -203,10 +203,10 @@ public enum Client {
                         wasCommand = true;
                         break;
                     case "roll":
-                        String[] bounds = commandValue.split(SINGLE_SPACE);
-                        int lower = Integer.parseInt(bounds[0]);
-                        int upper = Integer.parseInt(bounds[1]);
-                        sendRoll(lower, upper);
+                        String[] parts = commandValue.split(SINGLE_SPACE);
+                        int dice = Integer.parseInt(parts[1]);
+                        int sides = Integer.parseInt(parts[2]);
+                        sendRoll(dice, sides);
                         wasCommand = true;
                         break;
                     // Note: these are to disconnect, they're not for changing rooms
