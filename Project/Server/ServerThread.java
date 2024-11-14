@@ -18,6 +18,7 @@ import Project.Common.LoggerUtil;
  * A server-side representation of a single client.
  * This class is more about the data and abstracted communication
  */
+@SuppressWarnings("unused")
 public class ServerThread extends BaseServerThread {
     public static final long DEFAULT_CLIENT_ID = -1;
     private Room currentRoom;
@@ -121,6 +122,12 @@ public class ServerThread extends BaseServerThread {
                     break;
                 case DISCONNECT:
                     currentRoom.disconnect(this);
+                case FLIP:
+                    currentRoom.handleFlip(this);
+                    break;
+                case ROLL:
+                    RollPayload rollPayload = (RollPayload) payload;
+                    currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides());
                     break;
                 default:
                     break;
@@ -128,15 +135,7 @@ public class ServerThread extends BaseServerThread {
         } catch (Exception e) {
             LoggerUtil.INSTANCE.severe("Could not process Payload: " + payload,e);
         
-        }
-
-        if (payload instanceof RollPayload) {
-            handleRollPayload((RollPayload) payload);
-        } else if (payload instanceof FlipPayload) {
-            handleFlipPayload((FlipPayload) payload);
-        }
-        
-        
+        }    
     }
 
     // send methods to pass data back to the Client
@@ -160,10 +159,11 @@ public class ServerThread extends BaseServerThread {
      * Overload of sendMessage used for server-side generated messages
      * 
      * @param message
+     * @param string 
      * @return @see {@link #send(Payload)}
      */
-    public boolean sendMessage(String message) {
-        return sendMessage(ServerThread.DEFAULT_CLIENT_ID, message);
+    public boolean sendMessage(String message, String string) {
+        return sendMessage(clientId, message);
     }
 
     /**
@@ -174,12 +174,13 @@ public class ServerThread extends BaseServerThread {
      * @return @see {@link #send(Payload)}
      */
     public boolean sendMessage(long senderId, String message) {
-        Payload p = new Payload(message, message);
+        Payload p = new Payload(null);
         p.setClientId(senderId);
         p.setMessage(message);
         p.setPayloadType(PayloadType.MESSAGE);
         return send(p);
     }
+    
 
     /**
      * Tells the client information about a client joining/leaving a room
@@ -233,19 +234,6 @@ public class ServerThread extends BaseServerThread {
     }
 
 
-    private void handleRollPayload(RollPayload payload) {
-        int result = (int) (Math.random() * payload.getSides()) + 1;
-        String message = payload.getSender() + " rolled " + payload.getDice() + "d" + payload.getSides() + " and got " + result;
-        currentRoom.sendMessage(this, message); // Broadcast the message to all clients in the room
-    }
-    
-    private void handleFlipPayload(FlipPayload payload) {
-        String result = Math.random() > 0.5 ? "heads" : "tails";
-        String message = payload.getSender() + " flipped a coin and got " + result;
-        currentRoom.sendMessage(this, message); // Broadcast the message to all clients in the room
-    }
-    
-    
     public String formatText(String input) {
         input = input.replace("**", "<b>").replace("**", "</b>");
         input = input.replace("*", "<i>").replace("*", "</i>");

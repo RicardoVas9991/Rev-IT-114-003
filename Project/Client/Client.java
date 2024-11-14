@@ -156,6 +156,24 @@ public enum Client {
                     String.join("\n", knownClients.values().stream()
                             .map(c -> String.format("%s(%s)", c.getClientName(), c.getClientId())).toList()));
             return true;
+        
+        } else if (text.startsWith("/roll")) {
+            String[] parts = text.split(" ");
+            if (parts.length == 3) {
+                try {
+                    int dice = Integer.parseInt(parts[1]);
+                    int sides = Integer.parseInt(parts[2]);
+                    sendRoll(dice, sides);
+                    return true;
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid input. Usage: /roll <number_of_dice> <sides_per_die>");
+                }
+            } else {
+                System.out.println("Usage: /roll <number_of_dice> <sides_per_die>");
+            }
+        } else if (text.equalsIgnoreCase("/flip")) {
+            sendFlip();
+            return true;
         } else { // logic previously from Room.java
             // decided to make this as separate block to separate the core client-side items
             // vs the ones that generally are used after connection and that send requests
@@ -178,6 +196,17 @@ public enum Client {
                         break;
                     case LIST_ROOMS:
                         sendListRooms(commandValue);
+                        wasCommand = true;
+                        break;
+                    case "flip":
+                        sendFlip();
+                        wasCommand = true;
+                        break;
+                    case "roll":
+                        String[] bounds = commandValue.split(SINGLE_SPACE);
+                        int lower = Integer.parseInt(bounds[0]);
+                        int upper = Integer.parseInt(bounds[1]);
+                        sendRoll(lower, upper);
                         wasCommand = true;
                         break;
                     // Note: these are to disconnect, they're not for changing rooms
@@ -264,6 +293,18 @@ public enum Client {
         cp.setClientName(myData.getClientName());
         cp.setPayloadType(PayloadType.CLIENT_CONNECT); // Ensure PayloadType is set here
         send(cp);
+    }
+    
+
+    private void sendFlip() {
+        FlipPayload flipPayload = new FlipPayload(myData.getClientName());
+        send(flipPayload);
+    }
+
+
+    private void sendRoll(int dice, int sides) {
+        RollPayload rollPayload = new RollPayload(myData.getClientName(), dice, sides);
+        send(rollPayload);
     }
     
 
@@ -510,48 +551,5 @@ public enum Client {
         }
     }
     // end payload processors
-
-    private String username;
-
-    public void handleCommand(String input) {
-        String[] parts = input.split(" ");
-        String command = parts[0];
-
-        switch (command) {
-            case "/roll":
-                handleRollCommand(parts);
-                break;
-            case "/flip":
-                handleFlipCommand();
-                break;
-            default:
-                sendMessageToServer(input);
-                break;
-        }
-    }
-
-    private void handleRollCommand(String[] parts) {
-        if (parts.length == 2) {
-            String[] rollParts = parts[1].split("d");
-            int dice = Integer.parseInt(rollParts[0]);
-            int sides = Integer.parseInt(rollParts[1]);
-            RollPayload payload = new RollPayload(username, dice, sides);
-            sendPayloadToServer(payload);
-        }
-    }
-
-    private void handleFlipCommand() {
-        FlipPayload payload = new FlipPayload(username);
-        sendPayloadToServer(payload);
-    }
-
-    private void sendMessageToServer(String message) {
-        sendMessage(message);
-    }
-    
-    private void sendPayloadToServer(Payload payload) {
-        send(payload);
-    }
-    
 
 }

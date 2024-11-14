@@ -25,6 +25,6 @@ public class RollPayload extends Payload {
             ", sides=" + sides +
             ", sender='" + getSender() + '\'' +
             '}';
-}
+    }
 
 }

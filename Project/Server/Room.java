@@ -219,13 +219,13 @@ public class Room implements AutoCloseable{
         if (Server.INSTANCE.createRoom(room)) {
             Server.INSTANCE.joinRoom(room, sender);
         } else {
-            sender.sendMessage(String.format("Room %s already exists", room));
+            sender.sendMessage(0, String.format("Room %s already exists", room));
         }
     }
 
     protected void handleJoinRoom(ServerThread sender, String room) {
         if (!Server.INSTANCE.joinRoom(room, sender)) {
-            sender.sendMessage(String.format("Room %s doesn't exist", room));
+            sender.sendMessage(0, String.format("Room %s doesn't exist", room));
         }
     }
 
@@ -240,19 +240,31 @@ public class Room implements AutoCloseable{
     // end receive data from ServerThread
 
 
-    public String formatText(String input) {
-        input = input.replace("**", "<b>").replace("**", "</b>");
-        input = input.replace("*", "<i>").replace("*", "</i>");
-        input = input.replace("_", "<u>").replace("_", "</u>");
-        input = input.replace("#r", "<span style='color:red;'>").replace("r#", "</span>");
-        // Additional formatting as needed
-        return input;
-    }
-
-    public void broadcastMessage(String message) {
-        String formattedMessage = formatText(message);
-        sendMessage(null, formattedMessage); // Broadcast the formatted message to all clients in the room
+    public void handleFlip(ServerThread serverThread) {
+        String result = Math.random() < 0.5 ? "heads" : "tails";
+        serverThread.sendMessage("Server", "flipped a coin and got " + result);
     }
     
+    public void handleRoll(ServerThread serverThread, int dice, int sides) {
+        if (dice > sides) {
+            int temp = dice;
+            dice = sides;
+            sides = temp;
+        }
+        int result = (int) (Math.random() * (sides - dice + 1)) + dice;
+        serverThread.sendMessage("Server", "rolled between " + dice + " and " + sides + " and got " + result);
+    }
+    
+    public String processTextFormatting(String message) {
+        message = message.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>");
+        message = message.replaceAll("\\*(.*?)\\*", "<i>$1</i>");
+        message = message.replaceAll("_(.*?)_", "<u>$1</u>");
+        message = message.replaceAll("#r(.*?)r#", "<red>$1</red>");
+        message = message.replaceAll("#b(.*?)b#", "<blue>$1</blue>");
+        message = message.replaceAll("#g(.*?)g#", "<green>$1</green>");
+        return message;
+    }
+    
+
 
 }
