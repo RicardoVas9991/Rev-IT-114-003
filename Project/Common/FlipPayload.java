@@ -18,6 +18,6 @@ public class FlipPayload extends Payload {
 
     @Override
     public String toString() {
-        return String.format("FlipPayload{" + "message='" + getMessage() + '\'' + '}');
+        return String.format("Payload: " + getPayloadType(), "FlipPayload{" + "message='" + getMessage() + '\'' + '}');
     }
 }

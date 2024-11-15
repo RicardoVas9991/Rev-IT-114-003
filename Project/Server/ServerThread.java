@@ -127,7 +127,7 @@ public class ServerThread extends BaseServerThread {
                     break;
                 case ROLL:
                     RollPayload rollPayload = (RollPayload) payload;
-                    currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides());
+                    currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides(), clientName);
                     break;
                 default:
                     break;

@@ -1,5 +1,6 @@
 package Project.Server;
 
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 import Project.Common.LoggerUtil;
@@ -240,19 +241,42 @@ public class Room implements AutoCloseable{
     // end receive data from ServerThread
 
 
-    public void handleFlip(ServerThread serverThread, String message) {
-        String result = Math.random() < 0.5 ? "heads" : "tails";
-        serverThread.sendMessage("Server", message = "flipped a coin and got " + result);
+    public void handleFlip(ServerThread sender, String message) {
+        if ("/flip".equalsIgnoreCase(message) || "/toss".equalsIgnoreCase(message)) {
+            String result = new Random().nextBoolean() ? "heads" : "tails";
+            String senderString = String.format("User[%s]", sender.getClientId());
+            sender.sendMessage(String.format("%s flipped a coin and got %s!", senderString, result), null);
+            return;
+            }
     }
     
-    public void handleRoll(ServerThread serverThread, int dice, int sides) {
-        if (dice > sides) {
-            int temp = dice;
-            dice = sides;
-            sides = temp;
+    public void handleRoll(ServerThread sender, int dice, int sides, String message) {
+        if (message.startsWith("/roll ")) {
+            try {
+                String[] parts = message.substring(6).split("d");
+                int diceCount = Integer.parseInt(parts[0]);
+                int diceSides = Integer.parseInt(parts[1]);
+    
+                int total = 0;
+                Random rand = new Random();
+                StringBuilder rollResults = new StringBuilder();
+                
+                for (int i = 0; i < diceCount; i++) {
+                    int roll = rand.nextInt(diceSides) + 1;
+                    total += roll;
+                    rollResults.append(roll);
+                    if (i < diceCount - 1) {
+                        rollResults.append(", ");
+                    }
+                }
+    
+                String senderString = String.format("User[%s]", sender.getClientId());
+                sender.sendMessage(String.format("%s rolled %sd%s and got: [%s] (Total: %d)", senderString, diceCount, diceSides, rollResults, total), null);
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                sender.sendMessage(0, "Invalid format! Use /roll #d# (e.g., /roll 2d6)");
+            }
         }
-        int result = (int) (Math.random() * (sides - dice + 1)) + dice;
-        serverThread.sendMessage("Server", "rolled between " + dice + " and " + sides + " and got " + result);
+        return;
     }
     
     public String processTextFormatting(String message) {
