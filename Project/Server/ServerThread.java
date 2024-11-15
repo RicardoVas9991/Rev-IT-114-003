@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 
 import Project.Common.PayloadType;
 import Project.Common.RollPayload;
+import Project.Common.FlipPayload;
 import Project.Common.RoomResultsPayload;
 import Project.Common.Payload;
 
@@ -121,7 +122,8 @@ public class ServerThread extends BaseServerThread {
                 case DISCONNECT:
                     currentRoom.disconnect(this);
                 case FLIP:
-                    currentRoom.handleFlip(this);
+                    FlipPayload flipPayload = (FlipPayload) payload;
+                    currentRoom.handleFlip(this, flipPayload.getMessage());
                     break;
                 case ROLL:
                     RollPayload rollPayload = (RollPayload) payload;

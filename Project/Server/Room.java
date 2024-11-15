@@ -240,9 +240,9 @@ public class Room implements AutoCloseable{
     // end receive data from ServerThread
 
 
-    public void handleFlip(ServerThread serverThread) {
+    public void handleFlip(ServerThread serverThread, String message) {
         String result = Math.random() < 0.5 ? "heads" : "tails";
-        serverThread.sendMessage("Server", "flipped a coin and got " + result);
+        serverThread.sendMessage("Server", message = "flipped a coin and got " + result);
     }
     
     public void handleRoll(ServerThread serverThread, int dice, int sides) {

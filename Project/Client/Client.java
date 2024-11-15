@@ -165,7 +165,7 @@ public enum Client {
                 try {
                     int dice = Integer.parseInt(parts[1]);
                     int sides = Integer.parseInt(parts[2]);
-                    sendRoll(dice, sides);
+                    sendRoll(text, dice, sides);
                     return true;
                 } catch (NumberFormatException e) {
                     System.out.println("Invalid input. Usage: /roll <number_of_dice> <sides_per_die>");
@@ -174,7 +174,7 @@ public enum Client {
                 System.out.println("Usage: /roll <number_of_dice> <sides_per_die>");
             }
         } else if (text.equalsIgnoreCase("/flip") || text.equalsIgnoreCase("/toss")) {
-            sendFlip();
+            sendFlip(text);
             return true;
         } else { // logic previously from Room.java
             // decided to make this as separate block to separate the core client-side items
@@ -201,14 +201,14 @@ public enum Client {
                         wasCommand = true;
                         break;
                     case FLIP:
-                        sendFlip();
+                        sendFlip(commandValue);
                         wasCommand = true;
                         break;
                     case ROLL:
                         String[] parts = commandValue.split(SINGLE_SPACE);
                         int dice = Integer.parseInt(parts[1]);
                         int sides = Integer.parseInt(parts[2]);
-                        sendRoll(dice, sides);
+                        sendRoll(commandValue, dice, sides);
                         wasCommand = true;
                         break;
                     // Note: these are to disconnect, they're not for changing rooms
@@ -304,14 +304,20 @@ public enum Client {
         System.out.println("PayloadType set to: " + payload.getPayloadType());
     }
 
-    private void sendFlip() {
+    private void sendFlip(String message) {
         FlipPayload flipPayload = new FlipPayload();
+        flipPayload.setPayloadType(PayloadType.FLIP);
+        flipPayload.setMessage(message);
         send(flipPayload);
     }
 
 
-    private void sendRoll(int dice, int sides) {
+    private void sendRoll(String message, int dice, int sides) {
         RollPayload rollPayload = new RollPayload();
+        rollPayload.setPayloadType(PayloadType.ROLL);
+        rollPayload.setSide(sides);
+        rollPayload.setDice(dice);
+        rollPayload.setMessage(message);
         send(rollPayload);
     }
     
