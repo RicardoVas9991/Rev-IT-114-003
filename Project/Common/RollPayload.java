@@ -35,6 +35,7 @@ public class RollPayload extends Payload {
     }
 
 
+    @Override
     public String toString() {
         return String.format("RollPayload{" + "dice=" +  getDice() + ", sides=" + getSides() + ", message='" + getMessage() + '\'' + '}');
     }
