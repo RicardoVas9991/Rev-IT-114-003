@@ -4,32 +4,40 @@ package Project.Common;
 public class RollPayload extends Payload {
     private int dice;
     private int sides;
-    private String sender;
+    private String message;
 
-    public RollPayload(String sender, int dice, int sides) {
-        super(PayloadType.ROLL);
-        this.dice = dice;
-        this.sides = sides;
+    public RollPayload() {
+        setPayloadType(PayloadType.ROLL);
     }
 
     public int getDice() { 
         return dice; 
     }
+
+    public void setDice(int dice) { // rev/11-14-2024
+        this.dice = dice;
+    }
+
     public int getSides() { 
         return sides; 
     }
 
-    public String getSender() {
-        return sender;
+    public void setSide(int sides) {
+        this.sides = sides;
     }
+
+    public String getMessage() { // rev/11-14-2024
+        return message;
+    }
+
+    public void setMessage(String message) { // rev/11-14-2024
+        this.message = message;
+    }
+
 
     @Override
     public String toString() {
-        return "RollPayload{" +
-            "dice=" + dice +
-            ", sides=" + sides +
-            ", sender='" + getSender() + '\'' +
-            '}';
+        return String.format("RollPayload{" + "dice=" +  getDice() + ", sides=" + getSides() + ", message='" + getMessage() + '\'' + '}');
     }
 
 }

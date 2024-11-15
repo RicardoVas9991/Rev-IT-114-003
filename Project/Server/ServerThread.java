@@ -172,7 +172,7 @@ public class ServerThread extends BaseServerThread {
      * @return @see {@link #send(Payload)}
      */
     public boolean sendMessage(long senderId, String message) {
-        Payload p = new Payload(null);
+        Payload p = new Payload();
         p.setClientId(senderId);
         p.setMessage(message);
         p.setPayloadType(PayloadType.MESSAGE);

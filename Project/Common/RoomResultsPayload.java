@@ -7,7 +7,7 @@ public class RoomResultsPayload extends Payload {
     private List<String> rooms = new ArrayList<>();
 
     public RoomResultsPayload() {
-        super(PayloadType.ROOM_LIST);  // Call to super constructor
+        setPayloadType(PayloadType.ROOM_LIST);  // Call to constructor - rev/11-14-2024
     }
 
     public List<String> getRooms() {

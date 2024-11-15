@@ -2,21 +2,22 @@
 package Project.Common;
 
 public class FlipPayload extends Payload {
-    private String sender;
+    private String message;
 
-    public FlipPayload(String sender) {
-        super(PayloadType.FLIP);
-        this.sender = sender;
+    public FlipPayload() {
+        setPayloadType(PayloadType.FLIP);
     }
 
-    public String getSender() {
-        return sender;
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     @Override
     public String toString() {
-        return "FlipPayload{" +
-               "sender='" + getSender() + '\'' +
-               '}';
+        return String.format("FlipPayload{" + "message='" + getMessage() + '\'' + '}');
     }
 }

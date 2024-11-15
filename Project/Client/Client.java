@@ -57,6 +57,8 @@ public enum Client {
     private final String LOGOFF = "logoff";
     private final String LOGOUT = "logout";
     private final String SINGLE_SPACE = " ";
+    private final String FLIP = "flip"; // rev/11-14-2024
+    private final String ROLL = "roll"; // rev/11-14-2024
 
     // needs to be private now that the enum logic is handling this
     private Client() {
@@ -198,11 +200,11 @@ public enum Client {
                         sendListRooms(commandValue);
                         wasCommand = true;
                         break;
-                    case "flip":
+                    case FLIP:
                         sendFlip();
                         wasCommand = true;
                         break;
-                    case "roll":
+                    case ROLL:
                         String[] parts = commandValue.split(SINGLE_SPACE);
                         int dice = Integer.parseInt(parts[1]);
                         int sides = Integer.parseInt(parts[2]);
@@ -230,7 +232,7 @@ public enum Client {
      * @param roomQuery optional partial match search String
      */
     private void sendListRooms(String roomQuery) {
-        Payload p = new Payload(roomQuery, roomQuery);
+        Payload p = new Payload();
         p.setPayloadType(PayloadType.ROOM_LIST);
         p.setMessage(roomQuery);
         send(p);
@@ -242,7 +244,7 @@ public enum Client {
      * @param room
      */
     private void sendCreateRoom(String room) {
-        Payload p = new Payload(room, room);
+        Payload p = new Payload();
         p.setPayloadType(PayloadType.ROOM_CREATE);
         p.setMessage(room);
         send(p);
@@ -254,7 +256,7 @@ public enum Client {
      * @param room
      */
     private void sendJoinRoom(String room) {
-        Payload p = new Payload(room, room);
+        Payload p = new Payload();
         p.setPayloadType(PayloadType.ROOM_JOIN);
         p.setMessage(room);
         send(p);
@@ -264,7 +266,7 @@ public enum Client {
      * Tells the server-side we want to disconnect
      */
     private void sendDisconnect() {
-        Payload p = new Payload(COMMAND_CHARACTER, COMMAND_CHARACTER);
+        Payload p = new Payload();
         p.setPayloadType(PayloadType.DISCONNECT);
         send(p);
     }
@@ -275,7 +277,7 @@ public enum Client {
      * @param message
      */
     private void sendMessage(String message) {
-        Payload p = new Payload(message, message);
+        Payload p = new Payload();
         p.setPayloadType(PayloadType.MESSAGE);
         p.setMessage(message);
         send(p);
@@ -295,15 +297,21 @@ public enum Client {
         send(cp);
     }
     
+    public void someMethodCreatingPayload() {
+        Payload payload = new Payload();
+        // Some logic to determine the payload type - rev/11-14-2024
+        payload.setPayloadType(PayloadType.CLIENT_CONNECT);
+        System.out.println("PayloadType set to: " + payload.getPayloadType());
+    }
 
     private void sendFlip() {
-        FlipPayload flipPayload = new FlipPayload(myData.getClientName());
+        FlipPayload flipPayload = new FlipPayload();
         send(flipPayload);
     }
 
 
     private void sendRoll(int dice, int sides) {
-        RollPayload rollPayload = new RollPayload(myData.getClientName(), dice, sides);
+        RollPayload rollPayload = new RollPayload();
         send(rollPayload);
     }
     

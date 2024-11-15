@@ -9,15 +9,6 @@ public enum PayloadType {
     ROOM_JOIN, // join/leave room based on boolean
     MESSAGE, // sender and message,
     ROOM_LIST, // client: query for rooms, server: result of query
-    CONNECT, 
     ROLL, 
-    FLIP; // Add other types as needed
-
-    public void someMethodCreatingPayload() {
-        Payload payload = new Payload(null);
-        // Some logic to determine the payload type
-        payload.setPayloadType(PayloadType.CLIENT_CONNECT);
-        System.out.println("PayloadType set to: " + payload.getPayloadType());
-    }
-    
+    FLIP; // Add other types as needed  - rev/11-14-2024  
 }

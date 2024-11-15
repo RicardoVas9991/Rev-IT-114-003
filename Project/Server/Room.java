@@ -219,13 +219,13 @@ public class Room implements AutoCloseable{
         if (Server.INSTANCE.createRoom(room)) {
             Server.INSTANCE.joinRoom(room, sender);
         } else {
-            sender.sendMessage(0, String.format("Room %s already exists", room));
+            sender.sendMessage(0, String.format("Room %s already exists", room)); // rev/11-14-2024
         }
     }
 
     protected void handleJoinRoom(ServerThread sender, String room) {
         if (!Server.INSTANCE.joinRoom(room, sender)) {
-            sender.sendMessage(0, String.format("Room %s doesn't exist", room));
+            sender.sendMessage(0, String.format("Room %s doesn't exist", room)); // rev/11-14-2024
         }
     }
 
