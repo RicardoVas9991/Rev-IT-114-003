@@ -224,7 +224,6 @@ public enum Client {
                 return wasCommand;
             }
         }
-        sendMessage(text);
         return false;
     }
 
