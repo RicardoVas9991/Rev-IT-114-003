@@ -1,4 +1,5 @@
 package Project.Common;
+import java.lang.Math;
 
 public class FlipPayload extends Payload {
     private String sender;

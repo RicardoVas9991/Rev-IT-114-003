@@ -1,6 +1,7 @@
 package Project.Common;
 import java.io.Serializable;
 
+
 public class Payload implements Serializable {
     private PayloadType payloadType;
     private long clientId;
