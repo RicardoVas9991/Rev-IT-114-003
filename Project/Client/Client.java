@@ -165,22 +165,22 @@ public enum Client {
                     int dice = Integer.parseInt(diceParts[0]);
                     int sides = Integer.parseInt(diceParts[1]);
                     RollPayload rollPayload = new RollPayload(sender, dice, sides);
-                    processPayload(rollPayload);
+                    send(rollPayload);
                 } else {
                     int sides = Integer.parseInt(parts[1]);
                     RollPayload rollPayload = new RollPayload(sender, 1, sides);
-                    processPayload(rollPayload);
+                    send(rollPayload);
                 }
                 if (parts[1].matches("\\d+d\\d+")) { // e.g., "2d6"
                     String[] diceParts = parts[1].split("d");
                     int dice = Integer.parseInt(diceParts[0]);
                     int sides = Integer.parseInt(diceParts[1]);
                     RollPayload rollPayload = new RollPayload(sender, dice, sides);
-                    processPayload(rollPayload);
+                    send(rollPayload);
                 } else if (parts[1].matches("\\d+")) { // e.g., "6"
                     int sides = Integer.parseInt(parts[1]);
                     RollPayload rollPayload = new RollPayload(sender, 1, sides);
-                    processPayload(rollPayload);
+                    send(rollPayload);
                 } else {
                     System.out.println(TextFX.colorize("Invalid roll format. Use /roll <NdM> or /roll <M>", Color.RED));
                 }
@@ -188,7 +188,7 @@ public enum Client {
         } else if (text.startsWith("/flip")) {
             String sender = myData.getClientName();
             FlipPayload flipPayload = new FlipPayload(sender, null); // Result will be set server-side
-            processPayload(flipPayload);
+            send(flipPayload);
         } else { // logic previously from Room.java
             // decided to make this as separate block to separate the core client-side items
             // vs the ones that generally are used after connection and that send requests
