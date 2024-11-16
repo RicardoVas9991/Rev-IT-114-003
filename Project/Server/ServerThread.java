@@ -24,7 +24,7 @@ public class ServerThread extends BaseServerThread {
     private String clientName;
     private Consumer<ServerThread> onInitializationComplete; // callback to inform when this object is ready
     private Room room;
-
+    
     public void setRoom(Room room) {
         this.room = room;
     }
@@ -112,7 +112,11 @@ public class ServerThread extends BaseServerThread {
                     setClientName(cp.getClientName());
                     break;
                 case MESSAGE:
-                    currentRoom.sendMessage(this, payload.getMessage());
+                if (currentRoom == null) {
+                    LoggerUtil.INSTANCE.warning("Client is not in a room. Ignoring message: " + payload.getMessage());
+                    return;
+                }
+                currentRoom.sendMessage(this, payload.getMessage());
                     break;
                 case ROOM_CREATE:
                     currentRoom.handleCreateRoom(this, payload.getMessage());
@@ -237,9 +241,8 @@ public class ServerThread extends BaseServerThread {
     }
 
     public ClientData getClientData() {
-        return this.getClientData();
+        return new ClientData();
     }
-    
 
     // end send methods
 }
