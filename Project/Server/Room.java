@@ -1,14 +1,18 @@
 package Project.Server;
 
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import Project.Client.ClientData;
 import Project.Common.LoggerUtil;
 
 public class Room implements AutoCloseable{
     private String name;// unique name of the Room
     protected volatile boolean isRunning = false;
     private ConcurrentHashMap<Long, ServerThread> clientsInRoom = new ConcurrentHashMap<Long, ServerThread>();
+    private List<ServerThread> clients = new ArrayList<>();
+    private ClientData myData;
 
     public final static String LOBBY = "lobby";
 
@@ -174,7 +178,6 @@ public class Room implements AutoCloseable{
             return failedToSend;
         });
     }
-     // rev - 10/16/2024 - Show the ServerThread/Room code handling the create/join process
 
     /**
      * Sends a basic String message from the sender to all connectedClients
@@ -189,7 +192,6 @@ public class Room implements AutoCloseable{
      * @param sender  ServerThread (client) sending the message or null if it's a
      *                server-generated message
      */
-     // rev - 10/16/2024 - Show the code related to the Server-side receiving the message and relaying it to each connected Client
     protected synchronized void sendMessage(ServerThread sender, String message) {
         if (!isRunning) { // block action if Room isn't running
             return;
@@ -215,18 +217,22 @@ public class Room implements AutoCloseable{
     // end send data to client(s)
 
     // receive data from ServerThread
+
+    public ClientData getClientData() {
+    return this.myData;
+    }
     
     protected void handleCreateRoom(ServerThread sender, String room) {
         if (Server.INSTANCE.createRoom(room)) {
             Server.INSTANCE.joinRoom(room, sender);
         } else {
-            sender.sendMessage(0, String.format("Room %s already exists", room)); // rev/11-14-2024
+            sender.sendMessage(String.format("Room %s already exists", room));
         }
     }
 
     protected void handleJoinRoom(ServerThread sender, String room) {
         if (!Server.INSTANCE.joinRoom(room, sender)) {
-            sender.sendMessage(0, String.format("Room %s doesn't exist", room)); // rev/11-14-2024
+            sender.sendMessage(String.format("Room %s doesn't exist", room));
         }
     }
 
@@ -238,57 +244,41 @@ public class Room implements AutoCloseable{
         disconnect(sender);
     }
 
-    // end receive data from ServerThread
-
-
-    public void handleFlip(ServerThread sender, String message) {
-        if ("/flip".equalsIgnoreCase(message) || "/toss".equalsIgnoreCase(message)) {
-            String result = new Random().nextBoolean() ? "heads" : "tails";
-            String senderString = String.format("User[%s]", sender.getClientId());
-            sender.sendMessage(String.format("%s flipped a coin and got %s!", senderString, result), null);
-            return;
-            }
-    }
-    
-    public void handleRoll(ServerThread sender, int dice, int sides, String message) {
-        if (message.startsWith("/roll ")) {
-            try {
-                String[] parts = message.substring(6).split("d");
-                int diceCount = Integer.parseInt(parts[0]);
-                int diceSides = Integer.parseInt(parts[1]);
-    
-                int total = 0;
-                Random rand = new Random();
-                StringBuilder rollResults = new StringBuilder();
-                
-                for (int i = 0; i < diceCount; i++) {
-                    int roll = rand.nextInt(diceSides) + 1;
-                    total += roll;
-                    rollResults.append(roll);
-                    if (i < diceCount - 1) {
-                        rollResults.append(", ");
-                    }
-                }
-    
-                String senderString = String.format("User[%s]", sender.getClientId());
-                sender.sendMessage(String.format("%s rolled %sd%s and got: [%s] (Total: %d)", senderString, diceCount, diceSides, rollResults, total), null);
-            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-                sender.sendMessage(0, "Invalid format! Use /roll #d# (e.g., /roll 2d6)");
-            }
+    public void handleRoll(ServerThread sender, int dice, int sides) {
+        int total = 0;
+        for (int i = 0; i < dice; i++) {
+            total += (int) (Math.random() * sides) + 1;
         }
-        return;
+        String message = sender.getClientName() + " rolled " + dice + "d" + sides + " and got " + total;
+        broadcastMessage(sender, message);
     }
     
-    public String processTextFormatting(String message) {
+    public void handleFlip(ServerThread sender) {
+        String result = Math.random() < 0.5 ? "heads" : "tails";
+        String message = sender.getClientName() + " flipped a coin and got " + result;
+        broadcastMessage(sender, message);
+    }
+
+    private String formatMessage(String message) {
+        // Bold
         message = message.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>");
+        // Italics
         message = message.replaceAll("\\*(.*?)\\*", "<i>$1</i>");
+        // Underline
         message = message.replaceAll("_(.*?)_", "<u>$1</u>");
+        // Colors (example for red, green, blue)
         message = message.replaceAll("#r(.*?)r#", "<red>$1</red>");
-        message = message.replaceAll("#b(.*?)b#", "<blue>$1</blue>");
         message = message.replaceAll("#g(.*?)g#", "<green>$1</green>");
+        message = message.replaceAll("#b(.*?)b#", "<blue>$1</blue>");
         return message;
     }
     
+    public void broadcastMessage(ServerThread sender, String message) {
+        String formattedMessage = formatMessage(message);
+        for (ServerThread client : clients) {
+            client.sendMessage(formattedMessage);
+        }
+    }    
 
-
+    // end receive data from ServerThread
 }

@@ -10,5 +10,6 @@ public enum PayloadType {
     MESSAGE, // sender and message,
     ROOM_LIST, // client: query for rooms, server: result of query
     ROLL, 
-    FLIP; // Add other types as needed  - rev/11-14-2024  
+    FLIP,
+    DEFAULT; // Add other types as needed  - rev/11-14-2024  
 }

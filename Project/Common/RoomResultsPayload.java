@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RoomResultsPayload extends Payload {
-    private List<String> rooms = new ArrayList<>();
+    private List<String> rooms = new ArrayList<String>();
 
     public RoomResultsPayload() {
-        setPayloadType(PayloadType.ROOM_LIST);  // Call to constructor - rev/11-14-2024
+        setPayloadType(PayloadType.ROOM_LIST);
     }
 
     public List<String> getRooms() {

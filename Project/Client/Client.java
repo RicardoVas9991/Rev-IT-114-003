@@ -57,8 +57,6 @@ public enum Client {
     private final String LOGOFF = "logoff";
     private final String LOGOUT = "logout";
     private final String SINGLE_SPACE = " ";
-    private final String FLIP = "flip"; // rev/11-14-2024
-    private final String ROLL = "roll"; // rev/11-14-2024
 
     // needs to be private now that the enum logic is handling this
     private Client() {
@@ -158,25 +156,32 @@ public enum Client {
                     String.join("\n", knownClients.values().stream()
                             .map(c -> String.format("%s(%s)", c.getClientName(), c.getClientId())).toList()));
             return true;
-        
-        } else if (text.startsWith("/roll")) {
+        } if (text.startsWith("/roll")) {
             String[] parts = text.split(" ");
-            if (parts.length == 3) {
-                try {
-                    int dice = Integer.parseInt(parts[1]);
-                    int sides = Integer.parseInt(parts[2]);
-                    sendRoll(text, dice, sides);
-                    return true;
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid input. Usage: /roll <number_of_dice> <sides_per_die>");
+            if (parts.length == 2) {
+                String sender = myData.getClientName(); // Assuming a name attribute exists
+                if (parts[1].contains("d")) {
+                    String[] diceParts = parts[1].split("d");
+                    int dice = Integer.parseInt(diceParts[0]);
+                    int sides = Integer.parseInt(diceParts[1]);
+                    RollPayload rollPayload = new RollPayload(sender, dice, sides);
+                    processPayload(rollPayload);
+                } else {
+                    int sides = Integer.parseInt(parts[1]);
+                    RollPayload rollPayload = new RollPayload(sender, 1, sides);
+                    processPayload(rollPayload);
                 }
-            } else {
-                System.out.println("Usage: /roll <number_of_dice> <sides_per_die>");
             }
-        } else if (text.equalsIgnoreCase("/flip") || text.equalsIgnoreCase("/toss")) {
-            sendFlip(text);
-            return true;
-        } else { // logic previously from Room.java
+        } else if (text.startsWith("/flip")) {
+            String sender = myData.getClientName();
+            FlipPayload flipPayload = new FlipPayload(sender, null); // Result will be set server-side
+            processPayload(flipPayload);
+        } else {
+            // Handle regular messages
+            sendMessage(text);
+        } 
+        
+        { // logic previously from Room.java
             // decided to make this as separate block to separate the core client-side items
             // vs the ones that generally are used after connection and that send requests
             if (text.startsWith(COMMAND_CHARACTER)) {
@@ -200,17 +205,6 @@ public enum Client {
                         sendListRooms(commandValue);
                         wasCommand = true;
                         break;
-                    case FLIP:
-                        sendFlip(commandValue);
-                        wasCommand = true;
-                        break;
-                    case ROLL:
-                        String[] parts = commandValue.split(SINGLE_SPACE);
-                        int dice = Integer.parseInt(parts[1]);
-                        int sides = Integer.parseInt(parts[2]);
-                        sendRoll(commandValue, dice, sides);
-                        wasCommand = true;
-                        break;
                     // Note: these are to disconnect, they're not for changing rooms
                     case DISCONNECT:
                     case LOGOFF:
@@ -232,7 +226,7 @@ public enum Client {
      * @param roomQuery optional partial match search String
      */
     private void sendListRooms(String roomQuery) {
-        Payload p = new Payload();
+        Payload p = new Payload(null);
         p.setPayloadType(PayloadType.ROOM_LIST);
         p.setMessage(roomQuery);
         send(p);
@@ -244,7 +238,7 @@ public enum Client {
      * @param room
      */
     private void sendCreateRoom(String room) {
-        Payload p = new Payload();
+        Payload p = new Payload(null);
         p.setPayloadType(PayloadType.ROOM_CREATE);
         p.setMessage(room);
         send(p);
@@ -256,7 +250,7 @@ public enum Client {
      * @param room
      */
     private void sendJoinRoom(String room) {
-        Payload p = new Payload();
+        Payload p = new Payload(null);
         p.setPayloadType(PayloadType.ROOM_JOIN);
         p.setMessage(room);
         send(p);
@@ -266,7 +260,7 @@ public enum Client {
      * Tells the server-side we want to disconnect
      */
     private void sendDisconnect() {
-        Payload p = new Payload();
+        Payload p = new Payload(null);
         p.setPayloadType(PayloadType.DISCONNECT);
         send(p);
     }
@@ -277,50 +271,24 @@ public enum Client {
      * @param message
      */
     private void sendMessage(String message) {
-        Payload p = new Payload();
+        Payload p = new Payload(null);
         p.setPayloadType(PayloadType.MESSAGE);
         p.setMessage(message);
         send(p);
     }
 
     /**
-     * Sends chosen client name after socket handshake - rev/11-13-2024
+     * Sends chosen client name after socket handshake
      */
     private void sendClientName() {
         if (myData.getClientName() == null || myData.getClientName().length() == 0) {
-            System.out.println(TextFX.colorize("Name must be set first via /name command", TextFX.Color.RED));
+            System.out.println(TextFX.colorize("Name must be set first via /name command", Color.RED));
             return;
         }
         ConnectionPayload cp = new ConnectionPayload();
         cp.setClientName(myData.getClientName());
-        cp.setPayloadType(PayloadType.CLIENT_CONNECT); // Ensure PayloadType is set here
         send(cp);
     }
-    
-    public void someMethodCreatingPayload() {
-        Payload payload = new Payload();
-        // Some logic to determine the payload type - rev/11-14-2024
-        payload.setPayloadType(PayloadType.CLIENT_CONNECT);
-        System.out.println("PayloadType set to: " + payload.getPayloadType());
-    }
-
-    private void sendFlip(String message) {
-        FlipPayload flipPayload = new FlipPayload();
-        flipPayload.setPayloadType(PayloadType.FLIP);
-        flipPayload.setMessage(message);
-        send(flipPayload);
-    }
-
-
-    private void sendRoll(String message, int dice, int sides) {
-        RollPayload rollPayload = new RollPayload();
-        rollPayload.setPayloadType(PayloadType.ROLL);
-        rollPayload.setSide(sides);
-        rollPayload.setDice(dice);
-        rollPayload.setMessage(message);
-        send(rollPayload);
-    }
-    
 
     /**
      * Generic send that passes any Payload over the socket (to ServerThread)
@@ -329,16 +297,13 @@ public enum Client {
      */
     private void send(Payload p) {
         try {
-            if (p.getPayloadType() == null) {
-                LoggerUtil.INSTANCE.severe("PayloadType is null for payload: " + p);
-            }
             out.writeObject(p);
             out.flush();
         } catch (IOException e) {
             LoggerUtil.INSTANCE.severe("Socket send exception", e);
         }
+
     }
-    // rev/11-13-2024
     // end send methods
 
     public void start() throws IOException {
@@ -491,9 +456,6 @@ public enum Client {
             }
         } catch (Exception e) {
             LoggerUtil.INSTANCE.severe("Could not process Payload: " + payload,e);
-        } if (payload.getPayloadType() == null) {
-            LoggerUtil.INSTANCE.severe("Received payload with null PayloadType: " + payload);
-            return;
         }
     }
 

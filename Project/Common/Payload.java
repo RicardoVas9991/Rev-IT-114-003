@@ -5,19 +5,24 @@ public class Payload implements Serializable {
     private PayloadType payloadType;
     private long clientId;
     private String message;
-
-    
-
+    public PayloadType type;
+        
     public PayloadType getPayloadType() {
         return payloadType;
     }
-
-
-
+        
+        
     public void setPayloadType(PayloadType payloadType) {
         this.payloadType = payloadType;
     }
+    
+    public Payload() {
+        this.type = PayloadType.DEFAULT; // Default value, if applicable
+    }
 
+    public Payload(PayloadType type) {
+        this.type = type;
+    }    
 
 
     public long getClientId() {
@@ -46,6 +51,6 @@ public class Payload implements Serializable {
 
     @Override
     public String toString(){
-        return String.format("Payload[%s] Client Id [%s] Message: [%s]", getPayloadType(), getClientId(), getMessage()); // rev/11-14-2024
+        return String.format("Payload[%s] Client Id [%s] Message: [%s]", getPayloadType(), getClientId(), getMessage());
     }
 }

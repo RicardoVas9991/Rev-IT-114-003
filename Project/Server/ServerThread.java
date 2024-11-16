@@ -7,23 +7,32 @@ import java.util.function.Consumer;
 
 import Project.Common.PayloadType;
 import Project.Common.RollPayload;
-import Project.Common.FlipPayload;
 import Project.Common.RoomResultsPayload;
 import Project.Common.Payload;
 
 import Project.Common.ConnectionPayload;
 import Project.Common.LoggerUtil;
+
 /**
  * A server-side representation of a single client.
  * This class is more about the data and abstracted communication
  */
-
 public class ServerThread extends BaseServerThread {
     public static final long DEFAULT_CLIENT_ID = -1;
     private Room currentRoom;
     private long clientId;
     private String clientName;
     private Consumer<ServerThread> onInitializationComplete; // callback to inform when this object is ready
+    private Room room;
+
+    public void setRoom(Room room) {
+        this.room = room;
+    }
+
+    public Room getRoom() {
+        return this.room;
+    }
+
 
     /**
      * Wraps the Socket connection and takes a Server reference and a callback
@@ -95,12 +104,7 @@ public class ServerThread extends BaseServerThread {
 
     // handle received message from the Client
     @Override
-    public void processPayload(Payload payload) { 
-        if (payload == null || payload.getPayloadType() == null) { 
-            System.err.println("Invalid payload received"); 
-            return;
-        }
-
+    protected void processPayload(Payload payload) {
         try {
             switch (payload.getPayloadType()) {
                 case CLIENT_CONNECT:
@@ -121,21 +125,22 @@ public class ServerThread extends BaseServerThread {
                     break;
                 case DISCONNECT:
                     currentRoom.disconnect(this);
-                case FLIP:
-                    FlipPayload flipPayload = (FlipPayload) payload;
-                    currentRoom.handleFlip(this, flipPayload.getMessage());
                     break;
                 case ROLL:
                     RollPayload rollPayload = (RollPayload) payload;
-                    currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides(), clientName);
+                    room.handleRoll(this, rollPayload.getDice(), rollPayload.getSides());
+                    break;
+                case FLIP:
+                    room.handleFlip(this);
                     break;
                 default:
+                    room.broadcastMessage(this, payload.toString());
                     break;
             }
         } catch (Exception e) {
             LoggerUtil.INSTANCE.severe("Could not process Payload: " + payload,e);
         
-        }    
+        }
     }
 
     // send methods to pass data back to the Client
@@ -159,11 +164,10 @@ public class ServerThread extends BaseServerThread {
      * Overload of sendMessage used for server-side generated messages
      * 
      * @param message
-     * @param string 
      * @return @see {@link #send(Payload)}
      */
-    public boolean sendMessage(String message, String string) {
-        return sendMessage(clientId, message);
+    public boolean sendMessage(String message) {
+        return sendMessage(ServerThread.DEFAULT_CLIENT_ID, message);
     }
 
     /**
@@ -174,13 +178,12 @@ public class ServerThread extends BaseServerThread {
      * @return @see {@link #send(Payload)}
      */
     public boolean sendMessage(long senderId, String message) {
-        Payload p = new Payload();
+        Payload p = new Payload(null);
         p.setClientId(senderId);
         p.setMessage(message);
         p.setPayloadType(PayloadType.MESSAGE);
         return send(p);
     }
-    
 
     /**
      * Tells the client information about a client joining/leaving a room
@@ -233,14 +236,5 @@ public class ServerThread extends BaseServerThread {
         return send(cp);
     }
 
-
-    public String formatText(String input) {
-        input = input.replace("**", "<b>").replace("**", "</b>");
-        input = input.replace("*", "<i>").replace("*", "</i>");
-        input = input.replace("_", "<u>").replace("_", "</u>");
-        input = input.replace("#r", "<span style='color:red;'>").replace("r#", "</span>");
-        // Additional formatting as needed
-        return input;
-    }
     // end send methods
 }

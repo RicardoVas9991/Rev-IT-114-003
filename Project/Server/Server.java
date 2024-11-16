@@ -63,7 +63,6 @@ public enum Server {
     /**
      * Gracefully disconnect clients
      */
-     // rev - 10/16/2024 -  Show the code related to Clients disconnecting/Show the Server code related to handling termination
     private void shutdown() {
         try {
             // chose removeIf over forEach to avoid potential
