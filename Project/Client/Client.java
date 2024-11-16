@@ -285,7 +285,7 @@ public enum Client {
             System.out.println(TextFX.colorize("Name must be set first via /name command", Color.RED));
             return;
         }
-        ConnectionPayload cp = new ConnectionPayload();
+        ConnectionPayload cp = new ConnectionPayload(null);
         cp.setClientName(myData.getClientName());
         send(cp);
     }

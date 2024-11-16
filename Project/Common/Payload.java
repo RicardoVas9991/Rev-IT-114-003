@@ -16,9 +16,9 @@ public class Payload implements Serializable {
         this.payloadType = payloadType;
     }
     
-    public Payload() {
-        this.type = PayloadType.DEFAULT; // Default value, if applicable
-    }
+    // public Payload() {
+    //     this.type = PayloadType.DEFAULT; // Default value, if applicable
+    // }
 
     public Payload(PayloadType type) {
         this.type = type;

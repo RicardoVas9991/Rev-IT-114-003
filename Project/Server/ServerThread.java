@@ -146,13 +146,13 @@ public class ServerThread extends BaseServerThread {
     // send methods to pass data back to the Client
 
     public boolean sendRooms(List<String> rooms) {
-        RoomResultsPayload rrp = new RoomResultsPayload();
+        RoomResultsPayload rrp = new RoomResultsPayload(null);
         rrp.setRooms(rooms);
         return send(rrp);
     }
 
     public boolean sendClientSync(long clientId, String clientName) {
-        ConnectionPayload cp = new ConnectionPayload();
+        ConnectionPayload cp = new ConnectionPayload(null);
         cp.setClientId(clientId);
         cp.setClientName(clientName);
         cp.setConnect(true);
@@ -195,7 +195,7 @@ public class ServerThread extends BaseServerThread {
      * @return success of sending the payload
      */
     public boolean sendRoomAction(long clientId, String clientName, String room, boolean isJoin) {
-        ConnectionPayload cp = new ConnectionPayload();
+        ConnectionPayload cp = new ConnectionPayload(null);
         cp.setPayloadType(PayloadType.ROOM_JOIN);
         cp.setConnect(isJoin); // <-- determine if join or leave
         cp.setMessage(room);
@@ -212,7 +212,7 @@ public class ServerThread extends BaseServerThread {
      * @return success of sending the payload
      */
     public boolean sendDisconnect(long clientId, String clientName) {
-        ConnectionPayload cp = new ConnectionPayload();
+        ConnectionPayload cp = new ConnectionPayload(null);
         cp.setPayloadType(PayloadType.DISCONNECT);
         cp.setConnect(false);
         cp.setClientId(clientId);
@@ -228,7 +228,7 @@ public class ServerThread extends BaseServerThread {
      */
     public boolean sendClientId(long clientId) {
         this.clientId = clientId;
-        ConnectionPayload cp = new ConnectionPayload();
+        ConnectionPayload cp = new ConnectionPayload(null);
         cp.setPayloadType(PayloadType.CLIENT_ID);
         cp.setConnect(true);
         cp.setClientId(clientId);
