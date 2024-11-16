@@ -173,8 +173,7 @@ public enum Client {
                 }
             }
         } else if (text.startsWith("/flip")) {
-            String sender = myData.getClientName();
-            FlipPayload flipPayload = new FlipPayload(sender, null); // Result will be set server-side
+            FlipPayload flipPayload = new FlipPayload(null); // Result will be set server-side
             processPayload(flipPayload);
         } else {
             // Handle regular messages
