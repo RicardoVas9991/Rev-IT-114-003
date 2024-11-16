@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import Project.Client.ClientData;
 import Project.Common.LoggerUtil;
 
 public class Room implements AutoCloseable{
@@ -12,7 +11,6 @@ public class Room implements AutoCloseable{
     protected volatile boolean isRunning = false;
     private ConcurrentHashMap<Long, ServerThread> clientsInRoom = new ConcurrentHashMap<Long, ServerThread>();
     private List<ServerThread> clients = new ArrayList<>();
-    private ClientData myData;
 
     public final static String LOBBY = "lobby";
 
@@ -217,10 +215,6 @@ public class Room implements AutoCloseable{
     // end send data to client(s)
 
     // receive data from ServerThread
-
-    public ClientData getClientData() {
-    return this.myData;
-    }
     
     protected void handleCreateRoom(ServerThread sender, String room) {
         if (Server.INSTANCE.createRoom(room)) {

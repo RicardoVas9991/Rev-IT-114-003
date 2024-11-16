@@ -9,7 +9,7 @@ import Project.Common.PayloadType;
 import Project.Common.RollPayload;
 import Project.Common.RoomResultsPayload;
 import Project.Common.Payload;
-
+import Project.Client.ClientData;
 import Project.Common.ConnectionPayload;
 import Project.Common.LoggerUtil;
 
@@ -235,6 +235,11 @@ public class ServerThread extends BaseServerThread {
         cp.setClientName(clientName);
         return send(cp);
     }
+
+    public ClientData getClientData() {
+        return this.getClientData();
+    }
+    
 
     // end send methods
 }
