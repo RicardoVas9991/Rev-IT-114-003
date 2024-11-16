@@ -24,7 +24,7 @@ public class ServerThread extends BaseServerThread {
     private String clientName;
     private Consumer<ServerThread> onInitializationComplete; // callback to inform when this object is ready
     private Room room;
-    
+
     public void setRoom(Room room) {
         this.room = room;
     }
@@ -104,48 +104,87 @@ public class ServerThread extends BaseServerThread {
 
     // handle received message from the Client
     @Override
-    protected void processPayload(Payload payload) {
-        try {
-            switch (payload.getPayloadType()) {
-                case CLIENT_CONNECT:
-                    ConnectionPayload cp = (ConnectionPayload) payload;
-                    setClientName(cp.getClientName());
-                    break;
-                case MESSAGE:
+protected void processPayload(Payload payload) {
+    try {
+        if (payload.getPayloadType() == null) {
+            LoggerUtil.INSTANCE.warning("Received payload with null PayloadType. Ignoring.");
+            return;
+        }
+
+        switch (payload.getPayloadType()) {
+            case CLIENT_CONNECT:
+                ConnectionPayload cp = (ConnectionPayload) payload;
+                setClientName(cp.getClientName());
+                break;
+
+            case MESSAGE:
                 if (currentRoom == null) {
                     LoggerUtil.INSTANCE.warning("Client is not in a room. Ignoring message: " + payload.getMessage());
                     return;
                 }
                 currentRoom.sendMessage(this, payload.getMessage());
-                    break;
-                case ROOM_CREATE:
-                    currentRoom.handleCreateRoom(this, payload.getMessage());
-                    break;
-                case ROOM_JOIN:
-                    currentRoom.handleJoinRoom(this, payload.getMessage());
-                    break;
-                case ROOM_LIST:
-                    currentRoom.handleListRooms(this, payload.getMessage());
-                    break;
-                case DISCONNECT:
+                break;
+
+            case ROOM_CREATE:
+                if (currentRoom == null) {
+                    LoggerUtil.INSTANCE.warning("Cannot create room. Client is not in a room context.");
+                    return;
+                }
+                currentRoom.handleCreateRoom(this, payload.getMessage());
+                break;
+
+            case ROOM_JOIN:
+                if (currentRoom == null) {
+                    LoggerUtil.INSTANCE.warning("Cannot join room. Client is not in a room context.");
+                    return;
+                }
+                currentRoom.handleJoinRoom(this, payload.getMessage());
+                break;
+
+            case ROOM_LIST:
+                if (currentRoom == null) {
+                    LoggerUtil.INSTANCE.warning("Cannot list rooms. Client is not in a room context.");
+                    return;
+                }
+                currentRoom.handleListRooms(this, payload.getMessage());
+                break;
+
+            case DISCONNECT:
+                if (currentRoom != null) {
                     currentRoom.disconnect(this);
-                    break;
-                case ROLL:
-                    RollPayload rollPayload = (RollPayload) payload;
-                    room.handleRoll(this, rollPayload.getDice(), rollPayload.getSides());
-                    break;
-                case FLIP:
-                    room.handleFlip(this);
-                    break;
-                default:
-                    room.broadcastMessage(this, payload.toString());
-                    break;
-            }
-        } catch (Exception e) {
-            LoggerUtil.INSTANCE.severe("Could not process Payload: " + payload,e);
-        
+                }
+                break;
+
+            case ROLL:
+                RollPayload rollPayload = (RollPayload) payload;
+                if (currentRoom == null) {
+                    LoggerUtil.INSTANCE.warning("Cannot roll dice. Client is not in a room context.");
+                    return;
+                }
+                currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides());
+                break;
+
+            case FLIP:
+                if (currentRoom == null) {
+                    LoggerUtil.INSTANCE.warning("Cannot flip. Client is not in a room context.");
+                    return;
+                }
+                currentRoom.handleFlip(this);
+                break;
+
+            default:
+                if (currentRoom == null) {
+                    LoggerUtil.INSTANCE.warning("Client is not in a room. Ignoring message: " + payload.toString());
+                    return;
+                }
+                currentRoom.broadcastMessage(this, payload.toString());
+                break;
         }
+    } catch (Exception e) {
+        LoggerUtil.INSTANCE.severe("Could not process Payload: " + payload, e);
     }
+}
+
 
     // send methods to pass data back to the Client
 
