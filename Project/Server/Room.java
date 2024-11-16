@@ -3,7 +3,6 @@ package Project.Server;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.lang.Math;
 
 import Project.Common.LoggerUtil;
 
@@ -247,7 +246,8 @@ public class Room implements AutoCloseable{
         broadcastMessage(sender, message);
     }
     
-    public void handleFlip(ServerThread sender, String result) {
+    public void handleFlip(ServerThread sender) {
+        String result = Math.random() < 0.5 ? "heads" : "tails";
         String message = sender.getClientName() + " flipped a coin and got " + result;
         broadcastMessage(sender, message);
     }

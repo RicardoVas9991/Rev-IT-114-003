@@ -9,9 +9,8 @@ import Project.Common.PayloadType;
 import Project.Common.RollPayload;
 import Project.Common.RoomResultsPayload;
 import Project.Common.Payload;
-import Project.Client.ClientData;
+
 import Project.Common.ConnectionPayload;
-import Project.Common.FlipPayload;
 import Project.Common.LoggerUtil;
 
 /**
@@ -24,16 +23,6 @@ public class ServerThread extends BaseServerThread {
     private long clientId;
     private String clientName;
     private Consumer<ServerThread> onInitializationComplete; // callback to inform when this object is ready
-    private Room room;
-    
-    public void setRoom(Room room) {
-        this.room = room;
-    }
-
-    public Room getRoom() {
-        return this.room;
-    }
-
 
     /**
      * Wraps the Socket connection and takes a Server reference and a callback
@@ -133,14 +122,13 @@ public class ServerThread extends BaseServerThread {
                     break;
                 case ROLL:
                     RollPayload rollPayload = (RollPayload) payload;
-                    room.handleRoll(this, rollPayload.getDice(), rollPayload.getSides(), rollPayload.getTotal());
+                    currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides(), rollPayload.getTotal());
                     break;
                 case FLIP:
-                    FlipPayload flipPayload = (FlipPayload) payload;
-                    room.handleFlip(this, flipPayload.getResult());
+                    currentRoom.handleFlip(this);
                     break;
                 default:
-                    room.broadcastMessage(this, payload.toString());
+                    currentRoom.broadcastMessage(this, payload.toString());
                     break;
             }
         } catch (Exception e) {
@@ -240,10 +228,6 @@ public class ServerThread extends BaseServerThread {
         cp.setClientId(clientId);
         cp.setClientName(clientName);
         return send(cp);
-    }
-
-    public ClientData getClientData() {
-        return new ClientData();
     }
 
     // end send methods
