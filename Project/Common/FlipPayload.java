@@ -7,11 +7,16 @@ public class FlipPayload extends Payload {
     public FlipPayload(String sender, String result) {
         super(PayloadType.FLIP);
         this.sender = sender;
-        this.result = result;
+        this.result = Math.random() < 0.5 ? "heads" : "tails";
     }
 
-    public String getSender() { return sender; }
-    public String getResult() { return result; }
+    public String getSender() { 
+        return sender; 
+    }
+    
+    public String getResult() { 
+        return result; 
+    }
 
     @Override
     public String toString() {

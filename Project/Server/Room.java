@@ -238,8 +238,7 @@ public class Room implements AutoCloseable{
         disconnect(sender);
     }
 
-    public void handleRoll(ServerThread sender, int dice, int sides) {
-        int total = 0;
+    public void handleRoll(ServerThread sender, int dice, int sides, int total) {
         for (int i = 0; i < dice; i++) {
             total += (int) (Math.random() * sides) + 1;
         }
@@ -247,8 +246,7 @@ public class Room implements AutoCloseable{
         broadcastMessage(sender, message);
     }
     
-    public void handleFlip(ServerThread sender) {
-        String result = Math.random() < 0.5 ? "heads" : "tails";
+    public void handleFlip(ServerThread sender, String result) {
         String message = sender.getClientName() + " flipped a coin and got " + result;
         broadcastMessage(sender, message);
     }

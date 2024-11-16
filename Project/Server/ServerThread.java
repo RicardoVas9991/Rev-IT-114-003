@@ -11,6 +11,7 @@ import Project.Common.RoomResultsPayload;
 import Project.Common.Payload;
 import Project.Client.ClientData;
 import Project.Common.ConnectionPayload;
+import Project.Common.FlipPayload;
 import Project.Common.LoggerUtil;
 
 /**
@@ -132,10 +133,11 @@ public class ServerThread extends BaseServerThread {
                     break;
                 case ROLL:
                     RollPayload rollPayload = (RollPayload) payload;
-                    room.handleRoll(this, rollPayload.getDice(), rollPayload.getSides());
+                    room.handleRoll(this, rollPayload.getDice(), rollPayload.getSides(), rollPayload.getTotal());
                     break;
                 case FLIP:
-                    room.handleFlip(this);
+                    FlipPayload flipPayload = (FlipPayload) payload;
+                    room.handleFlip(this, flipPayload.getResult());
                     break;
                 default:
                     room.broadcastMessage(this, payload.toString());

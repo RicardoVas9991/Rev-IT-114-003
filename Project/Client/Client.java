@@ -166,12 +166,16 @@ public enum Client {
                     String[] diceParts = parts[1].split("d");
                     int dice = Integer.parseInt(diceParts[0]);
                     int sides = Integer.parseInt(diceParts[1]);
-                    RollPayload rollPayload = new RollPayload(sender, dice, sides);
+                    int total = 0;
+                    for (int i = 0; i < dice; i++) {
+                        total += (int) (Math.random() * sides) + 1;
+                    }
+                    RollPayload rollPayload = new RollPayload(sender, dice, sides, total);
                     System.out.println(rollPayload);
                     return true;
                 } else {
                     int sides = Integer.parseInt(parts[1]);
-                    RollPayload rollPayload = new RollPayload(sender, 1, sides);
+                    RollPayload rollPayload = new RollPayload(sender, 1, sides, sides);
                     System.out.println(rollPayload);
                     return true;
                 }
