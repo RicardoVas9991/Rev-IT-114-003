@@ -47,6 +47,8 @@ public enum Client {
     private volatile boolean isRunning = true; // volatile for thread-safe visibility
     private ConcurrentHashMap<Long, ClientData> knownClients = new ConcurrentHashMap<>();
     private ClientData myData;
+    private FlipPayload myFlip;
+    
 
     // constants (used to reduce potential types when using them in code)
     private final String COMMAND_CHARACTER = "/";
@@ -176,7 +178,8 @@ public enum Client {
             }
         } else if (text.startsWith("/flip")) {
             String sender = myData.getClientName();
-            FlipPayload flipPayload = new FlipPayload(sender, null); // Result will be set server-side
+            String result = myFlip.getResult();
+            FlipPayload flipPayload = new FlipPayload(sender, result); // Result will be set server-side
             System.out.println(flipPayload);
             return true;
         } else { // logic previously from Room.java

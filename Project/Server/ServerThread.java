@@ -23,16 +23,6 @@ public class ServerThread extends BaseServerThread {
     private long clientId;
     private String clientName;
     private Consumer<ServerThread> onInitializationComplete; // callback to inform when this object is ready
-    private Room room;
-
-    public void setRoom(Room room) {
-        this.room = room;
-    }
-
-    public Room getRoom() {
-        return this.room;
-    }
-
 
     /**
      * Wraps the Socket connection and takes a Server reference and a callback
@@ -104,13 +94,12 @@ public class ServerThread extends BaseServerThread {
 
     // handle received message from the Client
     @Override
-protected void processPayload(Payload payload) {
-    try {
-        if (payload.getPayloadType() == null) {
-            LoggerUtil.INSTANCE.warning("Received payload with null PayloadType. Ignoring.");
-            return;
-        }
-
+    protected void processPayload(Payload payload) {
+        try {
+            if (payload.getPayloadType() == null) {
+                LoggerUtil.INSTANCE.warning("Received payload with null PayloadType. Ignoring.");
+                return;
+            }
         switch (payload.getPayloadType()) {
             case CLIENT_CONNECT:
                 ConnectionPayload cp = (ConnectionPayload) payload;
@@ -221,6 +210,9 @@ protected void processPayload(Payload payload) {
      * @return @see {@link #send(Payload)}
      */
     public boolean sendMessage(long senderId, String message) {
+        if (currentRoom == null) {
+            return send(new Payload(PayloadType.MESSAGE));
+        }
         Payload p = new Payload(null);
         p.setClientId(senderId);
         p.setMessage(message);
