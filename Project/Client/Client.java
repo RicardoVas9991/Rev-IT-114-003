@@ -161,8 +161,8 @@ public enum Client {
             String[] parts = text.split(" ");
             if (parts.length == 2) {
                 String sender = myData.getClientName(); // Assuming a name attribute exists
-                if (parts[1].contains("d#")) {
-                    String[] diceParts = parts[1].split("d#");
+                if (parts[1].contains("d")) {
+                    String[] diceParts = parts[1].split("d");
                     int dice = Integer.parseInt(diceParts[0]);
                     int sides = Integer.parseInt(diceParts[1]);
                     int total = 0;

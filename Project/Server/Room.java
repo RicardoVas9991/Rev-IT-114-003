@@ -242,7 +242,7 @@ public class Room implements AutoCloseable{
         for (int i = 0; i < dice; i++) {
             total += (int) (Math.random() * sides) + 1;
         }
-        String message = sender.getClientName() + " rolled " + dice + "d" + sides + " and got " + total;
+        String message = sender.getClientName() + " rolled " + dice + "d#" + sides + " and got " + total;
         broadcastMessage(sender, message);
     }
     
@@ -252,7 +252,7 @@ public class Room implements AutoCloseable{
         broadcastMessage(sender, message);
     }
 
-    protected String formatMessage(String message) {
+    public String formatMessage(String message) {
         // Bold
         message = message.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>");
         // Italics
