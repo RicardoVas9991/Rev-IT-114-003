@@ -6,8 +6,8 @@ import java.util.List;
 public class RoomResultsPayload extends Payload {
     private List<String> rooms = new ArrayList<String>();
 
-    public RoomResultsPayload(PayloadType type) {
-        super(type); // Call to the Payload constructor
+    public RoomResultsPayload() {
+        setPayloadType(PayloadType.ROOM_LIST);
     }
 
     public List<String> getRooms() {

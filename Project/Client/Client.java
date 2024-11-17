@@ -11,7 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.lang.Math;
+
 import Project.Common.ConnectionPayload;
 import Project.Common.FlipPayload;
 import Project.Common.LoggerUtil;
@@ -21,7 +21,6 @@ import Project.Common.RollPayload;
 import Project.Common.RoomResultsPayload;
 import Project.Common.TextFX;
 import Project.Common.TextFX.Color;
-
 
 /**
  * Demoing bi-directional communication between client and server in a
@@ -43,13 +42,13 @@ public enum Client {
     private ObjectOutputStream out = null;
     private ObjectInputStream in = null;
     final Pattern ipAddressPattern = Pattern
-            .compile("/connect\\s+(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{1,5})");
-    final Pattern localhostPattern = Pattern.compile("/connect\\s+(localhost:\\d{1,5})");
+    .compile("/connect\\s+(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{3,5})");
+    final Pattern localhostPattern = Pattern.compile("/connect\\s+(localhost:\\d{3,5})");
     private volatile boolean isRunning = true; // volatile for thread-safe visibility
     private ConcurrentHashMap<Long, ClientData> knownClients = new ConcurrentHashMap<>();
     private ClientData myData;
     
-
+    
     // constants (used to reduce potential types when using them in code)
     private final String COMMAND_CHARACTER = "/";
     private final String CREATE_ROOM = "createroom";
@@ -231,7 +230,7 @@ public enum Client {
      * @param roomQuery optional partial match search String
      */
     private void sendListRooms(String roomQuery) {
-        Payload p = new Payload(null);
+        Payload p = new Payload();
         p.setPayloadType(PayloadType.ROOM_LIST);
         p.setMessage(roomQuery);
         send(p);
@@ -243,7 +242,7 @@ public enum Client {
      * @param room
      */
     private void sendCreateRoom(String room) {
-        Payload p = new Payload(null);
+        Payload p = new Payload();
         p.setPayloadType(PayloadType.ROOM_CREATE);
         p.setMessage(room);
         send(p);
@@ -255,7 +254,7 @@ public enum Client {
      * @param room
      */
     private void sendJoinRoom(String room) {
-        Payload p = new Payload(null);
+        Payload p = new Payload();
         p.setPayloadType(PayloadType.ROOM_JOIN);
         p.setMessage(room);
         send(p);
@@ -265,7 +264,7 @@ public enum Client {
      * Tells the server-side we want to disconnect
      */
     private void sendDisconnect() {
-        Payload p = new Payload(null);
+        Payload p = new Payload();
         p.setPayloadType(PayloadType.DISCONNECT);
         send(p);
     }
@@ -276,7 +275,7 @@ public enum Client {
      * @param message
      */
     private void sendMessage(String message) {
-        Payload p = new Payload(null);
+        Payload p = new Payload();
         p.setPayloadType(PayloadType.MESSAGE);
         p.setMessage(message);
         send(p);
@@ -290,7 +289,7 @@ public enum Client {
             System.out.println(TextFX.colorize("Name must be set first via /name command", Color.RED));
             return;
         }
-        ConnectionPayload cp = new ConnectionPayload(null);
+        ConnectionPayload cp = new ConnectionPayload();
         cp.setClientName(myData.getClientName());
         send(cp);
     }
@@ -381,7 +380,6 @@ public enum Client {
         // System.exit(0); // Terminate the application
     }
 
-    
     /**
      * Closes the server connection and associated resources
      */
@@ -413,10 +411,6 @@ public enum Client {
         } catch (IOException e) {
             LoggerUtil.INSTANCE.info("Error closing socket", e);
         }
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            LoggerUtil.INSTANCE.info("Shutdown hook triggered");
-            close();
-        }));        
     }
 
     public static void main(String[] args) {
@@ -466,7 +460,6 @@ public enum Client {
             }
         } catch (Exception e) {
             LoggerUtil.INSTANCE.severe("Could not process Payload: " + payload,e);
-            LoggerUtil.INSTANCE.severe("Unexpected Payload type: " + payload.getClass().getName(), e);
         }
     }
 

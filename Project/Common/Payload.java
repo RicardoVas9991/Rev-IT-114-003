@@ -1,26 +1,23 @@
 package Project.Common;
 import java.io.Serializable;
 
-
 public class Payload implements Serializable {
     private PayloadType payloadType;
     private long clientId;
     private String message;
-    public PayloadType type;
-        
+
+    
+
     public PayloadType getPayloadType() {
         return payloadType;
     }
-        
-        
+
+
+
     public void setPayloadType(PayloadType payloadType) {
         this.payloadType = payloadType;
     }
-    
-    
-    public Payload(PayloadType type) {
-        this.type = type;
-    }    
+
 
 
     public long getClientId() {
@@ -28,9 +25,11 @@ public class Payload implements Serializable {
     }
 
 
+
     public void setClientId(long clientId) {
         this.clientId = clientId;
     }
+
 
 
     public String getMessage() {
@@ -38,9 +37,11 @@ public class Payload implements Serializable {
     }
 
 
+
     public void setMessage(String message) {
         this.message = message;
     }
+
 
 
     @Override

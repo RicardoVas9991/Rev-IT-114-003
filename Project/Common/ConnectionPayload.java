@@ -4,8 +4,8 @@ public class ConnectionPayload extends Payload {
     private String clientName;
     private boolean isConnect;
 
-    public ConnectionPayload(PayloadType type) {
-        super(type); // Call to the Payload constructor
+    public ConnectionPayload(){
+        setPayloadType(PayloadType.CLIENT_CONNECT);
     }
     
     public String getClientName() {
