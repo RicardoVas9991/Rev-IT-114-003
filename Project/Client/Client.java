@@ -180,7 +180,7 @@ public enum Client {
                 }
             }
             return true;
-        } else if (text.startsWith("/flip")) {
+        } else if (text.startsWith("/flip") || text.startsWith("/toss")) {
             String sender = myData.getClientName();
             FlipPayload flipPayload = new FlipPayload(sender); // Result will be set server-side
             System.out.println(flipPayload);
