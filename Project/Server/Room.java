@@ -252,7 +252,7 @@ public class Room implements AutoCloseable{
         broadcastMessage(sender, message);
     }
 
-    private String formatMessage(String message) {
+    protected String formatMessage(String message) {
         // Bold
         message = message.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>");
         // Italics
@@ -272,6 +272,23 @@ public class Room implements AutoCloseable{
             client.sendMessage(formattedMessage);
         }
     }    
+
+    public static void main(String[] args) {
+        try (Room room = new Room("TestRoom")) {
+            // Test bold
+            System.out.println(room.formatMessage("**Bold text**")); // Should output: <b>Bold text</b>
+   
+            // Test italics
+            System.out.println(room.formatMessage("*Italic text*")); // Should output: <i>Italic text</i>
+   
+            // Test underline
+            System.out.println(room.formatMessage("_Underlined text_")); // Should output: <u>Underlined text</u>
+   
+            // Test colors
+            System.out.println(room.formatMessage("#rRed textr#")); // Should output: <red>Red text</red>
+        }
+    }
+    
 
     // end receive data from ServerThread
 }
