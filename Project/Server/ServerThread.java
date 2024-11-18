@@ -22,7 +22,7 @@ public class ServerThread extends BaseServerThread {
     private Room currentRoom;
     private long clientId;
     private String clientName;
-    private Consumer<ServerThread> onInitializationComplete; // callback to inform when this object is ready
+    private Consumer<ServerThread> onInitializationComplete; // callback to inform when this object is ready - Rev/11/-16-2024
 
     /**
      * Wraps the Socket connection and takes a Server reference and a callback
@@ -45,7 +45,7 @@ public class ServerThread extends BaseServerThread {
 
     public void setClientName(String name) {
         if (name == null) {
-            throw new NullPointerException("Client name can't be null");
+            throw new NullPointerException("Client name can't be null");    // - Rev/11/-16-2024
         }
         this.clientName = name;
         onInitialized();
@@ -103,7 +103,7 @@ public class ServerThread extends BaseServerThread {
                     break;
                 case MESSAGE:
                 if (currentRoom == null) {
-                    LoggerUtil.INSTANCE.warning("Client is not in a room. Ignoring message: " + payload.getMessage());
+                    LoggerUtil.INSTANCE.warning("Client is not in a room. Ignoring message: " + payload.getMessage());  // - Rev/11/-16-2024
                     return;
                 }
                 currentRoom.sendMessage(this, payload.getMessage());
@@ -120,15 +120,15 @@ public class ServerThread extends BaseServerThread {
                 case DISCONNECT:
                     currentRoom.disconnect(this);
                     break;
-                case ROLL:
+                case ROLL:  // - Rev/11/-16-2024
                     RollPayload rollPayload = (RollPayload) payload;
                     currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides(), rollPayload.getTotal());
                     break;
-                case FLIP:
+                case FLIP:  // - Rev/11/-16-2024
                     currentRoom.handleFlip(this);
                     break;
                 default:
-                    currentRoom.broadcastMessage(this, payload.toString());
+                    currentRoom.broadcastMessage(this, payload.toString()); // - Rev/11/-16-2024
                     break;
             }
         } catch (Exception e) {

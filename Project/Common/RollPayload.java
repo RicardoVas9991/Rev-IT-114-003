@@ -6,6 +6,7 @@ public class RollPayload extends Payload {
     private String sender;
     private int total;
 
+    // - Rev/11/-16-2024
     public RollPayload(String sender, int dice, int sides, int total) {
         super();
         this.sender = sender;
@@ -14,6 +15,7 @@ public class RollPayload extends Payload {
         this.total = total;
     }
 
+    // - Rev/11/-16-2024
     public int getDice() { return dice; }
     public int getSides() { return sides; }
     public String getSender() { return sender; }

@@ -1,5 +1,5 @@
 package Project.Common;
-import java.lang.Math;
+import java.lang.Math; // - Rev/11/-16-2024
 
 public class FlipPayload extends Payload {
     private String sender;
@@ -8,7 +8,7 @@ public class FlipPayload extends Payload {
     public FlipPayload(String sender) {
         super();
         this.sender = sender;
-        this.result = Math.random() < 0.5 ? "heads" : "tails";
+        this.result = Math.random() < 0.5 ? "heads" : "tails"; // - Rev/11/-16-2024
     }
 
     public String getSender() { 

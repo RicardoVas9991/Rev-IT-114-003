@@ -238,7 +238,7 @@ public class Room implements AutoCloseable{
         disconnect(sender);
     }
 
-    public void handleRoll(ServerThread sender, int dice, int sides, int total) {
+    public void handleRoll(ServerThread sender, int dice, int sides, int total) {   // - Rev/11/-16-2024
         for (int i = 0; i < dice; i++) {
             total += (int) (Math.random() * sides) + 1;
         }
@@ -246,13 +246,13 @@ public class Room implements AutoCloseable{
         broadcastMessage(sender, message);
     }
     
-    public void handleFlip(ServerThread sender) {
+    public void handleFlip(ServerThread sender) {   // - Rev/11/-16-2024
         String result = Math.random() < 0.5 ? "heads" : "tails";
         String message = sender.getClientName() + " flipped a coin and got " + result;
         broadcastMessage(sender, message);
     }
 
-    public String formatMessage(String message) {
+    public String formatMessage(String message) {   // - Rev/11/-16-2024
         // Bold
         message = message.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>");
         // Italics
@@ -266,14 +266,14 @@ public class Room implements AutoCloseable{
         return message;
     }
     
-    public void broadcastMessage(ServerThread sender, String message) {
+    public void broadcastMessage(ServerThread sender, String message) { // - Rev/11/-16-2024
         String formattedMessage = formatMessage(message);
         for (ServerThread client : clients) {
             client.sendMessage(formattedMessage);
         }
     }    
 
-    public static void main(String[] args) {
+    public static void main(String[] args) {    // - Rev/11/-16-2024
         try (Room room = new Room("TestRoom")) {
             // Test bold
             System.out.println(room.formatMessage("**Bold text**")); // Should output: <b>Bold text</b>

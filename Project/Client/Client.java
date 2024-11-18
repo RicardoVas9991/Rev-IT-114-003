@@ -157,7 +157,7 @@ public enum Client {
                     String.join("\n", knownClients.values().stream()
                             .map(c -> String.format("%s(%s)", c.getClientName(), c.getClientId())).toList()));
             return true;
-        } else if (text.startsWith("/roll")) {
+        } else if (text.startsWith("/roll")) {  // - Rev/11/-16-2024
             String[] parts = text.split(" ");
             if (parts.length == 2) {
                 String sender = myData.getClientName(); // Assuming a name attribute exists
@@ -180,7 +180,7 @@ public enum Client {
                 }
             }
             return true;
-        } else if (text.startsWith("/flip") || text.startsWith("/toss")) {
+        } else if (text.startsWith("/flip") || text.startsWith("/toss")) {  // - Rev/11/-16-2024
             String sender = myData.getClientName();
             FlipPayload flipPayload = new FlipPayload(sender); // Result will be set server-side
             System.out.println(flipPayload);
