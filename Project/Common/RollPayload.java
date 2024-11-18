@@ -6,6 +6,7 @@ public class RollPayload extends Payload {
     private String sender;
     private int total;
 
+    // - Rev/11/-16-2024
     public RollPayload(String sender, int dice, int sides, int total) {
         super();
         this.sender = sender;
