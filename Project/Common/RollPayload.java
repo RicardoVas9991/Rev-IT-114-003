@@ -14,6 +14,7 @@ public class RollPayload extends Payload {
         this.total = total;
     }
 
+    // - Rev/11/-16-2024
     public int getDice() { return dice; }
     public int getSides() { return sides; }
     public String getSender() { return sender; }

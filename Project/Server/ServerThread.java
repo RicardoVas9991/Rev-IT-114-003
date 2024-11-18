@@ -106,7 +106,7 @@ public class ServerThread extends BaseServerThread {
                     LoggerUtil.INSTANCE.warning("Client is not in a room. Ignoring message: " + payload.getMessage());
                     return;
                 }
-                currentRoom.sendMessage(this, payload.getMessage());
+                    currentRoom.sendMessage(this, payload.getMessage());
                     break;
                 case ROOM_CREATE:
                     currentRoom.handleCreateRoom(this, payload.getMessage());
@@ -122,10 +122,10 @@ public class ServerThread extends BaseServerThread {
                     break;
                 case ROLL:
                     RollPayload rollPayload = (RollPayload) payload;
-                    currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides(), rollPayload.getTotal());
+                    currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides(), rollPayload.getTotal()); // - Rev/11/-16-2024
                     break;
                 case FLIP:
-                    currentRoom.handleFlip(this);
+                    currentRoom.handleFlip(this); // - Rev/11/-16-2024
                     break;
                 default:
                     currentRoom.broadcastMessage(this, payload.toString());
