@@ -1,7 +1,5 @@
 package Project.Server;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import Project.Common.LoggerUtil;
@@ -10,7 +8,6 @@ public class Room implements AutoCloseable{
     private String name;// unique name of the Room
     protected volatile boolean isRunning = false;
     private ConcurrentHashMap<Long, ServerThread> clientsInRoom = new ConcurrentHashMap<Long, ServerThread>();
-    private List<ServerThread> clients = new ArrayList<>();
 
     public final static String LOBBY = "lobby";
 
@@ -176,6 +173,7 @@ public class Room implements AutoCloseable{
             return failedToSend;
         });
     }
+     // rev - 10/16/2024 - Show the ServerThread/Room code handling the create/join process
 
     /**
      * Sends a basic String message from the sender to all connectedClients
@@ -190,6 +188,7 @@ public class Room implements AutoCloseable{
      * @param sender  ServerThread (client) sending the message or null if it's a
      *                server-generated message
      */
+     // rev - 10/16/2024 - Show the code related to the Server-side receiving the message and relaying it to each connected Client
     protected synchronized void sendMessage(ServerThread sender, String message) {
         if (!isRunning) { // block action if Room isn't running
             return;
@@ -237,58 +236,6 @@ public class Room implements AutoCloseable{
     protected void clientDisconnect(ServerThread sender) {
         disconnect(sender);
     }
-
-    public void handleRoll(ServerThread sender, int dice, int sides, int total) {
-        for (int i = 0; i < dice; i++) {
-            total += (int) (Math.random() * sides) + 1;
-        }
-        String message = sender.getClientName() + " rolled " + dice + "d#" + sides + " and got " + total;
-        broadcastMessage(sender, message);
-    }
-    
-    public void handleFlip(ServerThread sender) {
-        String result = Math.random() < 0.5 ? "heads" : "tails";
-        String message = sender.getClientName() + " flipped a coin and got " + result;
-        broadcastMessage(sender, message);
-    }
-
-    public String formatMessage(String message) {
-        // Bold
-        message = message.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>");
-        // Italics
-        message = message.replaceAll("\\*(.*?)\\*", "<i>$1</i>");
-        // Underline
-        message = message.replaceAll("_(.*?)_", "<u>$1</u>");
-        // Colors (example for red, green, blue)
-        message = message.replaceAll("#r(.*?)r#", "<red>$1</red>");
-        message = message.replaceAll("#g(.*?)g#", "<green>$1</green>");
-        message = message.replaceAll("#b(.*?)b#", "<blue>$1</blue>");
-        return message;
-    }
-    
-    public void broadcastMessage(ServerThread sender, String message) {
-        String formattedMessage = formatMessage(message);
-        for (ServerThread client : clients) {
-            client.sendMessage(formattedMessage);
-        }
-    }    
-
-    public static void main(String[] args) {
-        try (Room room = new Room("TestRoom")) {
-            // Test bold
-            System.out.println(room.formatMessage("**Bold text**")); // Should output: <b>Bold text</b>
-   
-            // Test italics
-            System.out.println(room.formatMessage("*Italic text*")); // Should output: <i>Italic text</i>
-   
-            // Test underline
-            System.out.println(room.formatMessage("_Underlined text_")); // Should output: <u>Underlined text</u>
-   
-            // Test colors
-            System.out.println(room.formatMessage("#rRed textr#")); // Should output: <red>Red text</red>
-        }
-    }
-    
 
     // end receive data from ServerThread
 }

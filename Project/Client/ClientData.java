@@ -7,14 +7,14 @@ public class ClientData {
     public long getClientId() {
         return clientId;
     }
-    public void setClientId(long clientId) {
-        this.clientId = clientId;
+    public void setClientId(long clientId2) {
+        this.clientId = clientId2;
     }
     public String getClientName() {
         return clientName;
     }
-    public void setClientName(String clientName) {
-        this.clientName = clientName;
+    public void setClientName(String clientName2) {
+        this.clientName = clientName2;
     }
 
     public void reset(){
