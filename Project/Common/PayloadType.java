@@ -1,3 +1,5 @@
+// rev/11-02-2024 
+
 package Project.Common;
 
 public enum PayloadType {
@@ -8,7 +10,13 @@ public enum PayloadType {
     ROOM_CREATE,
     ROOM_JOIN, // join/leave room based on boolean
     MESSAGE, // sender and message,
-    ROOM_LIST, // client: query for rooms, server: result of query
-    ROLL, 
-    FLIP; // Add other types as needed  - rev/11-14-2024  
+    ROOM_LIST, // client: query for rooms, server: result of query,
+    CONNECTION, 
+    DISCONNECTION, 
+    QUESTION, 
+    ANSWER, 
+    POINT_UPDATE, // New Types for Milestone 2
+    READY, 
+    ROOM_STATUS, 
+    SCOREBOARD;
 }

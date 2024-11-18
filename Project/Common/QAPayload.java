@@ -1,13 +1,14 @@
+// rev / 11-04-2024
 package Project.Common;
 
 import java.util.List;
 
-public class ConnectionPayload extends Payload {
+public class QAPayload extends Payload {
     private String questionText;
     private List<String> answerOptions;
 
-    public ConnectionPayload(String questionText, List<String> answerOptions) {
-        super(PayloadType.QUESTION);
+    public QAPayload(String clientId, String questionText, List<String> answerOptions) {
+        super(clientId, questionText, "QAPayload");
         this.questionText = questionText;
         this.answerOptions = answerOptions;
     }
@@ -18,10 +19,5 @@ public class ConnectionPayload extends Payload {
 
     public List<String> getAnswerOptions() {
         return answerOptions;
-    }
-
-    public void setClientName(String clientName) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setClientName'");
     }
 }

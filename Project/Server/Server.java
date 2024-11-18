@@ -3,7 +3,6 @@ package Project.Server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -64,6 +63,7 @@ public enum Server {
     /**
      * Gracefully disconnect clients
      */
+     // rev - 10/16/2024 -  Show the code related to Clients disconnecting/Show the Server code related to handling termination
     private void shutdown() {
         try {
             // chose removeIf over forEach to avoid potential
@@ -96,6 +96,7 @@ public enum Server {
         joinRoom(Room.LOBBY, sClient);
     }
 
+     // rev - 10/16/2024 - Show the Server code for handling the create/join process
     /**
      * Attempts to create a new Room and add it to the tracked rooms collection
      * 
@@ -107,7 +108,15 @@ public enum Server {
         if (rooms.containsKey(nameCheck)) {
             return false;
         }
-        Room room = new Room(name);
+        Room room = null;
+        if (Room.LOBBY.equalsIgnoreCase(nameCheck)) {
+            room = new Room(name);
+        } else {
+            // uncomment this if doing chatroom
+            // room = new Room(name);
+            // comment this out if doing chatroom
+            room = new GameRoom(name); // <-- added during Ready Check lesson
+        }
         rooms.put(nameCheck, room);
         LoggerUtil.INSTANCE.info(String.format("Created new Room %s", name));
         return true;

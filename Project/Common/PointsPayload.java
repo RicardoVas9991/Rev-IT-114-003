@@ -1,17 +1,13 @@
 // rev / 11-04-2024
-
 package Project.Common;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class RoomResultsPayload extends Payload {
+public class PointsPayload extends Payload {
     private Map<String, Integer> playerPoints;
 
-    public RoomResultsPayload(Map<String, Integer> playerPoints) {
-        super(PayloadType.POINT_UPDATE);
+    public PointsPayload(String clientId, Map<String, Integer> playerPoints) {
+        super(clientId, "Points Update", "PointsPayload");
         this.playerPoints = playerPoints;
     }
 
