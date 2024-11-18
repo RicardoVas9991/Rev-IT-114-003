@@ -1,21 +1,20 @@
-// rev / 11-04-2024
-
 package Project.Common;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class RoomResultsPayload extends Payload {
-    private Map<String, Integer> playerPoints;
+    private List<String> rooms = new ArrayList<String>();
 
-    public RoomResultsPayload(Map<String, Integer> playerPoints) {
-        super(PayloadType.POINT_UPDATE);
-        this.playerPoints = playerPoints;
+    public RoomResultsPayload() {
+        setPayloadType(PayloadType.ROOM_LIST);
     }
 
-    public Map<String, Integer> getPlayerPoints() {
-        return playerPoints;
+    public List<String> getRooms() {
+        return rooms;
+    }
+
+    public void setRooms(List<String> rooms) {
+        this.rooms = rooms;
     }
 }
