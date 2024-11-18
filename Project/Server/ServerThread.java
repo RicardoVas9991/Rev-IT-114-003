@@ -6,8 +6,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import Project.Common.PayloadType;
-import Project.Common.Phase;
-import Project.Common.ReadyPayload;
+import Project.Common.RollPayload;
 import Project.Common.RoomResultsPayload;
 import Project.Common.Payload;
 
@@ -103,6 +102,10 @@ public class ServerThread extends BaseServerThread {
                     setClientName(cp.getClientName());
                     break;
                 case MESSAGE:
+                if (currentRoom == null) {
+                    LoggerUtil.INSTANCE.warning("Client is not in a room. Ignoring message: " + payload.getMessage());
+                    return;
+                }
                     currentRoom.sendMessage(this, payload.getMessage());
                     break;
                 case ROOM_CREATE:
@@ -117,56 +120,23 @@ public class ServerThread extends BaseServerThread {
                 case DISCONNECT:
                     currentRoom.disconnect(this);
                     break;
-                case READY:
-                    // no data needed as the intent will be used as the trigger
-                    try {
-                        // cast to GameRoom as the subclass will handle all Game logic
-                        ((GameRoom) currentRoom).handleReady(this);
-                    } catch (Exception e) {
-                        sendMessage("You must be in a GameRoom to do the ready check");
-                    }
+                case ROLL:
+                    RollPayload rollPayload = (RollPayload) payload;
+                    currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides(), rollPayload.getTotal()); // - Rev/11/-16-2024
+                    break;
+                case FLIP:
+                    currentRoom.handleFlip(this); // - Rev/11/-16-2024
                     break;
                 default:
+                    currentRoom.broadcastMessage(this, payload.toString());
                     break;
             }
         } catch (Exception e) {
-            LoggerUtil.INSTANCE.severe("Could not process Payload: " + payload, e);
-
+            LoggerUtil.INSTANCE.severe("Could not process Payload: " + payload,e);
+        
         }
     }
-    // send methods specific to non-chatroom projects
 
-    public boolean sendCurrentPhase(Phase phase){
-        Payload p = new Payload();
-        p.setPayloadType(PayloadType.PHASE);
-        p.setMessage(phase.name());
-        return send(p);
-    }
-    public boolean sendResetReady(){
-        ReadyPayload rp = new ReadyPayload();
-        rp.setPayloadType(PayloadType.RESET_READY);
-        return send(rp);
-    }
-
-    public boolean sendReadyStatus(long clientId, boolean isReady){
-        return sendReadyStatus(clientId, isReady, false);
-    }
-    /**
-     * Sync ready status of client id
-     * @param clientId who
-     * @param isReady ready or not
-     * @param quiet silently mark ready
-     * @return
-     */
-    public boolean sendReadyStatus(long clientId, boolean isReady, boolean quiet){
-        ReadyPayload rp = new ReadyPayload();
-        rp.setClientId(clientId);
-        rp.setReady(isReady);
-        if(quiet){
-            rp.setPayloadType(PayloadType.SYNC_READY);
-        }
-        return send(rp);
-    }
     // send methods to pass data back to the Client
 
     public boolean sendRooms(List<String> rooms) {

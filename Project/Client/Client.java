@@ -17,9 +17,11 @@ import Project.Client.Interfaces.IClientEvents;
 import Project.Client.Interfaces.IMessageEvents;
 import Project.Client.Interfaces.IRoomEvents;
 import Project.Common.ConnectionPayload;
+import Project.Common.FlipPayload;
 import Project.Common.LoggerUtil;
 import Project.Common.Payload;
 import Project.Common.PayloadType;
+import Project.Common.RollPayload;
 import Project.Common.RoomResultsPayload;
 import Project.Common.TextFX;
 import Project.Common.TextFX.Color;
@@ -49,9 +51,13 @@ public enum Client {
             .compile("/connect\\s+(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{3,5})");
     final Pattern localhostPattern = Pattern.compile("/connect\\s+(localhost:\\d{3,5})");
     private volatile boolean isRunning = true; // volatile for thread-safe visibility
-    private ConcurrentHashMap<Long, ClientData> knownClients = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Long, ClientData> knownClients = new ConcurrentHashMap<>();   // - Rev/11/-16-2024
     private ClientData myData;
+    
+    
+    
 
+    
     // constants (used to reduce potential types when using them in code)
     private final String COMMAND_CHARACTER = "/";
     private final String CREATE_ROOM = "createroom";
@@ -194,6 +200,34 @@ public enum Client {
             System.out.println(
                     String.join("\n", knownClients.values().stream()
                             .map(c -> String.format("%s(%s)", c.getClientName(), c.getClientId())).toList()));
+            return true;
+        } else if (text.startsWith("/roll")) {  // - Rev/11/-16-2024
+            String[] parts = text.split(" ");
+            if (parts.length == 2) {
+                String sender = myData.getClientName(); // Assuming a name attribute exists
+                if (parts[1].contains("d")) {
+                    String[] diceParts = parts[1].split("d");
+                    int dice = Integer.parseInt(diceParts[0]);
+                    int sides = Integer.parseInt(diceParts[1]);
+                    int total = 0;
+                    for (int i = 0; i < dice; i++) {
+                        total += (int) (Math.random() * sides) + 1;
+                    }
+                    RollPayload rollPayload = new RollPayload(sender, dice, sides, total);
+                    System.out.println(rollPayload);
+                    return true;
+                } else {
+                    int sides = Integer.parseInt(parts[1]);
+                    RollPayload rollPayload = new RollPayload(sender, 1, sides, sides);
+                    System.out.println(rollPayload);
+                    return true;
+                }
+            }
+            return true;
+        } else if (text.startsWith("/flip") || text.startsWith("/toss")) {  // - Rev/11/-16-2024
+            String sender = myData.getClientName();
+            FlipPayload flipPayload = new FlipPayload(sender); // Result will be set server-side
+            System.out.println(flipPayload);
             return true;
         } else { // logic previously from Room.java
             // decided to make this as separate block to separate the core client-side items
