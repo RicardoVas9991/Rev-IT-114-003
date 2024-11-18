@@ -35,4 +35,3 @@ config.*
 .DS_Store
 *.lck
 *.log*
-sources.txt
