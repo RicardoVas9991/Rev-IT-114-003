@@ -173,7 +173,7 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
 
     public static void main(String[] args) {
         // TODO update with your UCID instead of mine
-        SwingUtilities.invokeLater(() -> new ClientUI("MT85-Client"));
+        SwingUtilities.invokeLater(() -> new ClientUI("Rev-Client"));
     }
     // Interface methods start
 
