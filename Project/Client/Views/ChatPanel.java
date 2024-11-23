@@ -48,7 +48,7 @@ public class ChatPanel extends JPanel {
      * 
      * @param controls The controls to manage card transitions.
      */
-    public ChatPanel(ICardControls controls) {
+    public ChatPanel(ICardControls controls) { // rev/11-20-2024: Show the code related to the ChatPanel
         super(new BorderLayout(10, 10));
 
         JPanel chatContent = new JPanel(new GridBagLayout());

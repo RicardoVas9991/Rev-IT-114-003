@@ -28,7 +28,7 @@ public class ConnectionPanel extends JPanel {
      * 
      * @param controls the ICardControls to handle card navigation.
      */
-    public ConnectionPanel(ICardControls controls) {
+    public ConnectionPanel(ICardControls controls) { // rev/11-20-2024: Show the code related to the ConnectionPanel
         super(new BorderLayout(10, 10)); // Set BorderLayout with gaps
 
         JPanel content = new JPanel();

@@ -1,6 +1,7 @@
 package Project.Server;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -238,7 +239,7 @@ public class Room implements AutoCloseable{
         disconnect(sender);
     }
 
-    public void handleRoll(ServerThread sender, int dice, int sides, int total) {   // - Rev/11/-16-2024
+    public void handleRoll(ServerThread sender, int dice, int sides, int total) {   // - Rev/11-16-2024
         for (int i = 0; i < dice; i++) {
             total += (int) (Math.random() * sides) + 1;
         }
@@ -246,24 +247,196 @@ public class Room implements AutoCloseable{
         broadcastMessage(sender, message);
     }
     
-    public void handleFlip(ServerThread sender) {   // - Rev/11/-16-2024
+    public void handleFlip(ServerThread sender) {   // - Rev/11-16-2024
         String result = Math.random() < 0.5 ? "heads" : "tails";
         String message = sender.getClientName() + " flipped a coin and got " + result;
         broadcastMessage(sender, message);
     }
 
-    public String formatMessage(String message) {   // - Rev/11/-16-2024
-        // Bold
-        message = message.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>");
-        // Italics
-        message = message.replaceAll("\\*(.*?)\\*", "<i>$1</i>");
-        // Underline
-        message = message.replaceAll("_(.*?)_", "<u>$1</u>");
-        // Colors (example for red, green, blue)
-        message = message.replaceAll("#r(.*?)r#", "<red>$1</red>");
-        message = message.replaceAll("#g(.*?)g#", "<green>$1</green>");
-        message = message.replaceAll("#b(.*?)b#", "<blue>$1</blue>");
-        return message;
+    public String formatMessage(String message) {   // - Rev/11-16-2024
+        boolean wasCommand = false;
+        String command = message; // - Rev/11-23-2024
+			//BOLD
+			//makes sure there is at least one pair of "bold" symbols i.e *bold*
+			if (command.matches("(.*)\\*(.+)\\*(.*)")) {
+				int count = 0;
+				String changeText = "";
+			ArrayList<String> tags = new ArrayList<String>();
+			for (int i = 0; i < command.length(); i++) {
+				if (Character.toString(command.charAt(i)).equals("*")) {
+					count++;
+					if (count %2 != 0) {
+						tags.add("<b>");
+					}
+					else {
+						tags.add("</b>");
+					}
+					
+				}
+			}
+			String [] bold = command.split("\\*");
+			
+			//accounts for "***" as a potential text option
+			if (bold.length == 0) {
+				changeText += "<b>*</b>";
+						if (command.length() > 3)
+					changeText += command.substring(3);
+				
+			}
+			for (int i = 0; i < bold.length; i++) {
+				
+				// accounts for odd number of "*"
+				//  and also two "*" in a row
+				if (tags.size() == 1 && tags.get(tags.size()-1).contains("<b>") || (bold[i].equals("") && (bold[i+1].equals("")))) {
+					changeText += bold[i] + "*";
+					tags.remove(0);
+				}
+				// convet "**" pairs to "<b></b>"
+				else if (tags.size() > 1 || (tags.size() == 1 && tags.get(tags.size()-1).contains("</b>")) ){
+					changeText += bold[i] + tags.get(0);
+					tags.remove(0);
+				}
+				else changeText += bold[i];
+				}
+	    	wasCommand = true;
+	    	
+	    	// makes it so that conditions stack; 
+	    	// can have more than one type of function applied on the same line
+	    	if (changeText != "") {
+				command = changeText;
+			}
+	    }
+			// ITALICS
+			// same logic as bold
+			if (command.matches("(.*)_(.+)_(.*)")) {
+				int count = 0;
+				String changeText = "";
+				ArrayList<String> tags = new ArrayList<String>();
+				for (int i = 0; i < command.length(); i++) {
+					if (Character.toString(command.charAt(i)).equals("_")) {
+						count++;
+						if (count %2 != 0) {
+							tags.add("<i>");
+						}
+						else {
+							tags.add("</i>");
+						}
+					}
+				}
+				String [] italics = command.split("_");
+				if (italics.length == 0) {
+					changeText += "<i>_</i>";
+							if (command.length() > 3)
+						changeText += command.substring(3);
+					
+				}
+				for (int i = 0; i < italics.length; i++) {
+					if (tags.size() == 1 && tags.get(tags.size()-1).contains("<i>") || (italics[i].equals("") && (italics[i+1].equals("")))) {
+						changeText += italics[i] + "_";
+						tags.remove(0);
+					}
+					else if (tags.size() > 1 || (tags.size() == 1 && tags.get(tags.size()-1).contains("</i>")) ){ //if (i % 2 == 0) {
+						changeText += italics[i] + tags.get(0);
+						tags.remove(0);
+					}
+					else changeText += italics[i];
+					}
+		    	wasCommand = true;
+		    	if (changeText != "") {
+					command = changeText;
+				}
+	    }
+			// UNDERLINE
+			// same logic as bold
+			if (command.matches("(.*)~(.+)~(.*)")) {
+				int count = 0;
+				String changeText = "";
+				ArrayList<String> tags = new ArrayList<String>();
+				for (int i = 0; i < command.length(); i++) {
+					if (Character.toString(command.charAt(i)).equals("~")) {
+						count++;
+						if (count %2 != 0) {
+							tags.add("<u>");
+						}
+						else {
+							tags.add("</u>");
+						}
+						
+					}
+				}
+				String [] underline = command.split("~");
+				if (underline.length == 0) {
+					changeText += "<b>~</b>";
+							if (command.length() > 3)
+						changeText += command.substring(3);
+					
+				}			
+				for (int i = 0; i < underline.length; i++) {
+					if (tags.size() == 1 && tags.get(tags.size()-1).contains("<u>") || (underline[i].equals("") && (underline[i+1].equals("")))) {
+						changeText += underline[i] + "~";
+						tags.remove(0);
+					}
+					else if (tags.size() > 1 || (tags.size() == 1 && tags.get(tags.size()-1).contains("</i>")) ){ //if (i % 2 == 0) {
+						changeText += underline[i] + tags.get(0);
+						tags.remove(0);
+					}
+					else changeText += underline[i];
+					}
+		    	wasCommand = true;
+		    	if (changeText != "") {
+					command = changeText;
+				}
+	    }
+
+        // COLOR
+        // Rev/11-23-2024
+		 // change color by declaring a color between two pound signs
+			// e.x #red# this text would be red
+			// to change back to black/default type '##'
+			// color will stay black if declared color does not exist 
+				//e.x #null# this will stay black
+			if (command.matches("(.*)#(.+)#(.*)")) {
+				String changeText = "";
+				String colorString = "black";;
+				String [] color = command.split("#", -1);
+				System.out.println(Arrays.toString(color));
+				if (color.length == 0) {
+					changeText += command;	
+				}	
+					for (int i = 0; i < color.length; i++) {
+						
+						if (i % 2 != 0 && (!color[i].contains(" "))){
+							// accounts for odd number of #
+							if (i == color.length-1) {
+								changeText += "#" + color[i];
+							}
+							else { 
+								//if text is between two pound signs declare that as color variable
+								colorString = color[i];
+								if (colorString.equals("")) { colorString = "black"; }
+							}
+						}
+						// will not work if whitespace between pound signs i.e. # #
+						else if (i % 2 != 0 && (color[i].contains(" "))){
+							changeText += "#" + color[i] + "#";
+						}
+						// append message
+						else { 
+							changeText += "<font color="+colorString+">" + color[i] + "</font>";
+							colorString="black";
+						}
+					}
+				wasCommand = true;
+				if (changeText != "") {
+					command = changeText;
+				}
+				
+			}
+	   
+	    	if (wasCommand == true) {
+		    	formatMessage(command);
+		}
+        return command;
     }
     
     public void broadcastMessage(ServerThread sender, String message) {
@@ -271,24 +444,7 @@ public class Room implements AutoCloseable{
         for (ServerThread client : clients) {
             client.sendMessage(formattedMessage);
         }
-    }    
-
-    public static void main(String[] args) {    // - Rev/11/-16-2024
-        try (Room room = new Room("TestRoom")) {
-            // Test bold
-            System.out.println(room.formatMessage("**Bold text**")); // Should output: <b>Bold text</b>
-   
-            // Test italics
-            System.out.println(room.formatMessage("*Italic text*")); // Should output: <i>Italic text</i>
-   
-            // Test underline
-            System.out.println(room.formatMessage("_Underlined text_")); // Should output: <u>Underlined text</u>
-   
-            // Test colors
-            System.out.println(room.formatMessage("#rRed textr#")); // Should output: <red>Red text</red>
-        }
     }
-    
 
     // end receive data from ServerThread
 }
