@@ -58,7 +58,7 @@ public class ConnectionPanel extends JPanel {
         // Add Next button
         JButton button = new JButton("Next");
         button.setAlignmentX(JButton.CENTER_ALIGNMENT); // Center the button
-        button.addActionListener((event) -> {
+        button.addActionListener(_ -> {
             SwingUtilities.invokeLater(() -> {
                 boolean isValid = true;
                 try {

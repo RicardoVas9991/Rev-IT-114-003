@@ -9,6 +9,7 @@ import javax.swing.SwingUtilities;
 
 /**
  * RoomListItem represents an item in the list of rooms with a join button.
+ * Rev/11-23-2024
  */
 public class RoomListItem extends JPanel {
     private JTextField roomName;
@@ -30,7 +31,7 @@ public class RoomListItem extends JPanel {
         joinButton = new JButton("Join");
         joinButton.setToolTipText("Join this room");
 
-        joinButton.addActionListener((event) -> {
+        joinButton.addActionListener(_ -> {
             SwingUtilities.invokeLater(() -> {
                 onJoin.accept(roomName.getText());
             });

@@ -45,9 +45,9 @@ public class UserDetailsPanel extends JPanel {
 
         // Add Previous and Connect buttons
         JButton previousButton = new JButton("Previous");
-        previousButton.addActionListener(event -> controls.previous());
+        previousButton.addActionListener(_ -> controls.previous());
         JButton connectButton = new JButton("Connect");
-        connectButton.addActionListener(event -> {
+        connectButton.addActionListener(_ -> {
             String incomingUsername = userValue.getText().trim();
             if (incomingUsername.isEmpty()) {
                 userError.setText("Username must be provided");

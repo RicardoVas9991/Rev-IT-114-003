@@ -1,8 +1,10 @@
 package Project.Server;
 
 import java.net.Socket;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import Project.Common.PayloadType;
@@ -127,6 +129,15 @@ public class ServerThread extends BaseServerThread {
                 case FLIP:
                     currentRoom.handleFlip(this); // - Rev/11/-16-2024
                     break;
+                case PRIVATE_MESSAGE: // - Rev/11-23-2024
+                    handlePrivateMessage(payload);
+                    break;
+                case MUTE:
+                    handleMute(payload);
+                    break;
+                case UNMUTE:
+                    handleUnmute(payload);
+                    break;
                 default:
                     currentRoom.broadcastMessage(this, payload.toString());
                     break;
@@ -230,5 +241,54 @@ public class ServerThread extends BaseServerThread {
         return send(cp);
     }
 
+    private void handlePrivateMessage(Payload payload) { // - Rev/11-23-2024
+        String targetUsername = payload.getTarget();
+        String message = payload.getMessage();
+    
+        Room room = getCurrentRoom();
+        if (room != null) {
+            room.sendPrivateMessage(this, targetUsername, message);
+        }
+    }
+
+    private Set<String> muteList = new HashSet<>(); // - Rev/11-23-2024
+
+    public boolean isMuted(String username) {
+        return muteList.contains(username);
+    }
+
+    public void addMute(String username) {
+        muteList.add(username);
+    }
+
+    public void removeMute(String username) {
+        muteList.remove(username);
+    }
+
+    private void handleMute(Payload payload) { // - Rev/11-23-2024
+        String targetUsername = payload.getTarget();
+        Room room = getCurrentRoom();
+    
+        if (room != null) {
+            if (room.isUserInRoom(targetUsername)) {
+                addMute(targetUsername);
+                sendMessage("You muted " + targetUsername + ".");
+            } else {
+                sendMessage("[Error] User '" + targetUsername + "' not found in the room.");
+            }
+        }
+    }
+    
+    private void handleUnmute(Payload payload) {
+        String targetUsername = payload.getTarget();
+        if (muteList.contains(targetUsername)) {
+            removeMute(targetUsername);
+            sendMessage("You unmuted " + targetUsername + ".");
+        } else {
+            sendMessage("[Error] User '" + targetUsername + "' is not muted.");
+        }
+    }
+    
+    
     // end send methods
 }

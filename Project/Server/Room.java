@@ -438,11 +438,42 @@ public class Room implements AutoCloseable{
 		}
         return command;
     }
+
+    // - Rev/11-23-2024
+    public void sendPrivateMessage(ServerThread sender, String targetUsername, String message) {
+        ServerThread targetThread = null;
     
-    public void broadcastMessage(ServerThread sender, String message) {
-        String formattedMessage = formatMessage(message);
+        // Find target user in the room
         for (ServerThread client : clients) {
-            client.sendMessage(formattedMessage);
+            if (client.getClientId().getUsername().equals(targetUsername)) {
+                targetThread = client;
+                break;
+            }
+        }
+    
+        if (targetThread == null) {
+            // Target user not found
+            sender.sendMessage("[Error] User '" + targetUsername + "' not found.");
+            return;
+        }
+    
+        // Send message to both sender and target
+        String formattedMessage = "[Private] " + sender.getClientId().getUsername() + ": " + message;
+        sender.sendMessage(formattedMessage);
+        targetThread.sendMessage(formattedMessage);
+    
+        // Log the private message
+        System.out.println("Private message from " + sender.getClientId().getUsername() + " to " + targetUsername + ": " + message);
+    }
+
+    // - Rev/11-23-2024
+    public void broadcastMessage(ServerThread sender, String message) {
+        for (ServerThread client : clients) {
+            if (!client.isMuted(sender.getClientId().getUsername())) {
+                client.sendMessage(sender.getClientId().getUsername() + ": " + message);
+            } else {
+                System.out.println("Message from " + sender.getClientId().getUsername() + " to " + client.getClientId().getUsername() + " was skipped (muted).");
+            }
         }
     }
 
