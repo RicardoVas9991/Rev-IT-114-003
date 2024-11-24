@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import Project.Client.Interfaces.IClientConnectionEvents;
+import Project.Client.Interfaces.IConnectionEvents;
 import Project.Client.Interfaces.IClientEvents;
 import Project.Client.Interfaces.IMessageEvents;
 import Project.Client.Interfaces.IRoomEvents;
@@ -33,7 +33,7 @@ import Project.Common.TextFX.Color;
 public enum Client {
     INSTANCE;
 
-
+   
     private Socket server = null;
     private ObjectOutputStream out = null;
     private ObjectInputStream in = null;
@@ -551,7 +551,7 @@ public enum Client {
 
     private void processDisconnect(long clientId, String clientName) {
         // invoke onClientDisconnect callback
-        ((IClientConnectionEvents) events).onClientDisconnect(clientId, clientName);
+        ((IConnectionEvents) events).onClientDisconnect(clientId, clientName);
         System.out.println(
                 TextFX.colorize(String.format("*%s disconnected*",
                         clientId == myData.getClientId() ? "You" : clientName),
@@ -567,7 +567,7 @@ public enum Client {
             myData.setClientId(clientId);
             myData.setClientName(clientName);
             // invoke onReceiveClientId callback
-            ((IClientConnectionEvents) events).onReceiveClientId(clientId);
+            ((IConnectionEvents) events).onReceiveClientId(clientId);
             // knownClients.put(cp.getClientId(), myData);// <-- this is handled later
         }
     }
@@ -587,7 +587,7 @@ public enum Client {
             cd.setClientName(clientName);
             knownClients.put(clientId, cd);
             // invoke onSyncClient callback
-            ((IClientConnectionEvents) events).onSyncClient(clientId, clientName);
+            ((IConnectionEvents) events).onSyncClient(clientId, clientName);
         }
     }
 

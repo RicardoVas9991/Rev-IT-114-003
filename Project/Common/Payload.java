@@ -42,16 +42,6 @@ public class Payload implements Serializable {
         this.message = message;
     }
 
-    private String target; // For private messaging - Rev/11-23-2024
-
-    // Getter and Setter for target
-    public String getTarget() {
-        return target;
-    }
-
-    public void setTarget(String target) {
-        this.target = target;
-    }
 
 
     @Override

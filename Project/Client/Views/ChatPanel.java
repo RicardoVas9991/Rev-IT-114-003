@@ -76,4 +76,24 @@ public class ChatPanel extends JPanel {
     public void updateUsers(String[] users) {
         userList.setListData(users);
     }
+
+    public void removeUserListItem(long clientId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'removeUserListItem'");
+    }
+
+    public void addText(String message) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addText'");
+    }
+
+    public void clearUserList() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'clearUserList'");
+    }
+
+    public void addUserListItem(long clientId, String format) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addUserListItem'");
+    }
 }
