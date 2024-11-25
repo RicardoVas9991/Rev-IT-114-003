@@ -77,23 +77,45 @@ public class ChatPanel extends JPanel {
         userList.setListData(users);
     }
 
-    public void removeUserListItem(long clientId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'removeUserListItem'");
+    public void addUserListItem(long clientId, String format) {
+        DefaultListModel<String> model = (DefaultListModel<String>) userList.getModel();
+        if (model == null) {
+            model = new DefaultListModel<>();
+            userList.setModel(model);
+        }
+        String userEntry = String.format("[%d] %s", clientId, format);
+        if (!model.contains(userEntry)) {
+            model.addElement(userEntry);
+        }
     }
+    
+
+    public void removeUserListItem(long clientId) {
+        DefaultListModel<String> model = (DefaultListModel<String>) userList.getModel();
+        if (model != null) {
+            for (int i = 0; i < model.size(); i++) {
+                String entry = model.getElementAt(i);
+                if (entry.startsWith("[" + clientId + "]")) {
+                    model.remove(i);
+                    break;
+                }
+            }
+        }
+    }
+    
 
     public void addText(String message) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addText'");
+        chatArea.append(message + "\n");
+        chatArea.setCaretPosition(chatArea.getDocument().getLength()); // Auto-scroll to the bottom
     }
+    
 
     public void clearUserList() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'clearUserList'");
+        DefaultListModel<String> model = (DefaultListModel<String>) userList.getModel();
+        if (model != null) {
+            model.clear();
+        }
     }
+    
 
-    public void addUserListItem(long clientId, String format) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addUserListItem'");
-    }
 }

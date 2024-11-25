@@ -253,9 +253,27 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
 
     @Override
     public void onMessageSend(String message) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onMessageSend'");
+        if (message == null || message.trim().isEmpty()) {
+            LoggerUtil.INSTANCE.warning("Attempted to send an empty message.");
+            return;
+        }
+
+        try {
+            // Send the message to the server
+            Client.INSTANCE.sendMessage(message);
+
+            // Display the message in the chat panel for the sender
+            long clientId = Client.INSTANCE.getMyClientId();
+            String username = Client.INSTANCE.getClientNameFromId(clientId);
+            System.out.println("Username: " + username);
+            chatPanel.addText(String.format("You[%s]: %s", clientId, message));
+
+        } catch (IOException e) {
+            LoggerUtil.INSTANCE.severe("Failed to send message: " + e.getMessage());
+            chatPanel.addText("*Error: Message not sent.*");
+        }
     }
+
 
     // Interface methods end
 }
