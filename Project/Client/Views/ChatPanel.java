@@ -130,6 +130,7 @@ public class ChatPanel extends JPanel { // Rev/11-23-2024 - Show the code relate
             });
         });
     }
+
     // Rev/11-23-2024
     public static void main(String[] args) {
         JFrame frame = new JFrame("Chatroom");
