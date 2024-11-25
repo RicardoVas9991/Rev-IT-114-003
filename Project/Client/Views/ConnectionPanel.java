@@ -1,10 +1,14 @@
 package Project.Client.Views;
 
-import javax.swing.*;
-import java.awt.*;
-// import java.awt.event.ActionEvent;
-// import java.awt.event.ActionListener;
+import java.awt.BorderLayout;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import Project.Client.CardView;
@@ -15,16 +19,16 @@ import Project.Client.Interfaces.ICardControls;
  * for a connection. It uses a BorderLayout with a BoxLayout for the content
  * panel. It validates the port input and displays error messages if necessary.
  */
-public class ConnectionPanel extends JPanel {   // Rev/11-23-2024 - Show the code related to the ConnectionPanel
-    // private JTextField usernameField;
-    // private JTextField hostField;
-    // private JTextField portField;
-    // private JButton connectButton;
+public class ConnectionPanel extends JPanel {
     private String host;
     private int port;
 
+    /**
+     * Constructs a ConnectionPanel with the specified controls.
+     * 
+     * @param controls the ICardControls to handle card navigation.
+     */
     public ConnectionPanel(ICardControls controls) {
-        
         super(new BorderLayout(10, 10)); // Set BorderLayout with gaps
 
         JPanel content = new JPanel();
@@ -78,33 +82,7 @@ public class ConnectionPanel extends JPanel {   // Rev/11-23-2024 - Show the cod
         this.add(content, BorderLayout.CENTER);
         this.setName(CardView.CONNECT.name()); // Set the name of the panel
         controls.addPanel(CardView.CONNECT.name(), this); // Add panel to controls
-
-    //     Rev/11-23-2024
-    //     setLayout(new GridLayout(4, 2));
-
-    //     add(new JLabel("Username:"));
-    //     usernameField = new JTextField();
-    //     add(usernameField);
-
-    //     add(new JLabel("Host:"));
-    //     hostField = new JTextField();
-    //     add(hostField);
-
-    //     add(new JLabel("Port:"));
-    //     portField = new JTextField();
-    //     add(portField);
-
-    //     connectButton = new JButton("Connect");
-    //     add(connectButton);
-
-    //     connectButton.addActionListener(new ActionListener() {
-    //         @Override
-    //         public void actionPerformed(ActionEvent e) {
-    //         }
-    //     });
-    
-}
-
+    }
 
      /**
      * Gets the host value entered by the user.
@@ -123,12 +101,4 @@ public class ConnectionPanel extends JPanel {   // Rev/11-23-2024 - Show the cod
     public int getPort() {
         return port;
     }
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("Connect to Server");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(new ConnectionPanel(null));
-        frame.pack();
-        frame.setVisible(true);
-    }
-
 }
