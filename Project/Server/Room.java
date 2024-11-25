@@ -212,6 +212,15 @@ public class Room implements AutoCloseable{
             }
             return failedToSend;
         });
+
+        for (ServerThread client : clients) {
+            // Skip sending messages to clients who have muted the sender
+            if (client.isMuted(sender.getClientName())) {
+                LoggerUtil.INSTANCE.info("Message skipped for " + client.getClientName() + " (muted " + sender.getClientName() + ").");
+                continue;
+            }
+            client.sendMessage(sender.getClientName() + ": " + message);
+        }
     }
     // end send data to client(s)
 
@@ -238,19 +247,71 @@ public class Room implements AutoCloseable{
     protected void clientDisconnect(ServerThread sender) {
         disconnect(sender);
     }
-
-    public void handleRoll(ServerThread sender, int dice, int sides, int total) {   // - Rev/11-16-2024
-        for (int i = 0; i < dice; i++) {
-            total += (int) (Math.random() * sides) + 1;
-        }
-        String message = sender.getClientName() + " rolled " + dice + "d#" + sides + " and got " + total;
-        broadcastMessage(sender, message);
+// Rev/11-25-2024
+    public void handleRoll(ServerThread sender, int dice, int sides, int total) {
+        String formattedResult = String.format("**%s rolled %d dice with %d sides each and got a total of: %d**",
+                                               sender.getClientName(), dice, sides, total);
+        broadcastMessage(null, formattedResult);
     }
     
-    public void handleFlip(ServerThread sender) {   // - Rev/11-16-2024
-        String result = Math.random() < 0.5 ? "heads" : "tails";
-        String message = sender.getClientName() + " flipped a coin and got " + result;
-        broadcastMessage(sender, message);
+    
+    public void handleFlip(ServerThread sender) {
+        String result = Math.random() < 0.5 ? "Heads" : "Tails";
+        String formattedResult = String.format("**%s flipped a coin and got: %s**", sender.getClientName(), result);
+        broadcastMessage(null, formattedResult);
+    }
+    
+
+    private ServerThread getClientByName(String name) {
+        for (ServerThread client : clients) {
+            if (client.getClientName().equalsIgnoreCase(name)) {
+                return client;
+            }
+        }
+        return null;
+    }
+    
+    public void handlePrivateMessage(ServerThread sender, String targetName, String message) {
+        ServerThread receiver = getClientByName(targetName.trim().toLowerCase());
+        if (receiver == null) {
+            sender.sendMessage("Error: User " + targetName + " does not exist.");
+            return;
+        }
+        // Check if sender is muted by the receiver
+        if (receiver.isMuted(sender.getClientName())) {
+            sender.sendMessage("Your message to " + targetName + " was not delivered. You are muted by them.");
+            return;
+        }
+        // Send message to both sender and receiver
+        receiver.sendMessage(sender.getClientName() + " (private): " + message);
+        sender.sendMessage("(to " + targetName + "): " + message);
+    }
+
+    public void handleMute(ServerThread sender, String targetName) {
+        ServerThread target = getClientByName(targetName.trim().toLowerCase());
+        if (target == null) {
+            sender.sendMessage("Error: User " + targetName + " does not exist.");
+            return;
+        }
+        sender.mute(targetName);
+        sender.sendMessage("You have muted " + targetName + ".");
+    }
+    
+    public void handleUnmute(ServerThread sender, String targetName) {
+        ServerThread target = getClientByName(targetName.trim().toLowerCase());
+        if (target == null) {
+            sender.sendMessage("Error: User " + targetName + " does not exist.");
+            return;
+        }
+        sender.unmute(targetName);
+        sender.sendMessage("You have unmuted " + targetName + ".");
+    }
+    
+    public void broadcastMessage(ServerThread sender, String message) {
+        String formattedMessage = formatMessage(message);
+        for (ServerThread client : clients) {
+            client.sendMessage(formattedMessage);
+        }
     }
 
     public String formatMessage(String message) {   // - Rev/11-16-2024
@@ -438,13 +499,7 @@ public class Room implements AutoCloseable{
 		}
         return command;
     }
-    
-    public void broadcastMessage(ServerThread sender, String message) {
-        String formattedMessage = formatMessage(message);
-        for (ServerThread client : clients) {
-            client.sendMessage(formattedMessage);
-        }
-    }
+
 
     // end receive data from ServerThread
 }

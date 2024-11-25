@@ -2,170 +2,62 @@ package Project.Client.Views;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.ContainerEvent;
-import java.awt.event.ContainerListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.io.IOException;
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JEditorPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextField;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.border.EmptyBorder;
-
-import Project.Client.CardView;
-import Project.Client.Client;
-import Project.Client.Interfaces.ICardControls;
-import Project.Common.LoggerUtil;
-
-/**
- * ChatPanel represents the main chat interface where messages can be sent and
- * received.
- */
 public class ChatPanel extends JPanel {
+    private JList<String> userList;
+    private JTextArea chatHistory;
+    private JTextField messageField;
+    private JButton sendButton;
     private JPanel chatArea = null;
     private UserListPanel userListPanel;
-    private final float CHAT_SPLIT_PERCENT = 0.7f;
-
     /**
      * Constructor to create the ChatPanel UI.
      * 
      * @param controls The controls to manage card transitions.
      */
-    public ChatPanel(ICardControls controls) {
-        super(new BorderLayout(10, 10));
 
-        JPanel chatContent = new JPanel(new GridBagLayout());
-        chatContent.setAlignmentY(Component.TOP_ALIGNMENT);
+    public ChatPanel() {
+        setLayout(new BorderLayout());
 
-        // Wraps a viewport to provide scroll capabilities
-        JScrollPane scroll = new JScrollPane(chatContent);
-        scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scroll.setBorder(BorderFactory.createEmptyBorder());
+        userList = new JList<>();
+        add(new JScrollPane(userList), BorderLayout.WEST);
 
-        chatArea = chatContent;
+        chatHistory = new JTextArea();
+        chatHistory.setEditable(false);
+        add(new JScrollPane(chatHistory), BorderLayout.CENTER);
 
-        userListPanel = new UserListPanel();
+        JPanel inputPanel = new JPanel(new BorderLayout());
+        messageField = new JTextField();
+        inputPanel.add(messageField, BorderLayout.CENTER);
 
-        // JSplitPane setup with chat on the left and user list on the right
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scroll, userListPanel);
-        splitPane.setResizeWeight(CHAT_SPLIT_PERCENT); // Allocate % space to the chat panel initially
+        sendButton = new JButton("Send");
+        inputPanel.add(sendButton, BorderLayout.EAST);
 
-        // Enforce splitPane split
-        this.addComponentListener(new ComponentListener() {
+        add(inputPanel, BorderLayout.SOUTH);
+
+        sendButton.addActionListener(new ActionListener() {
             @Override
-            public void componentResized(ComponentEvent e) {
-                SwingUtilities.invokeLater(() -> splitPane.setDividerLocation(CHAT_SPLIT_PERCENT));
-            }
-
-            @Override
-            public void componentMoved(ComponentEvent e) {
-            }
-
-            @Override
-            public void componentShown(ComponentEvent e) {
-                SwingUtilities.invokeLater(() -> splitPane.setDividerLocation(CHAT_SPLIT_PERCENT));
-            }
-
-            @Override
-            public void componentHidden(ComponentEvent e) {
-            }
-        });
-
-        JPanel input = new JPanel();
-        input.setLayout(new BoxLayout(input, BoxLayout.X_AXIS));
-        input.setBorder(new EmptyBorder(5, 5, 5, 5)); // Add padding
-
-        JTextField textValue = new JTextField();
-        input.add(textValue);
-
-        JButton button = new JButton("Send");
-        // Allows submission with the enter key instead of just the button click
-        textValue.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    button.doClick();
+            public void actionPerformed(ActionEvent e) {
+                String message = messageField.getText();
+                if (!message.isEmpty()) {
+                    // Add logic to send the message
+                    messageField.setText("");
                 }
             }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-            }
         });
 
-        button.addActionListener(_ -> {
-            SwingUtilities.invokeLater(() -> {
-                try {
-                    String text = textValue.getText().trim();
-                    if (!text.isEmpty()) {
-                        Client.INSTANCE.sendMessage(text);
-                        textValue.setText(""); // Clear the original text
-                    }
-                } catch (NullPointerException | IOException e) {
-                    LoggerUtil.INSTANCE.severe("Error sending message", e);
-                }
-            });
-        });
-
-        input.add(button);
-
-        this.add(splitPane, BorderLayout.CENTER);
-        this.add(input, BorderLayout.SOUTH);
-
-        this.setName(CardView.CHAT.name());
-        controls.addPanel(CardView.CHAT.name(), this);
-
-        chatArea.addContainerListener(new ContainerListener() {
+        messageField.addActionListener(new ActionListener() {
             @Override
-            public void componentAdded(ContainerEvent e) {
-                SwingUtilities.invokeLater(() -> {
-                    if (chatArea.isVisible()) {
-                        chatArea.revalidate();
-                        chatArea.repaint();
-                    }
-                });
-            }
-
-            @Override
-            public void componentRemoved(ContainerEvent e) {
-                SwingUtilities.invokeLater(() -> {
-                    if (chatArea.isVisible()) {
-                        chatArea.revalidate();
-                        chatArea.repaint();
-                    }
-                });
+            public void actionPerformed(ActionEvent e) {
+                sendButton.doClick();
             }
         });
-
-        // Add vertical glue to push messages to the top
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0; // Column index 0
-        gbc.gridy = GridBagConstraints.RELATIVE; // Automatically move to the next row
-        gbc.weighty = 1.0; // Give extra space vertically to this component
-        gbc.fill = GridBagConstraints.BOTH; // Fill both horizontally and vertically
-        chatArea.add(Box.createVerticalGlue(), gbc);
     }
 
     /**
@@ -238,4 +130,69 @@ public class ChatPanel extends JPanel {
             });
         });
     }
+    // Rev/11-23-2024
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Chatroom");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(new ChatPanel());
+        frame.pack();
+        frame.setVisible(true);
+    }
+
+
+    public void handleSpecialCommands(String message) {
+        if (message.startsWith("/flip")) {
+            // Handle flip command
+            String result = Math.random() < 0.5 ? "heads" : "tails";
+            chatHistory.append("You flipped a coin and got " + result + "\n");
+        } else if (message.startsWith("/roll")) {
+            // Handle roll command
+            String[] parts = message.split(" ");
+            if (parts.length == 2) {
+                String[] rollParts = parts[1].split("d");
+                if (rollParts.length == 2) {
+                    int rolls = Integer.parseInt(rollParts[0]);
+                    int sides = Integer.parseInt(rollParts[1]);
+                    int result = (int) (Math.random() * sides) + 1;
+                    chatHistory.append("You rolled " + rolls + "d" + sides + " and got " + result + "\n");
+                }
+            }
+        } else {
+            // Handle regular message
+            chatHistory.append(message + "\n");
+        }
+    }
+    
+    public String processTextFormatting(String message) {
+        message = message.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>");
+        message = message.replaceAll("\\*(.*?)\\*", "<i>$1</i>");
+        message = message.replaceAll("_(.*?)_", "<u>$1</u>");
+        message = message.replaceAll("#r(.*?)r#", "<red>$1</red>");
+        message = message.replaceAll("#b(.*?)b#", "<blue>$1</blue>");
+        message = message.replaceAll("#g(.*?)g#", "<green>$1</green>");
+        return message;
+    }
+    
+    public void sendMessage(String message) {
+        if (message.startsWith("@")) {
+            String[] parts = message.split(" ", 2);
+            if (parts.length == 2) {
+            }
+        } else {
+            // Send regular message
+        }
+    }
+
+    public void handleMuteUnmute(String command) {
+        String[] parts = command.split(" ");
+        if (parts.length == 2) {
+            if (command.startsWith("/mute")) {
+                // Add targetUsername to mute list
+            } else if (command.startsWith("/unmute")) {
+                // Remove targetUsername from mute list
+            }
+        }
+    }
+    
+
 }

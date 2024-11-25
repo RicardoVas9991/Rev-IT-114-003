@@ -93,9 +93,9 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
         this.setJMenuBar(menu);
 
         // Initialize panels
-        connectionPanel = new ConnectionPanel(this);
+        connectionPanel = new ConnectionPanel(null);
         userDetailsPanel = new UserDetailsPanel(this);
-        chatPanel = new ChatPanel(this);
+        chatPanel = new ChatPanel();
         roomsPanel = new RoomsPanel(this);
 
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -273,7 +273,7 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
             LoggerUtil.INSTANCE.severe("Failed to send message: " + e.getMessage());
             chatPanel.addText("*Error: Message not sent.*");
         }
-    }
+    } 
 
 
     // Interface methods end

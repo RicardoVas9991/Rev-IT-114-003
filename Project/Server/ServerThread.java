@@ -1,6 +1,7 @@
 package Project.Server;
 
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -51,6 +52,34 @@ public class ServerThread extends BaseServerThread {
         this.clientName = name;
         onInitialized();
     }
+// Rev/11-23-2024
+    List<String> mutedClients = new ArrayList<String>(); 
+     
+    public List<String> getMutedClients() {
+    	 return this.mutedClients;
+     }
+     
+    public void mute(String name) {
+     	name = name.trim().toLowerCase();
+     	if (!isMuted(name)) {
+     		mutedClients.add(name);
+     		//save();
+     	}
+     }
+     
+  	public void unmute(String name) {
+  		name = name.trim().toLowerCase();
+     	if (isMuted(name)) {
+     		mutedClients.remove(name);
+     		//save();
+     	}
+  
+     }
+  	
+    public boolean isMuted(String name) {
+     	name = name.trim().toLowerCase();
+     	return mutedClients.contains(name);
+   	}
 
     public String getClientName() {
         return clientName;
@@ -102,13 +131,25 @@ public class ServerThread extends BaseServerThread {
                     ConnectionPayload cp = (ConnectionPayload) payload;
                     setClientName(cp.getClientName());
                     break;
-                case MESSAGE:
-                if (currentRoom == null) {
-                    LoggerUtil.INSTANCE.warning("Client is not in a room. Ignoring message: " + payload.getMessage());
-                    return;
-                }
-                    currentRoom.sendMessage(this, payload.getMessage());
-                    break;
+                    case MESSAGE:
+                    if (currentRoom == null) {
+                        LoggerUtil.INSTANCE.warning("Client is not in a room. Ignoring message: " + payload.getMessage());
+                        return;
+                    }
+                    String message = payload.getMessage();
+                    if (message.startsWith("@")) {
+                        int spaceIndex = message.indexOf(' ');
+                        if (spaceIndex > 1) {
+                            String targetName = message.substring(1, spaceIndex).trim();
+                            String privateMessage = message.substring(spaceIndex + 1).trim();
+                            currentRoom.handlePrivateMessage(this, targetName, privateMessage);
+                        } else {
+                            sendMessage("Error: Invalid private message format. Use @username <message>.");
+                        }
+                    } else {
+                        currentRoom.sendMessage(this, message);
+                    }
+                    break;                
                 case ROOM_CREATE:
                     currentRoom.handleCreateRoom(this, payload.getMessage());
                     break;
@@ -123,11 +164,31 @@ public class ServerThread extends BaseServerThread {
                     break;
                 case ROLL:
                     RollPayload rollPayload = (RollPayload) payload;
-                    currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides(), rollPayload.getTotal()); // - Rev/11/-16-2024
+                    currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides(), rollPayload.getTotal()); // - Rev/11-16-2024
                     break;
                 case FLIP:
                     currentRoom.handleFlip(this); // - Rev/11/-16-2024
                     break;
+                case MUTE:
+                    String muteTarget = payload.getMessage().trim().toLowerCase(); // Extract the target username
+                    if (muteTarget.isEmpty()) {
+                        sendMessage("Error: Mute command requires a valid username."); // Send error if empty
+                    } else {
+                        mute(muteTarget);
+                        sendMessage("You have muted: " + muteTarget); // Confirmation message
+                        LoggerUtil.INSTANCE.info("User " + getClientName() + " muted " + muteTarget); // Log the action
+                    }
+                    break; // - Rev/11-25-2024
+                case UNMUTE: 
+                    String unmuteTarget = payload.getMessage().trim().toLowerCase(); // Extract the target username
+                    if (unmuteTarget.isEmpty()) {
+                        sendMessage("Error: Unmute command requires a valid username."); // Send error if empty
+                    } else {
+                        unmute(unmuteTarget);
+                        sendMessage("You have unmuted: " + unmuteTarget); // Confirmation message
+                        LoggerUtil.INSTANCE.info("User " + getClientName() + " unmuted " + unmuteTarget); // Log the action
+                    }
+                    break; // - Rev/11-25-2024
                 default:
                     currentRoom.broadcastMessage(this, payload.toString());
                     break;
