@@ -9,7 +9,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class ChatPanel extends JPanel {
+public class ChatPanel extends JPanel { // Rev/11-23-2024 - Show the code related to the ChatPanel
     private JList<String> userList;
     private JTextArea chatHistory;
     private JTextField messageField;
@@ -162,7 +162,7 @@ public class ChatPanel extends JPanel {
             chatHistory.append(message + "\n");
         }
     }
-    
+    // Rev/11-23-2024 - Text Formatting appears correctly on the UI
     public String processTextFormatting(String message) {
         message = message.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>");
         message = message.replaceAll("\\*(.*?)\\*", "<i>$1</i>");

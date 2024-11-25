@@ -15,7 +15,7 @@ import Project.Client.Interfaces.ICardControls;
  * for a connection. It uses a BorderLayout with a BoxLayout for the content
  * panel. It validates the port input and displays error messages if necessary.
  */
-public class ConnectionPanel extends JPanel {
+public class ConnectionPanel extends JPanel {   // Rev/11-23-2024 - Show the code related to the ConnectionPanel
     private JTextField usernameField;
     private JTextField hostField;
     private JTextField portField;

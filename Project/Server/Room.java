@@ -247,14 +247,14 @@ public class Room implements AutoCloseable{
     protected void clientDisconnect(ServerThread sender) {
         disconnect(sender);
     }
-// Rev/11-25-2024
+// Rev/11-25-2024 - Show the code on the Room side that changes this format
     public void handleRoll(ServerThread sender, int dice, int sides, int total) {
         String formattedResult = String.format("**%s rolled %d dice with %d sides each and got a total of: %d**",
                                                sender.getClientName(), dice, sides, total);
         broadcastMessage(null, formattedResult);
     }
     
-    
+    // Rev/11-25-2024 - Show the code on the Room side that changes this format
     public void handleFlip(ServerThread sender) {
         String result = Math.random() < 0.5 ? "Heads" : "Tails";
         String formattedResult = String.format("**%s flipped a coin and got: %s**", sender.getClientName(), result);
