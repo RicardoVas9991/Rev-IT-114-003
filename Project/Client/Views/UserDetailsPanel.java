@@ -17,7 +17,7 @@ import Project.Common.LoggerUtil;
 /**
  * UserDetailsPanel represents the UI for entering user details like username.
  */
-public class UserDetailsPanel extends JPanel {
+public class UserDetailsPanel extends JPanel { // Rev/11-23-2024 - Show the code related to the UserDetailsPanel
     private String username;
 
     /**

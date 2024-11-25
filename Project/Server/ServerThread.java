@@ -6,12 +6,13 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import Project.Common.PayloadType;
-import Project.Common.RollPayload;
 import Project.Common.RoomResultsPayload;
 import Project.Common.Payload;
 
 import Project.Common.ConnectionPayload;
 import Project.Common.LoggerUtil;
+
+import Project.Common.RollPayload;
 
 /**
  * A server-side representation of a single client.
