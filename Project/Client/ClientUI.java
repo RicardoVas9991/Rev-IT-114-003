@@ -93,7 +93,7 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
         this.setJMenuBar(menu);
 
         // Initialize panels
-        connectionPanel = new ConnectionPanel(null);
+        connectionPanel = new ConnectionPanel(this);
         userDetailsPanel = new UserDetailsPanel(this);
         chatPanel = new ChatPanel();
         roomsPanel = new RoomsPanel(this);
