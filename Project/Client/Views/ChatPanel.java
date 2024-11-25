@@ -70,15 +70,15 @@ public class ChatPanel extends JPanel {
         } else {
             chatArea.append(message + "\n");
         }
-    }
+    } // Rev/11-23-2024
 
 
     public void updateUsers(String[] users) {
-        userList.setListData(users);
+        userList.setListData(users); // Rev/11-23-2024
     }
 
     public void addUserListItem(long clientId, String format) {
-        DefaultListModel<String> model = (DefaultListModel<String>) userList.getModel();
+        DefaultListModel<String> model = (DefaultListModel<String>) userList.getModel(); // Rev/11-23-2024
         if (model == null) {
             model = new DefaultListModel<>();
             userList.setModel(model);
@@ -91,7 +91,7 @@ public class ChatPanel extends JPanel {
     
 
     public void removeUserListItem(long clientId) {
-        DefaultListModel<String> model = (DefaultListModel<String>) userList.getModel();
+        DefaultListModel<String> model = (DefaultListModel<String>) userList.getModel(); // Rev/11-23-2024
         if (model != null) {
             for (int i = 0; i < model.size(); i++) {
                 String entry = model.getElementAt(i);
@@ -106,12 +106,12 @@ public class ChatPanel extends JPanel {
 
     public void addText(String message) {
         chatArea.append(message + "\n");
-        chatArea.setCaretPosition(chatArea.getDocument().getLength()); // Auto-scroll to the bottom
+        chatArea.setCaretPosition(chatArea.getDocument().getLength()); // Auto-scroll to the bottom - Rev/11-23-2024
     }
     
 
     public void clearUserList() {
-        DefaultListModel<String> model = (DefaultListModel<String>) userList.getModel();
+        DefaultListModel<String> model = (DefaultListModel<String>) userList.getModel(); // Rev/11-23-2024
         if (model != null) {
             model.clear();
         }

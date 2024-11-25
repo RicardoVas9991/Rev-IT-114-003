@@ -171,13 +171,14 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
         Client.INSTANCE.connect(host, port, username, this);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) { // Rev/11-23-2024
 
         SwingUtilities.invokeLater(() -> new ClientUI("Rev-Client"));
     }
+    
     // Interface methods start
 
-    @Override
+    @Override // Rev/11-23-2024
     public void onClientDisconnect(long clientId, String clientName) {
         if (currentCard.ordinal() >= CardView.CHAT.ordinal()) {
             chatPanel.removeUserListItem(clientId);
@@ -192,7 +193,7 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
         }
     }
 
-    @Override
+    @Override // Rev/11-23-2024
     public void onMessageReceive(long clientId, String message) {
         if (currentCard.ordinal() >= CardView.CHAT.ordinal()) {
             String clientName = Client.INSTANCE.getClientNameFromId(clientId);
@@ -218,7 +219,7 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
         }
     }
 
-    @Override
+    @Override // Rev/11-23-2024
     public void onReceiveRoomList(List<String> rooms, String message) {
         roomsPanel.removeAllRooms();
         if (message != null && !message.isEmpty()) {
@@ -231,7 +232,7 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
         }
     }
 
-    @Override
+    @Override // Rev/11-23-2024
     public void onRoomAction(long clientId, String clientName, String roomName, boolean isJoin) {
         LoggerUtil.INSTANCE.info("Current card: " + currentCard.name());
         if (currentCard.ordinal() >= CardView.CHAT.ordinal()) {
@@ -251,7 +252,7 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
         }
     }
 
-    @Override
+    @Override // Rev/11-23-2024
     public void onMessageSend(String message) {
         if (message == null || message.trim().isEmpty()) {
             LoggerUtil.INSTANCE.warning("Attempted to send an empty message.");
