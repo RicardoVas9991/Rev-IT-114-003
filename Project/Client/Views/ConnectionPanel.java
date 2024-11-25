@@ -2,8 +2,8 @@ package Project.Client.Views;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+// import java.awt.event.ActionEvent;
+// import java.awt.event.ActionListener;
 
 import javax.swing.border.EmptyBorder;
 
@@ -16,10 +16,10 @@ import Project.Client.Interfaces.ICardControls;
  * panel. It validates the port input and displays error messages if necessary.
  */
 public class ConnectionPanel extends JPanel {   // Rev/11-23-2024 - Show the code related to the ConnectionPanel
-    private JTextField usernameField;
-    private JTextField hostField;
-    private JTextField portField;
-    private JButton connectButton;
+    // private JTextField usernameField;
+    // private JTextField hostField;
+    // private JTextField portField;
+    // private JButton connectButton;
     private String host;
     private int port;
 
@@ -78,30 +78,33 @@ public class ConnectionPanel extends JPanel {   // Rev/11-23-2024 - Show the cod
         this.add(content, BorderLayout.CENTER);
         this.setName(CardView.CONNECT.name()); // Set the name of the panel
         controls.addPanel(CardView.CONNECT.name(), this); // Add panel to controls
-        // Rev/11-23-2024
-        setLayout(new GridLayout(4, 2));
 
-        add(new JLabel("Username:"));
-        usernameField = new JTextField();
-        add(usernameField);
+    //     Rev/11-23-2024
+    //     setLayout(new GridLayout(4, 2));
 
-        add(new JLabel("Host:"));
-        hostField = new JTextField();
-        add(hostField);
+    //     add(new JLabel("Username:"));
+    //     usernameField = new JTextField();
+    //     add(usernameField);
 
-        add(new JLabel("Port:"));
-        portField = new JTextField();
-        add(portField);
+    //     add(new JLabel("Host:"));
+    //     hostField = new JTextField();
+    //     add(hostField);
 
-        connectButton = new JButton("Connect");
-        add(connectButton);
+    //     add(new JLabel("Port:"));
+    //     portField = new JTextField();
+    //     add(portField);
 
-        connectButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
-    }
+    //     connectButton = new JButton("Connect");
+    //     add(connectButton);
+
+    //     connectButton.addActionListener(new ActionListener() {
+    //         @Override
+    //         public void actionPerformed(ActionEvent e) {
+    //         }
+    //     });
+    
+}
+
 
      /**
      * Gets the host value entered by the user.
