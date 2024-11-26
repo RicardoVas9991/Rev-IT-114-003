@@ -278,17 +278,22 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
     } 
 
     
-    public void onCommand(String command) {
-       if (command.startsWith("/flip") || command.startsWith("/roll")) {
-            chatPanel.handleSpecialCommands(command);
+    public void handleSpecialComma(String message) {
+       if (message.startsWith("/flip") || message.startsWith("/roll")) {
+            chatPanel.handleSpecialCommands(message);
         }
     }
 
     
-    public void onMessage(String message) {
+    public void processTextFormatting(String message) {
         String formattedMessage = chatPanel.processTextFormatting(message);
         chatPanel.addText(formattedMessage);
     }
 
+    public void handleMuteUnmute(String command) {
+        if (command.startsWith("/Mute") || command.startsWith("/unmute")) {
+             chatPanel.handleMuteUnmute(command);
+         }
+     }
     // Interface methods end
 }
