@@ -33,17 +33,7 @@ import Project.Common.TextFX.Color;
 public enum Client {
     INSTANCE;
 
-    {
-        // TODO moved to ClientUI (this repeat doesn't do anything since config is set
-        // only once)
-        // statically initialize the client-side LoggerUtil
-        LoggerUtil.LoggerConfig config = new LoggerUtil.LoggerConfig();
-        config.setFileSizeLimit(2048 * 1024); // 2MB
-        config.setFileCount(1);
-        config.setLogLocation("client.log");
-        // Set the logger configuration
-        LoggerUtil.INSTANCE.setConfig(config);
-    }
+    
     private Socket server = null;
     private ObjectOutputStream out = null;
     private ObjectInputStream in = null;

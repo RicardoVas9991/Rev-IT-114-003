@@ -249,8 +249,7 @@ public class Room implements AutoCloseable{
     }
 // Rev/11-25-2024 - Show the code on the Room side that changes this format
     public void handleRoll(ServerThread sender, int dice, int sides, int total) {
-        String formattedResult = String.format("**%s rolled %d dice with %d sides each and got a total of: %d**",
-                                               sender.getClientName(), dice, sides, total);
+        String formattedResult = String.format("**%s rolled %d dice with %d sides each and got a total of: %d**", sender.getClientName(), dice, sides, total);
         broadcastMessage(null, formattedResult);
     }
     
@@ -494,10 +493,12 @@ public class Room implements AutoCloseable{
     }
 
     public void broadcastMessage(ServerThread sender, String message) {
-            String formattedMessage = formatMessage(message);
-            for (ServerThread client : clients) {
-                client.sendMessage(formattedMessage);
+        for (ServerThread client : clients) {
+            if (!client.isMuted(sender.getClientName())) {
+                client.sendMessage(message);
             }
         }
+    }
+
     // end receive data from ServerThread
 }

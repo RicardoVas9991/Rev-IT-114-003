@@ -30,14 +30,6 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
-import Project.Common.ConnectionPayload;
-import Project.Common.FlipPayload;
-import Project.Common.Payload;
-import Project.Common.PayloadType;
-import Project.Common.RollPayload;
-import Project.Common.RoomResultsPayload;
-
-
 import Project.Client.CardView;
 import Project.Client.Client;
 import Project.Client.Interfaces.ICardControls;

@@ -27,16 +27,6 @@ import Project.Client.Views.ConnectionPanel;
 import Project.Client.Views.Menu;
 import Project.Client.Views.RoomsPanel;
 import Project.Client.Views.UserDetailsPanel;
-import Project.Common.ConnectionPayload;
-import Project.Common.FlipPayload;
-import Project.Common.Payload;
-import Project.Common.PayloadType;
-import Project.Common.RollPayload;
-import Project.Common.RoomResultsPayload;
-import Project.Common.TextFX;
-import Project.Common.TextFX.Color;
-import Project.Client.Client;
-
 import Project.Common.LoggerUtil;
 
 /**
@@ -67,6 +57,8 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
         // Set the logger configuration
         LoggerUtil.INSTANCE.setConfig(config);
     }
+
+    
 
     /**
      * Constructor to create the main application window.
@@ -265,6 +257,7 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
     public void onMessageSend(String message) {
         if (message == null || message.trim().isEmpty()) {
             LoggerUtil.INSTANCE.warning("Attempted to send an empty message.");
+            chatPanel.addText(message); // Directly display the message in ChatPanel
             return;
         }
 
@@ -284,6 +277,18 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
         }
     } 
 
+    
+    public void onCommand(String command) {
+       if (command.startsWith("/flip") || command.startsWith("/roll")) {
+            chatPanel.handleSpecialCommands(command);
+        }
+    }
+
+    
+    public void onMessage(String message) {
+        String formattedMessage = chatPanel.processTextFormatting(message);
+        chatPanel.addText(formattedMessage);
+    }
 
     // Interface methods end
 }
