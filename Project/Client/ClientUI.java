@@ -95,7 +95,7 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
         // Initialize panels
         connectionPanel = new ConnectionPanel(this);
         userDetailsPanel = new UserDetailsPanel(this);
-        chatPanel = new ChatPanel();
+        chatPanel = new ChatPanel(null);
         roomsPanel = new RoomsPanel(this);
 
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
