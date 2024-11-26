@@ -305,14 +305,7 @@ public class Room implements AutoCloseable{
         }
         sender.unmute(targetName);
         sender.sendMessage("You have unmuted " + targetName + ".");
-    }
-    
-    public void broadcastMessage(ServerThread sender, String message) {
-        String formattedMessage = formatMessage(message);
-        for (ServerThread client : clients) {
-            client.sendMessage(formattedMessage);
-        }
-    }
+    }   
 
     public String formatMessage(String message) {   // - Rev/11-16-2024
         boolean wasCommand = false;
@@ -500,6 +493,11 @@ public class Room implements AutoCloseable{
         return command;
     }
 
-
+    public void broadcastMessage(ServerThread sender, String message) {
+            String formattedMessage = formatMessage(message);
+            for (ServerThread client : clients) {
+                client.sendMessage(formattedMessage);
+            }
+        }
     // end receive data from ServerThread
 }

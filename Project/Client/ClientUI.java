@@ -27,6 +27,15 @@ import Project.Client.Views.ConnectionPanel;
 import Project.Client.Views.Menu;
 import Project.Client.Views.RoomsPanel;
 import Project.Client.Views.UserDetailsPanel;
+import Project.Common.ConnectionPayload;
+import Project.Common.FlipPayload;
+import Project.Common.Payload;
+import Project.Common.PayloadType;
+import Project.Common.RollPayload;
+import Project.Common.RoomResultsPayload;
+import Project.Common.TextFX;
+import Project.Common.TextFX.Color;
+import Project.Client.Client;
 
 import Project.Common.LoggerUtil;
 
@@ -92,7 +101,7 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
         menu = new Menu(this);
         this.setJMenuBar(menu);
 
-        // Initialize panels
+        // Initialize panels - Rev/11-23-2024
         connectionPanel = new ConnectionPanel(this);
         userDetailsPanel = new UserDetailsPanel(this);
         chatPanel = new ChatPanel(this);

@@ -33,7 +33,17 @@ import Project.Common.TextFX.Color;
 public enum Client {
     INSTANCE;
 
-   
+    {
+        // TODO moved to ClientUI (this repeat doesn't do anything since config is set
+        // only once)
+        // statically initialize the client-side LoggerUtil
+        LoggerUtil.LoggerConfig config = new LoggerUtil.LoggerConfig();
+        config.setFileSizeLimit(2048 * 1024); // 2MB
+        config.setFileCount(1);
+        config.setLogLocation("client.log");
+        // Set the logger configuration
+        LoggerUtil.INSTANCE.setConfig(config);
+    }
     private Socket server = null;
     private ObjectOutputStream out = null;
     private ObjectInputStream in = null;
@@ -43,10 +53,6 @@ public enum Client {
     private volatile boolean isRunning = true; // volatile for thread-safe visibility
     private ConcurrentHashMap<Long, ClientData> knownClients = new ConcurrentHashMap<>();   // - Rev/11/-16-2024
     private ClientData myData;
-    
-    
-    
-
     
     // constants (used to reduce potential types when using them in code)
     private final String COMMAND_CHARACTER = "/";
