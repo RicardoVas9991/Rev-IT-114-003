@@ -355,6 +355,36 @@ public enum Client {
         }
 
     }
+
+    // Rev 11/26/2024
+    private void sendRollCommand(String rollDetails) throws IOException {
+        // Parse the roll details, assuming format "numberOfDice sides"
+        String[] parts = rollDetails.split(" ");
+        if (parts.length == 2) {
+            try {
+                int numberOfDice = Integer.parseInt(parts[0]);
+                int sides = Integer.parseInt(parts[1]);
+                if (numberOfDice > 0 && sides > 0) {
+                    RollPayload p = new RollPayload("Roll", numberOfDice, sides, 0); // sender assumed as "Roll" for now
+                    send(p);
+                } else {
+                    System.out.println("Invalid roll: Number of dice and sides must be greater than 0.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Format must be: /roll <numberOfDice> <sides>");
+            }
+        } else {
+            System.out.println("Invalid input. Format must be: /roll <numberOfDice> <sides>");
+        }
+    }
+
+    private void sendFlipCommand() throws IOException {
+        // Create a payload for the /flip command
+        Payload p = new Payload();
+        p.setPayloadType(PayloadType.FLIP);
+        send(p);
+    }
+
     // end send methods
 
     public void start() throws IOException {
@@ -616,6 +646,19 @@ public enum Client {
             }
         }
     }
+
+    // Rev 11/26/2024 - Example command processing logic in Client.java
+    public void processCommand(String command) throws IOException {
+        if (command.startsWith("/roll")) {
+            String rollDetails = command.substring(5).trim(); // Extract the details after "/roll"
+            sendRollCommand(rollDetails);
+        } else if (command.equalsIgnoreCase("/flip")) {
+            sendFlipCommand();
+        } else {
+            System.out.println("Unknown command: " + command);
+        }
+    }
+
     // end payload processors
 
 }
