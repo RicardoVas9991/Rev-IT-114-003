@@ -209,7 +209,7 @@ public class ChatPanel extends JPanel {
             // Handle flip command
             String result = Math.random() < 0.5 ? "heads" : "tails";
             chatHistory.append("You flipped a coin and got " + result + "\n");
-        } else if (message.startsWith("/roll")) {
+        } if (message.startsWith("/roll")) {
             // Handle roll command
             String[] parts = message.split(" ");
             if (parts.length == 2) {

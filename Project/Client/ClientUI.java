@@ -259,9 +259,7 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
             LoggerUtil.INSTANCE.warning("Attempted to send an empty message.");
             chatPanel.addText(message); // Directly display the message in ChatPanel
             return;
-        }
-
-        try {
+        } try {
             // Send the message to the server
             Client.INSTANCE.sendMessage(message);
 
