@@ -202,6 +202,7 @@ public class Room implements AutoCloseable{
         // to be sent
         // Note: this uses a lambda expression for each item in the values() collection,
         // it's one way we can safely remove items during iteration
+
         info(String.format("sending message to %s recipients: %s", clientsInRoom.size(), message));
         clientsInRoom.values().removeIf(client -> {
             boolean failedToSend = !client.sendMessage(senderId, message);
@@ -249,14 +250,14 @@ public class Room implements AutoCloseable{
 // Rev/11-25-2024 - Show the code on the Room side that changes this format
     public void handleRoll(ServerThread sender, int dice, int sides, int total) {
         String formattedResult = String.format("**%s rolled %d dice with %d sides each and got a total of: %d**", sender.getClientName(), dice, sides, total);
-        broadcastMessage(null, formattedResult);
+        sendMessage(null, formattedResult);
     }
     
     // Rev/11-25-2024 - Show the code on the Room side that changes this format
     public void handleFlip(ServerThread sender) {
         String result = Math.random() < 0.5 ? "Heads" : "Tails";
         String formattedResult = String.format("**%s flipped a coin and got: %s**", sender.getClientName(), result);
-        broadcastMessage(null, formattedResult);
+        sendMessage(null, formattedResult);
     }
     
 
@@ -351,11 +352,11 @@ public class Room implements AutoCloseable{
         return result.toString();
     }    
 
-    public void broadcastMessage(ServerThread sender, String message) {
-            String formattedMessage = formatMessage(message);
-            for (ServerThread client : clients) {
-                client.sendMessage(formattedMessage);
-            }
-        }
+    // public void broadcastMessage(ServerThread sender, String message) {
+    //         String formattedMessage = formatMessage(message);
+    //         for (ServerThread client : clients) {
+    //             client.sendMessage(formattedMessage);
+    //         }
+    //     }
     // end receive data from ServerThread
 }

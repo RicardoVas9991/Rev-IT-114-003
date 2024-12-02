@@ -199,6 +199,7 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
         if (currentCard.ordinal() >= CardView.CHAT.ordinal()) {
             String clientName = Client.INSTANCE.getClientNameFromId(clientId);
             chatPanel.addText(String.format("%s[%s]: %s", clientName, clientId, message));
+            LoggerUtil.INSTANCE.info(String.format("Test %s[%s]: %s", clientName, clientId, message));
         }
     }
 

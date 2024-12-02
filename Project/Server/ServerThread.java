@@ -190,7 +190,7 @@ public class ServerThread extends BaseServerThread {
                     }
                     break; // - Rev/11-25-2024
                 default:
-                    currentRoom.broadcastMessage(this, payload.toString());
+                    currentRoom.sendMessage(this, payload.toString());
                     break;
             }
         } catch (Exception e) {
