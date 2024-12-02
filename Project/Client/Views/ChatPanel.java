@@ -43,7 +43,8 @@ public class ChatPanel extends JPanel {
     private JPanel chatArea = null;
     private UserListPanel userListPanel;
     private final float CHAT_SPLIT_PERCENT = 0.7f;
-    private JTextArea chatHistory; 
+    private JTextArea chatHistory = new JTextArea(); // 
+
     /**
      * Constructor to create the ChatPanel UI.
      * 
@@ -217,8 +218,11 @@ public class ChatPanel extends JPanel {
                 if (rollParts.length == 2) {
                     int rolls = Integer.parseInt(rollParts[0]);
                     int sides = Integer.parseInt(rollParts[1]);
-                    int result = (int) (Math.random() * sides) + 1;
-                    chatHistory.append("You rolled " + rolls + "d" + sides + " and got " + result + "\n");
+                    StringBuilder result = new StringBuilder("You rolled " + rolls + "d" + sides + ": ");
+                    for (int i = 0; i < rolls; i++) {
+                        result.append((int) (Math.random() * sides) + 1).append(" ");
+                    }
+                    chatHistory.append(result.toString().trim() + "\n");
                 }
             }
         } else {
@@ -265,9 +269,9 @@ public class ChatPanel extends JPanel {
      * 
      * @param text The text of the message.
      */
-    public void addText(String text) {
+    public void addText(String message) {
         SwingUtilities.invokeLater(() -> {
-            JEditorPane textContainer = new JEditorPane("text/plain", text);
+            JEditorPane textContainer = new JEditorPane("text/html", message);
             textContainer.setEditable(false);
             textContainer.setBorder(BorderFactory.createEmptyBorder());
 
