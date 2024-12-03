@@ -3,26 +3,22 @@ package Project.Common;
 public class RollPayload extends Payload {
     private int dice;
     private int sides;
-    private String sender;
-    private int total;
 
-    // - Rev/11/-16-2024
-    public RollPayload(String sender, int dice, int sides, int total) {
-        super();
-        this.sender = sender;
+    public RollPayload(int dice, int sides) {
         this.dice = dice;
         this.sides = sides;
-        this.total = total;
     }
 
-    // - Rev/11/-16-2024
-    public int getDice() { return dice; }
-    public int getSides() { return sides; }
-    public String getSender() { return sender; }
-    public int getTotal() { return total; }
+    public int getDice() {
+        return dice;
+    }
+
+    public int getSides() {
+        return sides;
+    }
 
     @Override
     public String toString() {
-        return sender + " rolled " + dice + "d#" + sides + " and got " + total;
+        return "ROLL:" + dice + "," + sides;
     }
 }

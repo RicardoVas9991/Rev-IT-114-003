@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.ContainerEvent;
@@ -20,16 +21,15 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+
 import Project.Client.CardView;
 import Project.Client.Client;
 import Project.Client.Interfaces.ICardControls;
@@ -42,8 +42,7 @@ import Project.Common.LoggerUtil;
 public class ChatPanel extends JPanel {
     private JPanel chatArea = null;
     private UserListPanel userListPanel;
-    private final float CHAT_SPLIT_PERCENT = 0.7f;
-    private JTextArea chatHistory = new JTextArea(); // 
+    private final float CHAT_SPLIT_PERCENT = 0.7f; 
 
     /**
      * Constructor to create the ChatPanel UI.
@@ -63,6 +62,7 @@ public class ChatPanel extends JPanel {
         scroll.setBorder(BorderFactory.createEmptyBorder());
 
         chatArea = chatContent;
+        // chatArea.setPreferredSize(new Dimension(0,0));
 
         userListPanel = new UserListPanel();
 
@@ -75,15 +75,18 @@ public class ChatPanel extends JPanel {
             @Override
             public void componentResized(ComponentEvent e) {
                 SwingUtilities.invokeLater(() -> splitPane.setDividerLocation(CHAT_SPLIT_PERCENT));
+                resizeEditorPanes();
             }
 
             @Override
             public void componentMoved(ComponentEvent e) {
+                resizeEditorPanes();
             }
 
             @Override
             public void componentShown(ComponentEvent e) {
                 SwingUtilities.invokeLater(() -> splitPane.setDividerLocation(CHAT_SPLIT_PERCENT));
+                resizeEditorPanes();
             }
 
             @Override
@@ -117,7 +120,7 @@ public class ChatPanel extends JPanel {
             }
         });
 
-        button.addActionListener(_ -> {
+        button.addActionListener((_) -> {
             SwingUtilities.invokeLater(() -> {
                 try {
                     String text = textValue.getText().trim();
@@ -137,7 +140,7 @@ public class ChatPanel extends JPanel {
         this.add(input, BorderLayout.SOUTH);
 
         this.setName(CardView.CHAT.name());
-        controls.addPanel(CardView.CHAT.name(), this);
+        //controls.addPanel(CardView.CHAT.name(), this);
 
         chatArea.addContainerListener(new ContainerListener() {
             @Override
@@ -168,6 +171,24 @@ public class ChatPanel extends JPanel {
         gbc.weighty = 1.0; // Give extra space vertically to this component
         gbc.fill = GridBagConstraints.BOTH; // Fill both horizontally and vertically
         chatArea.add(Box.createVerticalGlue(), gbc);
+
+        /*scroll.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                SwingUtilities.invokeLater(()->
+                {
+                    resizeEditorPanes();
+                });
+            }
+        });*/
+
+        // Ensure editor panes resize when the scroll pane viewport changes
+        scroll.getViewport().addComponentListener((ComponentListener) new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                resizeEditorPanes();
+            }
+        });
     }
 
     /**
@@ -196,82 +217,14 @@ public class ChatPanel extends JPanel {
         SwingUtilities.invokeLater(() -> userListPanel.clearUserList());
     }
 
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("Chatroom");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(new ChatPanel(null));
-        frame.pack();
-        frame.setVisible(true);
-    }
-
-
-    public void handleSpecialCommands(String message) {
-        if (message.startsWith("/flip")) {
-            // Handle flip command
-            String result = Math.random() < 0.5 ? "heads" : "tails";
-            chatHistory.append("You flipped a coin and got " + result + "\n");
-        } if (message.startsWith("/roll")) {
-            // Handle roll command
-            String[] parts = message.split(" ");
-            if (parts.length == 2) {
-                String[] rollParts = parts[1].split("d");
-                if (rollParts.length == 2) {
-                    int rolls = Integer.parseInt(rollParts[0]);
-                    int sides = Integer.parseInt(rollParts[1]);
-                    StringBuilder result = new StringBuilder("You rolled " + rolls + "d" + sides + ": ");
-                    for (int i = 0; i < rolls; i++) {
-                        result.append((int) (Math.random() * sides) + 1).append(" ");
-                    }
-                    chatHistory.append(result.toString().trim() + "\n");
-                }
-            }
-        } else {
-            // Handle regular message
-            chatHistory.append(message + "\n");
-        }
-    }
-    // Rev/11-23-2024 - Text Formatting appears correctly on the UI
-    public String processTextFormatting(String message) {
-        message = message.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>");
-        message = message.replaceAll("\\*(.*?)\\*", "<i>$1</i>");
-        message = message.replaceAll("_(.*?)_", "<u>$1</u>");
-        message = message.replaceAll("#r(.*?)r#", "<red>$1</red>");
-        message = message.replaceAll("#b(.*?)b#", "<blue>$1</blue>");
-        message = message.replaceAll("#g(.*?)g#", "<green>$1</green>");
-        return message;
-    }
-    
-    public void sendMessage(String message) {
-        if (message.startsWith("@")) {
-            String[] parts = message.split(" ", 2);
-            if (parts.length == 2) {
-            }
-        } else {
-            // Send regular message
-        }
-    }
-
-    // Rev/11-23-2024 -  Show the client-side code that processes the text per the requirement
-    public void handleMuteUnmute(String command) {
-        String[] parts = command.split(" ");
-        if (parts.length == 2) {
-            if (command.startsWith("/mute")) {
-                // Add targetUsername to mute list
-            } else if (command.startsWith("/unmute")) {
-                // Remove targetUsername from mute list
-            }
-        }
-    }
-    
-
     /**
      * Adds a message to the chat area.
      * 
      * @param text The text of the message.
      */
-    public void addText(String message) {
+    public void addText(String text) {
         SwingUtilities.invokeLater(() -> {
-            JEditorPane textContainer = new JEditorPane("text/html", message);
+            JEditorPane textContainer = new JEditorPane("text/plain", text);
             textContainer.setEditable(false);
             textContainer.setBorder(BorderFactory.createEmptyBorder());
 
@@ -302,10 +255,26 @@ public class ChatPanel extends JPanel {
             chatArea.repaint();
 
             // Scroll down on new message
-            SwingUtilities.invokeLater(() -> {
-                JScrollBar vertical = parentScrollPane.getVerticalScrollBar();
-                vertical.setValue(vertical.getMaximum());
-            });
+            if (parentScrollPane != null) {
+                SwingUtilities.invokeLater(() -> {
+                    JScrollBar vertical = parentScrollPane.getVerticalScrollBar();
+                    vertical.setValue(vertical.getMaximum());
+                });
+            }
         });
+    }
+
+    private void resizeEditorPanes() {
+        int width = chatArea.getParent().getWidth();
+        for (Component comp : chatArea.getComponents()) {
+            if (comp instanceof JEditorPane) {
+                JEditorPane editorPane = (JEditorPane) comp;
+                editorPane.setSize(new Dimension(width, Integer.MAX_VALUE));
+                Dimension d = editorPane.getPreferredSize();
+                editorPane.setPreferredSize(new Dimension(width, d.height));
+            }
+        }
+        chatArea.revalidate();
+        chatArea.repaint();
     }
 }

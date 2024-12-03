@@ -248,8 +248,8 @@ public class Room implements AutoCloseable{
         disconnect(sender);
     }
 // Rev/11-25-2024 - Show the code on the Room side that changes this format
-    public void handleRoll(ServerThread sender, int dice, int sides, int total) {
-        String formattedResult = String.format("**%s rolled %d dice with %d sides each and got a total of: %d**", sender.getClientName(), dice, sides, total);
+    public void handleRoll(ServerThread sender, int dice, int sides) {
+        String formattedResult = String.format("**%s rolled %d dice with %d sides each and got a total of: %d**", sender.getClientName(), dice, sides);
         sendMessage(null, formattedResult);
     }
     

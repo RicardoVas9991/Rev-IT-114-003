@@ -274,25 +274,7 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
             LoggerUtil.INSTANCE.severe("Failed to send message: " + e.getMessage());
             chatPanel.addText("*Error: Message not sent.*");
         }
-    } 
-
-    
-    public void handleSpecialComma(String message) {
-       if (message.startsWith("/flip") || message.startsWith("/roll")) {
-            chatPanel.handleSpecialCommands(message);
-        }
     }
 
-    
-    public void processTextFormatting(String message) {
-        String formattedMessage = chatPanel.processTextFormatting(message);
-        chatPanel.addText(formattedMessage);
-    }
-
-    public void handleMuteUnmute(String command) {
-        if (command.startsWith("/Mute") || command.startsWith("/unmute")) {
-             chatPanel.handleMuteUnmute(command);
-         }
-     }
     // Interface methods end
 }

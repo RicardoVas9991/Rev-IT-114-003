@@ -5,6 +5,7 @@ public class Payload implements Serializable {
     private PayloadType payloadType;
     private long clientId;
     private String message;
+    private String target;
 
     
 
@@ -42,10 +43,17 @@ public class Payload implements Serializable {
         this.message = message;
     }
 
+    public void setTarget(String target) {
+        this.target = target;
+    }
 
+    public String getTarget() {
+        return target;
+    }
 
     @Override
     public String toString(){
         return String.format("Payload[%s] Client Id [%s] Message: [%s]", getPayloadType(), getClientId(), getMessage());
     }
+
 }

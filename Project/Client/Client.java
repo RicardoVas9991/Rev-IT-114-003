@@ -12,6 +12,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.JPanel;
+
 import Project.Client.Interfaces.IConnectionEvents;
 import Project.Client.Interfaces.IClientEvents;
 import Project.Client.Interfaces.IMessageEvents;
@@ -43,6 +45,8 @@ public enum Client {
     private volatile boolean isRunning = true; // volatile for thread-safe visibility
     private ConcurrentHashMap<Long, ClientData> knownClients = new ConcurrentHashMap<>();   // - Rev/11/-16-2024
     private ClientData myData;
+    public JPanel chatArea = new JPanel();
+    
     
     // constants (used to reduce potential types when using them in code)
     private final String COMMAND_CHARACTER = "/";
@@ -190,21 +194,18 @@ public enum Client {
         } else if (text.startsWith("/roll")) {  // - Rev/11/-16-2024
             String[] parts = text.split(" ");
             if (parts.length == 2) {
-                String sender = myData.getClientName(); // Assuming a name attribute exists
                 if (parts[1].contains("d")) {
                     String[] diceParts = parts[1].split("d");
                     int dice = Integer.parseInt(diceParts[0]);
                     int sides = Integer.parseInt(diceParts[1]);
-                    int total = 0;
                     for (int i = 0; i < dice; i++) {
-                        total += (int) (Math.random() * sides) + 1;
                     }
-                    RollPayload rollPayload = new RollPayload(sender, dice, sides, total);
+                    RollPayload rollPayload = new RollPayload(dice, sides);
                     System.out.println(rollPayload);
                     return true;
                 } else {
                     int sides = Integer.parseInt(parts[1]);
-                    RollPayload rollPayload = new RollPayload(sender, 1, sides, sides);
+                    RollPayload rollPayload = new RollPayload(1, sides);
                     System.out.println(rollPayload);
                     return true;
                 }
@@ -215,6 +216,40 @@ public enum Client {
             FlipPayload flipPayload = new FlipPayload(sender); // Result will be set server-side
             System.out.println(flipPayload);
             return true;
+        } else if (text.startsWith("/mute")) {  // Rev/11-23-2024 -  Show the client-side code that processes the text per the requirement
+            String[] parts = text.split(" ");
+            if (parts.length == 2) {
+                Payload payload = new Payload();
+                payload.setPayloadType(PayloadType.MUTE);
+                payload.setMessage(parts[1]); // Username to mute
+                send(payload);
+            } else {
+                chatArea.add(chatArea, "Invalid mute command. Use /mute <username>.");
+            }
+        } else if (text.startsWith("/unmute")) {
+            String[] parts = text.split(" ");
+            if (parts.length == 2) {
+                Payload payload = new Payload();
+                payload.setPayloadType(PayloadType.UNMUTE);
+                payload.setMessage(parts[1]); // Username to unmute
+                send(payload);
+            } else {
+                chatArea.add(chatArea,"Invalid unmute command. Use /unmute <username>.");
+            }
+        } else if (text.startsWith("@")) {
+            String[] parts = text.split(" ", 2);
+            if (parts.length == 2) {
+                String target = parts[0].substring(1); // Remove '@'
+                String message = parts[1];
+        
+                Payload payload = new Payload();
+                payload.setPayloadType(PayloadType.MESSAGE);
+                payload.setTarget(target); // Target username
+                payload.setMessage(message);
+                send(payload);
+            } else {
+                chatArea.add(chatArea,"Invalid private message. Use @<username> <message>.");
+            }
         } else { // logic previously from Room.java
             // decided to make this as separate block to separate the core client-side items
             // vs the ones that generally are used after connection and that send requests
@@ -357,32 +392,32 @@ public enum Client {
     }
 
     // Rev 11/26/2024
-    private void sendRollCommand(String rollDetails) throws IOException {
+    private void sendRollCommand(String command) throws IOException {
         // Parse the roll details, assuming format "numberOfDice sides"
-        String[] parts = rollDetails.split(" ");
-        if (parts.length == 2) {
-            try {
-                int numberOfDice = Integer.parseInt(parts[0]);
-                int sides = Integer.parseInt(parts[1]);
-                if (numberOfDice > 0 && sides > 0) {
-                    RollPayload p = new RollPayload("Roll", numberOfDice, sides, 0); // sender assumed as "Roll" for now
-                    send(p);
-                } else {
-                    System.out.println("Invalid roll: Number of dice and sides must be greater than 0.");
+        if (command.startsWith("/roll")) {
+            String[] parts = command.split(" ");
+            if (parts.length == 3) {
+                try {
+                    int dice = Integer.parseInt(parts[1]);
+                    int sides = Integer.parseInt(parts[2]);
+                    RollPayload payload = new RollPayload(dice, sides);
+                    send(payload);
+                } catch (NumberFormatException e) {
+                    chatArea.add(chatArea,"Invalid roll command. Use /roll <dice> <sides>.");
                 }
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Format must be: /roll <numberOfDice> <sides>");
+            } else {
+                chatArea.add(chatArea,"Invalid roll command. Use /roll <dice> <sides>.");
             }
-        } else {
-            System.out.println("Invalid input. Format must be: /roll <numberOfDice> <sides>");
         }
     }
 
-    private void sendFlipCommand() throws IOException {
+    private void sendFlipCommand(String command) throws IOException {
         // Create a payload for the /flip command
-        Payload p = new Payload();
-        p.setPayloadType(PayloadType.FLIP);
-        send(p);
+        if (command.equals("/flip")) {
+            Payload payload = new Payload();
+            payload.setPayloadType(PayloadType.FLIP);
+            send(payload);
+        }
     }
 
     // end send methods
@@ -653,9 +688,9 @@ public enum Client {
             String rollDetails = command.substring(5).trim(); // Extract the details after "/roll"
             sendRollCommand(rollDetails);
         } else if (command.equalsIgnoreCase("/flip")) {
-            sendFlipCommand();
+            sendFlipCommand(command);
         } else {
-            System.out.println("Unknown command: " + command);
+            chatArea.add(chatArea, "Unknown command: " + command);
         }
     }
 
