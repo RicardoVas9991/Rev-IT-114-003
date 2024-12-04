@@ -59,8 +59,10 @@ public class Payload implements Serializable {
 
 
     public Payload replaceAll(String string, String string2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'replaceAll'");
+       if (this.message != null) {
+        this.message = this.message.replaceAll(string, string2);
+        }
+            return null;
     }
 
 }

@@ -233,18 +233,24 @@ public enum Client {
                 chatArea.add(chatArea,"Invalid unmute command. Use /unmute <username>.");
             }
         } if (text.startsWith("@")) {
-            String[] parts = text.split(" ", 2);
+            text = text.trim(); // Remove leading and trailing spaces
+            String[] parts = text.split(" ", 2); // Split into username and message
             if (parts.length == 2) {
-                String target = parts[0].substring(1); // Remove '@'
-                String message = parts[1];
-
+                String target = parts[0].substring(1).toLowerCase(); // Remove '@' and convert to lowercase
+                String message = parts[1].trim(); // Trim the message content
+        
+                if (target.isEmpty() || message.isEmpty()) {
+                    ((Appendable) chatArea).append("Invalid private message. Username or message cannot be empty.\n");
+                    return isRunning;
+                }
+        
                 Payload payload = new Payload();
                 payload.setPayloadType(PayloadType.MESSAGE);
                 payload.setTarget(target); // Target username
                 payload.setMessage(message);
-                send(payload);
+                send(payload); // Send the payload to the server
             } else {
-                chatArea.add(chatArea,"Invalid private message. Use @<username> <message>.");
+                ((Appendable) chatArea).append("Invalid private message. Use @<username> <message>.\n");
             }
         } else { // logic previously from Room.java
             // decided to make this as separate block to separate the core client-side items
