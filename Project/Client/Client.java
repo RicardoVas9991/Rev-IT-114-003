@@ -192,7 +192,7 @@ public enum Client {
                     for (int i = 0; i < dice; i++) {
                     }
                     RollPayload rollPayload = new RollPayload(dice, sides, total);
-                    chatArea.add(chatArea, rollPayload);
+                    send(rollPayload);
                     LoggerUtil.INSTANCE.info("Dice rolled: ");
                     return true;
                 } else {
@@ -203,7 +203,7 @@ public enum Client {
         } else if (text.startsWith("/flip") || text.startsWith("/toss")) {  // - Rev/11/-16-2024
             String sender = myData.getClientName();
             FlipPayload flipPayload = new FlipPayload(sender); // Result will be set server-side
-            chatArea.add(chatArea, flipPayload);
+            send(flipPayload);
             LoggerUtil.INSTANCE.info("Coin flipped: ");
             return true;
         } if (text.startsWith("/mute")) {  // Rev/11-23-2024 -  Show the client-side code that processes the text per the requirement
@@ -212,7 +212,7 @@ public enum Client {
                 Payload payload = new Payload();
                 payload.setPayloadType(PayloadType.MUTE);
                 payload.setMessage(parts[1]); // Username to mute
-                chatArea.add(chatArea, payload);
+                send(payload);
                 LoggerUtil.INSTANCE.info("Client muted: ");
             } else {
                 chatArea.add(chatArea, "Invalid mute command. Use /mute <username>.");
@@ -223,7 +223,7 @@ public enum Client {
                 Payload payload = new Payload();
                 payload.setPayloadType(PayloadType.UNMUTE);
                 payload.setMessage(parts[1]); // Username to unmute
-                chatArea.add(chatArea, payload);
+                send(payload);
                 LoggerUtil.INSTANCE.info("Client unmuted: ");
             } else {
                 chatArea.add(chatArea,"Invalid unmute command. Use /unmute <username>.");
@@ -238,7 +238,7 @@ public enum Client {
                 payload.setPayloadType(PayloadType.MESSAGE);
                 payload.setTarget(target); // Target username
                 payload.setMessage(message);
-                chatArea.add(chatArea, payload);
+                send(payload);
             } else {
                 chatArea.add(chatArea,"Invalid private message. Use @<username> <message>.");
             }
@@ -351,7 +351,7 @@ public enum Client {
         send(p);
     }
 
-    public void processTextFormatting(String message) {	
+    public void processTextFormatting(Payload message) throws IOException {	
         // Convert **text** to <b>text</b>	
         message = message.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>");	
         // Convert *text* to <i>text</i>	
@@ -364,7 +364,7 @@ public enum Client {
         message = message.replaceAll("#b(.*?)b#", "<blue>$1</blue>");	
         // Convert #gtext g# to <green>text</green>	
         message = message.replaceAll("#g(.*?)g#", "<green>$1</green>");	
-        chatArea.add(chatArea, message);
+        send(message);
     }
 
     /**

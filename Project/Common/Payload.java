@@ -56,4 +56,11 @@ public class Payload implements Serializable {
         return String.format("Payload[%s] Client Id [%s] Message: [%s]", getPayloadType(), getClientId(), getMessage());
     }
 
+
+
+    public Payload replaceAll(String string, String string2) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'replaceAll'");
+    }
+
 }
