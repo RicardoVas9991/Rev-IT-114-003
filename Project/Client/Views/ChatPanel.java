@@ -21,7 +21,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -190,13 +189,6 @@ public class ChatPanel extends JPanel {
                 resizeEditorPanes();
             }
         });
-    }
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("Chatroom");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(new ChatPanel(null));
-        frame.pack();
-        frame.setVisible(true);
     }
 
     /**
