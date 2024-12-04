@@ -185,7 +185,7 @@ public enum Client {
             String[] parts = text.split(" ");
             if (parts.length == 2) {
                 if (parts[1].contains(",")) {
-                    String[] diceParts = parts[1].split("");
+                    String[] diceParts = parts[1].split(",");
                     int dice = Integer.parseInt(diceParts[0]);
                     int sides = Integer.parseInt(diceParts[1]);
                     int total = 0;
@@ -194,6 +194,11 @@ public enum Client {
                     }
                     RollPayload rollPayload = new RollPayload(dice, sides, total);
                     LoggerUtil.INSTANCE.info("Dice rolled: ");
+                    System.out.println(rollPayload);
+                    return true;
+                    } else {	               
+                    int sides = Integer.parseInt(parts[1]);
+                    RollPayload rollPayload = new RollPayload( 1, sides, sides);
                     System.out.println(rollPayload);
                     return true;
                 }
