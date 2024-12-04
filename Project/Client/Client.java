@@ -629,7 +629,7 @@ public enum Client {
             myData.setClientId(clientId);
             myData.setClientName(clientName);
             // invoke onReceiveClientId callback
-            LoggerUtil.INSTANCE.info("ClientId: ");
+            LoggerUtil.INSTANCE.info("ClientId processed: ");
             ((IConnectionEvents) events).onReceiveClientId(clientId);
             // knownClients.put(cp.getClientId(), myData);// <-- this is handled later
         }
