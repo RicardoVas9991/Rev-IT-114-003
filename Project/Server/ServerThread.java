@@ -1,6 +1,10 @@
 package Project.Server;
 
+import java.io.IOException;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -54,28 +58,47 @@ public class ServerThread extends BaseServerThread {
     }
 // Rev/11-23-2024
     List<String> mutedClients = new ArrayList<String>(); 
-     
+    
     public List<String> getMutedClients() {
     	 return this.mutedClients;
      }
      
-    public void mute(String name) {
-     	name = name.trim().toLowerCase();
-     	if (!isMuted(name)) {
-     		mutedClients.add(name);
-     		//save();
-     	}
-     }
-     
-  	public void unmute(String name) {
-  		name = name.trim().toLowerCase();
-     	if (isMuted(name)) {
-     		mutedClients.remove(name);
-     		//save();
-     	}
-  
-     }
-  	
+     public void mute(String name) {
+        name = name.trim().toLowerCase();
+        if (!isMuted(name)) {
+            mutedClients.add(name);
+            // Notify the muted user
+            sendMessageToClient(name, "You have been muted by " + this.clientName);
+            save();
+        }
+    }
+    
+    public void unmute(String name) {
+        name = name.trim().toLowerCase();
+        if (isMuted(name)) {
+            mutedClients.remove(name);
+            // Notify the unmuted user
+            sendMessageToClient(name, "You have been unmuted by " + this.clientName);
+            save();
+        }
+    }
+    
+
+    private void sendMessageToClient(String name, String message) {
+        // Send a notification to the client (name) with the message
+        // Use your existing message-sending logic
+        System.out.println("Notification to " + name + ": " + message);
+    }
+
+    private void save() {
+    try {
+        Path filePath = Paths.get(this.clientName + ".txt");
+        Files.write(filePath, mutedClients);
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
+
     public boolean isMuted(String name) {
      	name = name.trim().toLowerCase();
      	return mutedClients.contains(name);
@@ -164,10 +187,12 @@ public class ServerThread extends BaseServerThread {
                     break;
                 case ROLL:
                     RollPayload rollPayload = (RollPayload) payload;
-                    currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides()); // - Rev/11-16-2024
+                    currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides(), rollPayload.getTotal()); // - Rev/11-16-2024
+                    LoggerUtil.INSTANCE.info("ROLL: " + rollPayload.getDice() + "," + rollPayload.getSides() + " and got a" + rollPayload.getTotal());
                     break;
                 case FLIP:
                     currentRoom.handleFlip(this); // - Rev/11/-16-2024
+                    LoggerUtil.INSTANCE.info("FLIP: ");
                     break;
                 case MUTE:
                     String muteTarget = payload.getMessage().trim().toLowerCase(); // Extract the target username
@@ -290,6 +315,25 @@ public class ServerThread extends BaseServerThread {
         cp.setClientId(clientId);
         cp.setClientName(clientName);
         return send(cp);
+    }
+
+    public void processMuteCommand(String command) {
+        String[] parts = command.split(" ", 2);
+        if (parts.length < 2) return;
+    
+        String action = parts[0].toLowerCase();
+        String target = parts[1].trim();
+    
+        switch (action) {
+            case "/mute":
+                mute(target);
+                break;
+            case "/unmute":
+                unmute(target);
+                break;
+            default:
+                System.out.println("Unknown command: " + command);
+        }
     }
 
     // end send methods

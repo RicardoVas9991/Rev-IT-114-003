@@ -188,23 +188,23 @@ public enum Client {
                     String[] diceParts = parts[1].split("d");
                     int dice = Integer.parseInt(diceParts[0]);
                     int sides = Integer.parseInt(diceParts[1]);
+                    int total = 0;
                     for (int i = 0; i < dice; i++) {
                     }
-                    RollPayload rollPayload = new RollPayload(dice, sides);
-                    System.out.println(rollPayload);
+                    RollPayload rollPayload = new RollPayload(dice, sides, total);
+                    chatArea.add(chatArea, rollPayload);
+                    LoggerUtil.INSTANCE.info("Dice rolled: ");
                     return true;
                 } else {
-                    int sides = Integer.parseInt(parts[1]);
-                    RollPayload rollPayload = new RollPayload(1, sides);
-                    System.out.println(rollPayload);
-                    return true;
+                    chatArea.add(chatArea,"Invalid roll command. Use /roll <dice> <sides>.");
                 }
             }
             return true;
         } else if (text.startsWith("/flip") || text.startsWith("/toss")) {  // - Rev/11/-16-2024
             String sender = myData.getClientName();
             FlipPayload flipPayload = new FlipPayload(sender); // Result will be set server-side
-            System.out.println(flipPayload);
+            chatArea.add(chatArea, flipPayload);
+            LoggerUtil.INSTANCE.info("Coin flipped: ");
             return true;
         } if (text.startsWith("/mute")) {  // Rev/11-23-2024 -  Show the client-side code that processes the text per the requirement
             String[] parts = text.split(" ");
@@ -212,7 +212,8 @@ public enum Client {
                 Payload payload = new Payload();
                 payload.setPayloadType(PayloadType.MUTE);
                 payload.setMessage(parts[1]); // Username to mute
-                send(payload);
+                chatArea.add(chatArea, payload);
+                LoggerUtil.INSTANCE.info("Client muted: ");
             } else {
                 chatArea.add(chatArea, "Invalid mute command. Use /mute <username>.");
             }
@@ -222,7 +223,8 @@ public enum Client {
                 Payload payload = new Payload();
                 payload.setPayloadType(PayloadType.UNMUTE);
                 payload.setMessage(parts[1]); // Username to unmute
-                send(payload);
+                chatArea.add(chatArea, payload);
+                LoggerUtil.INSTANCE.info("Client unmuted: ");
             } else {
                 chatArea.add(chatArea,"Invalid unmute command. Use /unmute <username>.");
             }
@@ -236,7 +238,7 @@ public enum Client {
                 payload.setPayloadType(PayloadType.MESSAGE);
                 payload.setTarget(target); // Target username
                 payload.setMessage(message);
-                send(payload);
+                chatArea.add(chatArea, payload);
             } else {
                 chatArea.add(chatArea,"Invalid private message. Use @<username> <message>.");
             }
@@ -403,15 +405,16 @@ public enum Client {
             String[] parts = command.split(" ");
             if (parts.length == 3) {
                 try {
-                    if (parts[1].contains("d")) {
+                    if (parts[1].contains(",")) {
                     }
                     int dice = Integer.parseInt(parts[1]);
                     int sides = Integer.parseInt(parts[2]);
+                    int total = 0;
                     for (int i = 0; i < dice; i++) {
                     }
-                    RollPayload payload = new RollPayload(dice, sides);
-                    LoggerUtil.INSTANCE.info("Dice rolled: ");
+                    RollPayload payload = new RollPayload(dice, sides, total);
                     chatArea.add(chatArea, payload);
+                    LoggerUtil.INSTANCE.info("Dice rolled: ");
                 } catch (NumberFormatException e) {
                     chatArea.add(chatArea,"Invalid roll command. Use /roll <dice> <sides>.");
                 }
@@ -426,8 +429,8 @@ public enum Client {
         if (command.equals("/flip")) {
             Payload payload = new Payload();
             payload.setPayloadType(PayloadType.FLIP);
-            LoggerUtil.INSTANCE.info("Coin flipped: ");
             chatArea.add(chatArea, payload);
+            LoggerUtil.INSTANCE.info("Coin flipped: ");
         }
     }
 
