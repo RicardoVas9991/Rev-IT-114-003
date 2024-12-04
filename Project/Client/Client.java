@@ -349,6 +349,22 @@ public enum Client {
         send(p);
     }
 
+    public String processTextFormatting(String message) {	
+        // Convert **text** to <b>text</b>	
+        message = message.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>");	
+        // Convert *text* to <i>text</i>	
+        message = message.replaceAll("\\*(.*?)\\*", "<i>$1</i>");	
+        // Convert _text_ to <u>text</u>	
+        message = message.replaceAll("_(.*?)_", "<u>$1</u>");	
+        // Convert #rtext r# to <red>text</red>	
+        message = message.replaceAll("#r(.*?)r#", "<red>$1</red>");	
+        // Convert #btext b# to <blue>text</blue>	
+        message = message.replaceAll("#b(.*?)b#", "<blue>$1</blue>");	
+        // Convert #gtext g# to <green>text</green>	
+        message = message.replaceAll("#g(.*?)g#", "<green>$1</green>");	
+        return message;	
+    }
+
     /**
      * Sends chosen client name after socket handshake
      * 
@@ -613,6 +629,7 @@ public enum Client {
             myData.setClientId(clientId);
             myData.setClientName(clientName);
             // invoke onReceiveClientId callback
+            LoggerUtil.INSTANCE.info("ClientId: ");
             ((IConnectionEvents) events).onReceiveClientId(clientId);
             // knownClients.put(cp.getClientId(), myData);// <-- this is handled later
         }

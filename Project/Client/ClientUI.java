@@ -207,6 +207,7 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
     public void onReceiveClientId(long id) {
         show(CardView.CHAT.name());
         chatPanel.addText("*You connected*");
+        LoggerUtil.INSTANCE.info("ClientId: ");
     }
 
     @Override
