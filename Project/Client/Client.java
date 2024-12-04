@@ -184,12 +184,13 @@ public enum Client {
         } else if (text.startsWith("/roll")) {  // - Rev/11/-16-2024
             String[] parts = text.split(" ");
             if (parts.length == 2) {
-                if (parts[1].contains("d")) {
-                    String[] diceParts = parts[1].split("d");
+                if (parts[1].contains(",")) {
+                    String[] diceParts = parts[1].split("");
                     int dice = Integer.parseInt(diceParts[0]);
                     int sides = Integer.parseInt(diceParts[1]);
                     int total = 0;
                     for (int i = 0; i < dice; i++) {
+                        total += (int) (Math.random() * sides) + 1;
                     }
                     RollPayload rollPayload = new RollPayload(dice, sides, total);
                     LoggerUtil.INSTANCE.info("Dice rolled: ");
@@ -409,6 +410,7 @@ public enum Client {
                     int sides = Integer.parseInt(parts[2]);
                     int total = 0;
                     for (int i = 0; i < dice; i++) {
+                        total += (int) (Math.random() * sides) + 1;
                     }
                     RollPayload payload = new RollPayload(dice, sides, total);
                     chatArea.add(chatArea, payload);

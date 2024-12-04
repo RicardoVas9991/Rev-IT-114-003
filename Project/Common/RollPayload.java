@@ -25,6 +25,6 @@ public class RollPayload extends Payload {
 
     @Override
     public String toString() {
-        return "ROLL:" + dice + "," + sides + " and got a" + total;
+        return "ROLL:" + dice + "," + sides + " and got a " + total;
     }
 }

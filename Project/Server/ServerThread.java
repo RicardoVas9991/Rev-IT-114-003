@@ -188,7 +188,7 @@ public class ServerThread extends BaseServerThread {
                 case ROLL:
                     RollPayload rollPayload = (RollPayload) payload;
                     currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides(), rollPayload.getTotal()); // - Rev/11-16-2024
-                    LoggerUtil.INSTANCE.info("ROLL: " + rollPayload.getDice() + "," + rollPayload.getSides() + " and got a" + rollPayload.getTotal());
+                    LoggerUtil.INSTANCE.info("ROLL: " + rollPayload.getDice() + "," + rollPayload.getSides() + " and got a " + rollPayload.getTotal());
                     break;
                 case FLIP:
                     currentRoom.handleFlip(this); // - Rev/11/-16-2024
