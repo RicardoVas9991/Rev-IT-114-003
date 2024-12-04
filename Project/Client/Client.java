@@ -195,8 +195,6 @@ public enum Client {
                     send(rollPayload);
                     LoggerUtil.INSTANCE.info("Dice rolled: ");
                     return true;
-                } else {
-                    chatArea.add(chatArea,"Invalid roll command. Use /roll <dice> <sides>.");
                 }
             }
             return true;
