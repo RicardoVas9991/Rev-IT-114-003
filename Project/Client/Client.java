@@ -206,7 +206,7 @@ public enum Client {
             FlipPayload flipPayload = new FlipPayload(sender); // Result will be set server-side
             System.out.println(flipPayload);
             return true;
-        } else if (text.startsWith("/mute")) {  // Rev/11-23-2024 -  Show the client-side code that processes the text per the requirement
+        } if (text.startsWith("/mute")) {  // Rev/11-23-2024 -  Show the client-side code that processes the text per the requirement
             String[] parts = text.split(" ");
             if (parts.length == 2) {
                 Payload payload = new Payload();
@@ -216,7 +216,7 @@ public enum Client {
             } else {
                 chatArea.add(chatArea, "Invalid mute command. Use /mute <username>.");
             }
-        } else if (text.startsWith("/unmute")) {
+        } if (text.startsWith("/unmute")) {
             String[] parts = text.split(" ");
             if (parts.length == 2) {
                 Payload payload = new Payload();
@@ -226,7 +226,7 @@ public enum Client {
             } else {
                 chatArea.add(chatArea,"Invalid unmute command. Use /unmute <username>.");
             }
-        } else if (text.startsWith("@")) {
+        } if (text.startsWith("@")) {
             String[] parts = text.split(" ", 2);
             if (parts.length == 2) {
                 String target = parts[0].substring(1); // Remove '@'
@@ -349,7 +349,7 @@ public enum Client {
         send(p);
     }
 
-    public String processTextFormatting(String message) {	
+    public void processTextFormatting(String message) {	
         // Convert **text** to <b>text</b>	
         message = message.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>");	
         // Convert *text* to <i>text</i>	
@@ -363,7 +363,6 @@ public enum Client {
         // Convert #gtext g# to <green>text</green>	
         message = message.replaceAll("#g(.*?)g#", "<green>$1</green>");	
         chatArea.add(chatArea, message);
-                return message;	
     }
 
     /**
@@ -411,6 +410,7 @@ public enum Client {
                     for (int i = 0; i < dice; i++) {
                     }
                     RollPayload payload = new RollPayload(dice, sides);
+                    LoggerUtil.INSTANCE.info("Dice rolled: ");
                     chatArea.add(chatArea, payload);
                 } catch (NumberFormatException e) {
                     chatArea.add(chatArea,"Invalid roll command. Use /roll <dice> <sides>.");
@@ -426,6 +426,7 @@ public enum Client {
         if (command.equals("/flip")) {
             Payload payload = new Payload();
             payload.setPayloadType(PayloadType.FLIP);
+            LoggerUtil.INSTANCE.info("Coin flipped: ");
             chatArea.add(chatArea, payload);
         }
     }
