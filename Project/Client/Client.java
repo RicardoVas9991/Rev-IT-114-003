@@ -206,7 +206,7 @@ public enum Client {
             FlipPayload flipPayload = new FlipPayload(sender); // Result will be set server-side
             System.out.println(flipPayload);
             return true;
-        } else if (text.startsWith("/mute")) {  // Rev/11-23-2024 -  Show the client-side code that processes the text per the requirement
+        } if (text.startsWith("/mute")) {  // Rev/11-23-2024 -  Show the client-side code that processes the text per the requirement
             String[] parts = text.split(" ");
             if (parts.length == 2) {
                 Payload payload = new Payload();
@@ -216,7 +216,7 @@ public enum Client {
             } else {
                 chatArea.add(chatArea, "Invalid mute command. Use /mute <username>.");
             }
-        } else if (text.startsWith("/unmute")) {
+        } if (text.startsWith("/unmute")) {
             String[] parts = text.split(" ");
             if (parts.length == 2) {
                 Payload payload = new Payload();
@@ -226,7 +226,7 @@ public enum Client {
             } else {
                 chatArea.add(chatArea,"Invalid unmute command. Use /unmute <username>.");
             }
-        } else if (text.startsWith("@")) {
+        } if (text.startsWith("@")) {
             String[] parts = text.split(" ", 2);
             if (parts.length == 2) {
                 String target = parts[0].substring(1); // Remove '@'
