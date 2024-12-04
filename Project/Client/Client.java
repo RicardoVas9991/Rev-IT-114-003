@@ -360,38 +360,6 @@ public enum Client {
     }
 
     /**
-     * Processes the input message for text formatting.
-     * Converts special syntax into HTML-like tags for styling.
-     * 
-     * Supported formats:
-     * - Bold: **text**
-     * - Italic: *text*
-     * - Underline: _text_
-     * - Red text: #rtext r#
-     * - Blue text: #btext b#
-     * - Green text: #gtext g#
-     * 
-     * @param message The input message to be formatted.
-     * @return The formatted message with appropriate tags.
-     */
-    public String processTextFormatting(String message) {
-        // Convert **text** to <b>text</b>
-        message = message.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>");
-        // Convert *text* to <i>text</i>
-        message = message.replaceAll("\\*(.*?)\\*", "<i>$1</i>");
-        // Convert _text_ to <u>text</u>
-        message = message.replaceAll("_(.*?)_", "<u>$1</u>");
-        // Convert #rtext r# to <red>text</red>
-        message = message.replaceAll("#r(.*?)r#", "<red>$1</red>");
-        // Convert #btext b# to <blue>text</blue>
-        message = message.replaceAll("#b(.*?)b#", "<blue>$1</blue>");
-        // Convert #gtext g# to <green>text</green>
-        message = message.replaceAll("#g(.*?)g#", "<green>$1</green>");
-        return message;
-    }
-
-
-    /**
      * Sends chosen client name after socket handshake
      * 
      * @throws IOException
