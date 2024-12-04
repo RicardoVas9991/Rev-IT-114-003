@@ -206,7 +206,7 @@ public enum Client {
             FlipPayload flipPayload = new FlipPayload(sender); // Result will be set server-side
             System.out.println(flipPayload);
             return true;
-        } if (text.startsWith("/mute")) {  // Rev/11-23-2024 -  Show the client-side code that processes the text per the requirement
+        } else if (text.startsWith("/mute")) {  // Rev/11-23-2024 -  Show the client-side code that processes the text per the requirement
             String[] parts = text.split(" ");
             if (parts.length == 2) {
                 Payload payload = new Payload();
@@ -216,7 +216,7 @@ public enum Client {
             } else {
                 chatArea.add(chatArea, "Invalid mute command. Use /mute <username>.");
             }
-        } if (text.startsWith("/unmute")) {
+        } else if (text.startsWith("/unmute")) {
             String[] parts = text.split(" ");
             if (parts.length == 2) {
                 Payload payload = new Payload();
@@ -226,12 +226,12 @@ public enum Client {
             } else {
                 chatArea.add(chatArea,"Invalid unmute command. Use /unmute <username>.");
             }
-        } if (text.startsWith("@")) {
+        } else if (text.startsWith("@")) {
             String[] parts = text.split(" ", 2);
             if (parts.length == 2) {
                 String target = parts[0].substring(1); // Remove '@'
                 String message = parts[1];
-        
+
                 Payload payload = new Payload();
                 payload.setPayloadType(PayloadType.MESSAGE);
                 payload.setTarget(target); // Target username
@@ -378,7 +378,6 @@ public enum Client {
             LoggerUtil.INSTANCE.severe("Socket send exception", e);
             throw e;
         }
-
     }
 
     // Rev 11/26/2024
@@ -414,10 +413,8 @@ public enum Client {
 
     public void start() throws IOException {
         LoggerUtil.INSTANCE.info("Client starting");
-
         // Use CompletableFuture to run listenToInput() in a separate thread
         CompletableFuture<Void> inputFuture = CompletableFuture.runAsync(this::listenToInput);
-
         // Wait for inputFuture to complete to ensure proper termination
         inputFuture.join();
     }
@@ -597,7 +594,6 @@ public enum Client {
         System.out.println(TextFX.colorize("Room Results:", Color.PURPLE));
         System.out.println(
                 String.join("\n", rooms));
-
     }
 
     private void processDisconnect(long clientId, String clientName) {
@@ -613,7 +609,6 @@ public enum Client {
     }
 
     private void processClientData(long clientId, String clientName) {
-
         if (myData.getClientId() == ClientData.DEFAULT_CLIENT_ID) {
             myData.setClientId(clientId);
             myData.setClientName(clientName);
