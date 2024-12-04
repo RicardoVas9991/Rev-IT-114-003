@@ -362,7 +362,8 @@ public enum Client {
         message = message.replaceAll("#b(.*?)b#", "<blue>$1</blue>");	
         // Convert #gtext g# to <green>text</green>	
         message = message.replaceAll("#g(.*?)g#", "<green>$1</green>");	
-        return message;	
+        chatArea.add(chatArea, message);
+                return message;	
     }
 
     /**
@@ -403,10 +404,14 @@ public enum Client {
             String[] parts = command.split(" ");
             if (parts.length == 3) {
                 try {
+                    if (parts[1].contains("d")) {
+                    }
                     int dice = Integer.parseInt(parts[1]);
                     int sides = Integer.parseInt(parts[2]);
+                    for (int i = 0; i < dice; i++) {
+                    }
                     RollPayload payload = new RollPayload(dice, sides);
-                    send(payload);
+                    chatArea.add(chatArea, payload);
                 } catch (NumberFormatException e) {
                     chatArea.add(chatArea,"Invalid roll command. Use /roll <dice> <sides>.");
                 }
@@ -421,7 +426,7 @@ public enum Client {
         if (command.equals("/flip")) {
             Payload payload = new Payload();
             payload.setPayloadType(PayloadType.FLIP);
-            send(payload);
+            chatArea.add(chatArea, payload);
         }
     }
 
