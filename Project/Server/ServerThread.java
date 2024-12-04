@@ -266,6 +266,26 @@ public class ServerThread extends BaseServerThread {
         return send(p);
     }
 
+    public boolean processMuteCommand(String command) {
+        String[] parts = command.split(" ", 2);
+        if (parts.length < 2) return isRunning;
+    
+        String action = parts[0].toLowerCase();
+        String target = parts[1].trim();
+    
+        switch (action) {
+            case "/mute":
+                mute(target);
+                break;
+            case "/unmute":
+                unmute(target);
+                break;
+            default:
+                System.out.println("Unknown command: " + command);
+        }
+                return isRunning;
+    }
+
     /**
      * Tells the client information about a client joining/leaving a room
      * 
@@ -315,25 +335,6 @@ public class ServerThread extends BaseServerThread {
         cp.setClientId(clientId);
         cp.setClientName(clientName);
         return send(cp);
-    }
-
-    public void processMuteCommand(String command) {
-        String[] parts = command.split(" ", 2);
-        if (parts.length < 2) return;
-    
-        String action = parts[0].toLowerCase();
-        String target = parts[1].trim();
-    
-        switch (action) {
-            case "/mute":
-                mute(target);
-                break;
-            case "/unmute":
-                unmute(target);
-                break;
-            default:
-                System.out.println("Unknown command: " + command);
-        }
     }
 
     // end send methods
