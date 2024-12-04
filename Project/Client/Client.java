@@ -192,8 +192,8 @@ public enum Client {
                     for (int i = 0; i < dice; i++) {
                     }
                     RollPayload rollPayload = new RollPayload(dice, sides, total);
-                    send(rollPayload);
                     LoggerUtil.INSTANCE.info("Dice rolled: ");
+                    System.out.println(rollPayload);
                     return true;
                 }
             }
@@ -201,8 +201,8 @@ public enum Client {
         } else if (text.startsWith("/flip") || text.startsWith("/toss")) {  // - Rev/11/-16-2024
             String sender = myData.getClientName();
             FlipPayload flipPayload = new FlipPayload(sender); // Result will be set server-side
-            send(flipPayload);
             LoggerUtil.INSTANCE.info("Coin flipped: ");
+            System.out.println(flipPayload);
             return true;
         } if (text.startsWith("/mute")) {  // Rev/11-23-2024 -  Show the client-side code that processes the text per the requirement
             String[] parts = text.split(" ");
