@@ -1,5 +1,4 @@
 package Project.Client;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -27,14 +26,12 @@ import Project.Common.RollPayload;
 import Project.Common.RoomResultsPayload;
 import Project.Common.TextFX;
 import Project.Common.TextFX.Color;
-
 /**
  * Demoing bi-directional communication between client and server in a
  * multi-client scenario
  */
 public enum Client {
     INSTANCE;
-
     
     private Socket server = null;
     private ObjectOutputStream out = null;
@@ -46,8 +43,8 @@ public enum Client {
     private ConcurrentHashMap<Long, ClientData> knownClients = new ConcurrentHashMap<>();   // - Rev/11/-16-2024
     private ClientData myData;
     public JPanel chatArea = new JPanel();
-    
-    
+
+
     // constants (used to reduce potential types when using them in code)
     private final String COMMAND_CHARACTER = "/";
     private final String CREATE_ROOM = "createroom";
@@ -57,16 +54,13 @@ public enum Client {
     private final String LOGOFF = "logoff";
     private final String LOGOUT = "logout";
     private final String SINGLE_SPACE = " ";
-
     // callback that updates the UI
     private static IClientEvents events;
-
     // needs to be private now that the enum logic is handling this
     private Client() {
         LoggerUtil.INSTANCE.info("Client Created");
         myData = new ClientData();
     }
-
     public boolean isConnected() {
         if (server == null) {
             return false;
@@ -77,7 +71,6 @@ public enum Client {
         // and is just for lesson's sake
         return server.isConnected() && !server.isClosed() && !server.isInputShutdown() && !server.isOutputShutdown();
     }
-
     /**
      * Takes an IP address and a port to attempt a socket connection to a server.
      * 
@@ -103,7 +96,6 @@ public enum Client {
         }
         return isConnected();
     }
-
     /**
      * Takes an ip address and a port to attempt a socket connection to a server.
      * 
@@ -133,7 +125,6 @@ public enum Client {
         }
         return isConnected();
     }
-
     /**
      * <p>
      * Check if the string contains the <i>connect</i> command
@@ -155,7 +146,6 @@ public enum Client {
         Matcher localhostMatcher = localhostPattern.matcher(text);
         return ipMatcher.matches() || localhostMatcher.matches();
     }
-
     /**
      * Controller for handling various text commands.
      * <p>
