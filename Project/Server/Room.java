@@ -270,20 +270,25 @@ public void handleRoll(ServerThread sender, int dice, int sides, int total) {
         return null;
     }
     
-    public void handlePrivateMessage(ServerThread sender, String targetName, String message) {
-        ServerThread receiver = getClientByName(targetName.trim().toLowerCase());
+    public void handlePrivateMessage(ServerThread sender, String targetId, String message) {
+        ServerThread receiver = getClientByName(targetId);
         if (receiver == null) {
-            sender.sendMessage("Error: User " + targetName + " does not exist.");
+            sender.sendMessage("Error: User with ID " + targetId + " does not exist.");
             return;
         }
-        // Check if sender is muted by the receiver
+    
+        // Check if the sender is muted by the receiver
         if (receiver.isMuted(sender.getClientName())) {
-            sender.sendMessage("Your message to " + targetName + " was not delivered. You are muted by them.");
+            sender.sendMessage("Your message to " + receiver.getClientName() + " was not delivered. You are muted by them.");
             return;
         }
-        // Send message to both sender and receiver
-        receiver.sendMessage(sender.getClientName() + " (private): " + message);
-        sender.sendMessage("(to " + targetName + "): " + message);
+    
+        // Send formatted messages to both sender and receiver
+        String senderMessage = formatMessage("(to " + receiver.getClientName() + "): " + message);
+        String receiverMessage = formatMessage(sender.getClientName() + " (private): " + message);
+    
+        sender.sendMessage(senderMessage);
+        receiver.sendMessage(receiverMessage);
     }
 
     public void handleMute(ServerThread sender, String targetName) {
@@ -307,25 +312,28 @@ public void handleRoll(ServerThread sender, int dice, int sides, int total) {
     }   
 
     public String formatMessage(String message) { // Rev/11-23-2024
-        String command = message;
-    
-        // Apply Bold, Italics, and Underline
-        command = applyFormatting(command, "*", "<b>", "</b>");
-        command = applyFormatting(command, "_", "<i>", "</i>");
-        command = applyFormatting(command, "~", "<u>", "</u>");
-    
-        // Apply Color
-        if (command.contains("#")) {
-            command = applyColorFormatting(command);
+        if (message == null || message.isEmpty()) {
+            return message; // Return as-is for empty/null input
         }
     
-        return command;
+        // Apply Bold, Italics, and Underline
+        message = applyFormatting(message, "*", "<b>", "</b>");
+        message = applyFormatting(message, "_", "<i>", "</i>");
+        message = applyFormatting(message, "~", "<u>", "</u>");
+    
+        // Apply Color Formatting
+        if (message.contains("#")) {
+            message = applyColorFormatting(message);
+        }
+    
+        return message;
     }
     
     private String applyFormatting(String text, String delimiter, String openTag, String closeTag) {
-        if (!text.contains(delimiter)) return text;
+        if (!text.contains(delimiter)) return text; // Skip if no delimiter found
+    
         StringBuilder result = new StringBuilder();
-        boolean isOpen = false;
+        boolean isOpen = false; // Track tag state
         for (char c : text.toCharArray()) {
             if (String.valueOf(c).equals(delimiter)) {
                 result.append(isOpen ? closeTag : openTag);
@@ -334,23 +342,39 @@ public void handleRoll(ServerThread sender, int dice, int sides, int total) {
                 result.append(c);
             }
         }
+    
+        // Ensure closing tag is added for unbalanced delimiters
+        if (isOpen) {
+            result.append(closeTag);
+        }
+    
         return result.toString();
     }
     
     private String applyColorFormatting(String text) {
         StringBuilder result = new StringBuilder();
         String[] parts = text.split("#");
-        String color = "black";
+        String color = "black"; // Default color
+    
         for (int i = 0; i < parts.length; i++) {
-            if (i % 2 == 1) { // Odd indices are colors
-                color = parts[i].trim();
-            } else {
-                result.append("<font color=").append(color).append(">").append(parts[i]).append("</font>");
-                color = "black"; // Reset to default
+            if (i % 2 == 1) { // Odd indices are color codes
+                String potentialColor = parts[i].split(" ")[0].trim(); // Extract potential color code
+                if (isValidColorCode(potentialColor)) {
+                    color = potentialColor; // Update color if valid
+                }
+                parts[i] = parts[i].substring(potentialColor.length()).trim(); // Remove color code
             }
+            result.append("<font color=\"").append(color).append("\">").append(parts[i]).append("</font>");
+            color = "black"; // Reset to default after each segment
         }
+    
         return result.toString();
-    }    
-
+    }
+    
+    private boolean isValidColorCode(String color) {
+        // Validate named color or hexadecimal color code
+        return color.matches("^[a-zA-Z]+$") || color.matches("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$");
+    }
+    
     // end receive data from ServerThread
 }

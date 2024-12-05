@@ -56,13 +56,4 @@ public class Payload implements Serializable {
         return String.format("Payload[%s] Client Id [%s] Message: [%s]", getPayloadType(), getClientId(), getMessage());
     }
 
-
-
-    public Payload replaceAll(String string, String string2) {
-       if (this.message != null) {
-        this.message = this.message.replaceAll(string, string2);
-        }
-            return null;
-    }
-
 }

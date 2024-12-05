@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 
 import Project.Client.Interfaces.IConnectionEvents;
 import Project.Client.Interfaces.IClientEvents;
@@ -22,6 +23,7 @@ import Project.Common.FlipPayload;
 import Project.Common.LoggerUtil;
 import Project.Common.Payload;
 import Project.Common.PayloadType;
+import Project.Common.PrivateMessagePayload;
 import Project.Common.RollPayload;
 import Project.Common.RoomResultsPayload;
 import Project.Common.TextFX;
@@ -43,6 +45,7 @@ public enum Client {
     private ConcurrentHashMap<Long, ClientData> knownClients = new ConcurrentHashMap<>();   // - Rev/11/-16-2024
     private ClientData myData;
     public JPanel chatArea = new JPanel();
+    private JTextArea chatWindow; // Example for Swing
 
 
     // constants (used to reduce potential types when using them in code)
@@ -240,7 +243,7 @@ public enum Client {
                 String message = parts[1].trim(); // Trim the message content
         
                 if (target.isEmpty() || message.isEmpty()) {
-                    ((Appendable) chatArea).append("Invalid private message. Username or message cannot be empty.\n");
+                    chatArea.add(chatArea,"Invalid private message. Username or message cannot be empty.\n");
                     return isRunning;
                 }
         
@@ -250,7 +253,7 @@ public enum Client {
                 payload.setMessage(message);
                 send(payload); // Send the payload to the server
             } else {
-                ((Appendable) chatArea).append("Invalid private message. Use @<username> <message>.\n");
+                chatArea.add(chatArea,"Invalid private message. Use @<username> <message>.\n");
             }
         } else { // logic previously from Room.java
             // decided to make this as separate block to separate the core client-side items
@@ -361,21 +364,11 @@ public enum Client {
         send(p);
     }
 
-    public void processTextFormatting(Payload message) throws IOException {	
-        // Convert **text** to <b>text</b>	
-        message = message.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>");	
-        // Convert *text* to <i>text</i>	
-        message = message.replaceAll("\\*(.*?)\\*", "<i>$1</i>");	
-        // Convert _text_ to <u>text</u>	
-        message = message.replaceAll("_(.*?)_", "<u>$1</u>");	
-        // Convert #rtext r# to <red>text</red>	
-        message = message.replaceAll("#r(.*?)r#", "<red>$1</red>");	
-        // Convert #btext b# to <blue>text</blue>	
-        message = message.replaceAll("#b(.*?)b#", "<blue>$1</blue>");	
-        // Convert #gtext g# to <green>text</green>	
-        message = message.replaceAll("#g(.*?)g#", "<green>$1</green>");	
-        send(message);
+    public void sendPrivateMessage(String clientId, String targetId, String message) {
+        PrivateMessagePayload privateMessagePayload = new PrivateMessagePayload(clientId, targetId, message);
+        processPayload(privateMessagePayload); // Send to the server
     }
+
 
     /**
      * Sends chosen client name after socket handshake
@@ -593,6 +586,10 @@ public enum Client {
                 case PayloadType.MESSAGE: // displays a received message
                     processMessage(payload.getClientId(), payload.getMessage());
                     break;
+                case PRIVATE_MESSAGE:
+                    PrivateMessagePayload pmp = (PrivateMessagePayload) payload;
+                    displayPrivateMessage(pmp.getSenderId(), pmp.getMessage());
+                    break;
                 default:
                     break;
             }
@@ -714,6 +711,11 @@ public enum Client {
         } else {
             chatArea.add(chatArea, "Unknown command: " + command);
         }
+    }
+
+    private void displayPrivateMessage(String senderId, String message) {
+        String formattedMessage = "(Private) " + senderId + ": " + message;
+        chatWindow.append(formattedMessage + "\n"); // Display in the chat UI
     }
 
     // end payload processors

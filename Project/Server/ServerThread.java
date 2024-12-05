@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import Project.Common.PayloadType;
+import Project.Common.PrivateMessagePayload;
 import Project.Common.RoomResultsPayload;
 import Project.Common.Payload;
 
@@ -165,20 +166,8 @@ public class ServerThread extends BaseServerThread {
                         LoggerUtil.INSTANCE.warning("Client is not in a room. Ignoring message: " + payload.getMessage());
                         return;
                     }
-                    String message = payload.getMessage();
-                    if (message.startsWith("@")) {
-                        int spaceIndex = message.indexOf(' ');
-                        if (spaceIndex > 1) {
-                            String targetName = message.substring(1, spaceIndex).trim();
-                            String privateMessage = message.substring(spaceIndex + 1).trim();
-                            currentRoom.handlePrivateMessage(this, targetName, privateMessage);
-                        } else {
-                            sendMessage("Error: Invalid private message format. Use @username <message>.");
-                        }
-                    } else {
-                        currentRoom.sendMessage(this, message);
-                    }
-                    break;                
+                    currentRoom.sendMessage(this, payload.getMessage());
+                        break;                
                 case ROOM_CREATE:
                     currentRoom.handleCreateRoom(this, payload.getMessage());
                     break;
@@ -222,8 +211,17 @@ public class ServerThread extends BaseServerThread {
                         LoggerUtil.INSTANCE.info("User " + getClientName() + " unmuted " + unmuteTarget); // Log the action
                     }
                     break; // - Rev/11-25-2024
+                case PRIVATE_MESSAGE:
+                    PrivateMessagePayload pmp = (PrivateMessagePayload) payload;
+                    if (currentRoom != null) {
+                        currentRoom.handlePrivateMessage(this, pmp.getTargetId(), pmp.getMessage());
+                    } else {
+                        sendMessage("Error: You are not in a room.");
+                    }
+                    break;
                 default:
                     currentRoom.sendMessage(this, payload.toString());
+                    LoggerUtil.INSTANCE.info("Unhandled payload type: " + payload.getPayloadType());
                     break;
             }
         } catch (Exception e) {
