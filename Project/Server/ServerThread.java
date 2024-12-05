@@ -84,6 +84,17 @@ public class ServerThread extends BaseServerThread {
             //save();
         }
     }
+    
+
+    private void sendMessageToClient(String name, String message) {
+        // Send a notification to the client (name) with the message
+        // Use your existing message-sending logic
+        Payload p = new Payload();
+        p.setClientId(clientId);
+        p.setMessage(message);
+        p.setPayloadType(PayloadType.MESSAGE);
+        return;
+    }
 
     // private void save() {
     //     try {
@@ -191,6 +202,7 @@ public class ServerThread extends BaseServerThread {
                     break;
                 case MUTE:
                     String muteTarget = payload.getMessage().trim().toLowerCase(); // Extract the target username
+                    currentRoom.handleMute(null, muteTarget);
                     if (muteTarget.isEmpty()) {
                         sendMessage("Error: Mute command requires a valid username."); // Send error if empty
                     } else {
@@ -201,6 +213,7 @@ public class ServerThread extends BaseServerThread {
                     break; // - Rev/11-25-2024
                 case UNMUTE: 
                     String unmuteTarget = payload.getMessage().trim().toLowerCase(); // Extract the target username
+                    currentRoom.handleUnmute(null, unmuteTarget);
                     if (unmuteTarget.isEmpty()) {
                         sendMessage("Error: Unmute command requires a valid username."); // Send error if empty
                     } else {
@@ -259,15 +272,6 @@ public class ServerThread extends BaseServerThread {
         p.setMessage(message);
         p.setPayloadType(PayloadType.MESSAGE);
         return send(p);
-    }
-
-    private void sendMessageToClient(String name, String message) {
-        // Send a notification to the client (name) with the message
-        Payload p = new Payload();
-        p.setClientId(clientId);
-        p.setMessage(message);
-        p.setPayloadType(PayloadType.MESSAGE);
-        System.out.println("Notification to " + name + ": " + message);
     }
 
     public boolean processMuteCommand(String command) {
