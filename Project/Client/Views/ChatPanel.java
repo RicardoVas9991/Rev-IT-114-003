@@ -14,12 +14,19 @@ import java.awt.event.ContainerListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -238,4 +245,54 @@ public class ChatPanel extends JPanel {
             });
         });
     }
+
+    // Chat History Export (Client-Side) - Milestone4 - rev/12/4/2024
+    // Add this button to the chat UI
+    JButton exportButton = new JButton("Export Chat");
+    exportButton.addActionListener(e -> exportChatHistory());
+    // Add exportButton to the UI (e.g., a panel)
+
+    // Method to export chat history
+    private void exportChatHistory() {
+        // rev/12/4/2024
+        try {
+            StringBuilder chatHistory = new StringBuilder();
+            for (String message : chatMessages) { // Replace 'chatMessages' with your message list
+                chatHistory.append(message).append("\n");
+            }
+            // Create unique filename with date-time
+            String filename = "chat_export_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".txt";
+            Files.write(Paths.get(filename), chatHistory.toString().getBytes());
+            JOptionPane.showMessageDialog(this, "Chat exported to " + filename, "Export Success", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Failed to export chat: " + ex.getMessage(), "Export Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // Update user list UI
+    private void updateUserList(Set<String> users, String lastSender) {
+        // rev/12/4/2024
+        userListPanel.removeAll(); // Assuming userListPanel holds the user list
+        for (String user : users) {
+            JLabel userLabel = new JLabel(user);
+            if (mutedUsers.contains(user)) { // mutedUsers is a client-side list of muted users
+                userLabel.setForeground(Color.GRAY);
+            }
+            if (user.equals(lastSender)) {
+                userLabel.setFont(userLabel.getFont().deriveFont(Font.BOLD));
+            }
+            userListPanel.add(userLabel);
+        }
+        userListPanel.revalidate();
+        userListPanel.repaint();
+    }
+
+    // Handle incoming messages
+    private void handleIncomingMessage(String sender, String message) {
+        // rev/12/4/2024
+        lastSender = sender; // Track the last sender
+        chatMessages.add(message); // Add to chat history
+        updateUserList(connectedUsers, lastSender); // Update user list
+    }
+
 }

@@ -3,9 +3,15 @@ package Project.Server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import Project.Common.LoggerUtil;
 
@@ -159,4 +165,40 @@ public enum Server {
         server.start(port);
         LoggerUtil.INSTANCE.info("Server Stopped");
     }
+
+    //Extra Credit Features - Milestone4 - rev/12/4/2024
+    // Server stats panel
+    JPanel statsPanel = new JPanel();
+    JLabel uptimeLabel = new JLabel("Uptime: ");
+    JLabel memoryLabel = new JLabel("Memory Usage: ");
+    statsPanel.@add(uptimeLabel);
+    statsPanel.add(memoryLabel);
+
+    // Update stats periodically
+    new Timer(1000, e -> {
+        long uptime = System.currentTimeMillis() - serverStartTime;
+        uptimeLabel.setText("Uptime: " + (uptime / 1000) + " seconds");
+        memoryLabel.setText("Memory Usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / (1024 * 1024) + " MB");
+    }).start();
+
+    JButton stopServerButton = new JButton("Stop Server");
+    stopServerButton.@addActionListener(e -> {
+        try {
+            serverSocket.close();
+            System.exit(0);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    });
+    statsPanel.add(stopServerButton);
+
+    // public static void main(String[] args) {
+    //     boolean headless = Arrays.asList(args).contains("--headless");
+    //     if (!headless) {
+    //         SwingUtilities.invokeLater(() -> new ServerUI().setVisible(true)); // Start server with UI
+    //     }
+    //     new Server().start(); // Start server
+    // }
+
+
 }

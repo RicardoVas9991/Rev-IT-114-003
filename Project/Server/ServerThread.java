@@ -1,10 +1,15 @@
 package Project.Server;
 
+import java.io.IOException;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import Project.Common.PayloadType;
 import Project.Common.PrivateMessagePayload;
@@ -55,52 +60,66 @@ public class ServerThread extends BaseServerThread {
     }
 
 // Rev/11-23-2024
-    List<String> mutedClients = new ArrayList<String>(); 
+    private List<String> mutedClients = new ArrayList<>();
     
+    public void MuteManager(String clientName) {
+        this.clientName = clientName.toLowerCase().trim();
+        load(); // Load the mute list during initialization
+    }
+
     public List<String> getMutedClients() {
-    	 return this.mutedClients;
-     }
-     
-     public void mute(String name) {
+        return this.mutedClients;
+    }
+
+    public void mute(String name) {
         name = name.trim().toLowerCase();
         if (!isMuted(name)) {
             mutedClients.add(name);
-            // Notify the muted user
+            save();
             sendMessageToClient(name, "You have been muted by " + this.clientName);
-            //save();
         }
     }
-    
+
     public void unmute(String name) {
         name = name.trim().toLowerCase();
         if (isMuted(name)) {
             mutedClients.remove(name);
-            // Notify the unmuted user
+            save();
             sendMessageToClient(name, "You have been unmuted by " + this.clientName);
-            //save();
         }
     }
-    
-
-    private void sendMessageToClient(String name, String message) {
-        // Send a notification to the client (name) with the message
-        // Use your existing message-sending logic
-        System.out.println("Notification to " + name + ": " + message);
-    }
-
-    // private void save() {
-    //     try {
-    //         Path filePath = Paths.get(this.clientName + ".txt");
-    //         Files.write(filePath, mutedClients);
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    // }
 
     public boolean isMuted(String name) {
-     	name = name.trim().toLowerCase();
-     	return mutedClients.contains(name);
-   	}
+        name = name.trim().toLowerCase();
+        return mutedClients.contains(name);
+    }
+
+    private void save() {
+        try {
+            Path filePath = Paths.get(this.clientName + ".txt");
+            Files.write(filePath, mutedClients);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void load() {
+        try {
+            Path filePath = Paths.get(this.clientName + ".txt");
+            if (Files.exists(filePath)) {
+                mutedClients = Files.readAllLines(filePath).stream()
+                                   .map(String::toLowerCase)
+                                   .collect(Collectors.toList());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendMessageToClient(String target, String message) {
+        // Implementation to send message to the client (replace with your actual method)
+        System.out.println("Sending to " + target + ": " + message);
+    }
 
     public String getClientName() {
         return clientName;
@@ -273,25 +292,18 @@ public class ServerThread extends BaseServerThread {
         return send(p);
     }
 
-    public boolean processMuteCommand(String command) {
+    public void processMuteCommands(String command) {
         String[] parts = command.split(" ", 2);
-        if (parts.length < 2) return isRunning;
-    
         String action = parts[0].toLowerCase();
-        String target = parts[1].trim();
+        String target = parts.length > 1 ? parts[1].trim() : null;
     
-        switch (action) {
-            case "/mute":
-                mute(target);
-                break;
-            case "/unmute":
-                unmute(target);
-                break;
-            default:
-                System.out.println("Unknown command: " + command);
+        if (action.equals("/mute") && target != null) {
+            mute(target);
+        } else if (action.equals("/unmute") && target != null) {
+            unmute(target);
         }
-                return isRunning;
     }
+    
 
     /**
      * Tells the client information about a client joining/leaving a room
