@@ -1,5 +1,4 @@
 package Project.Client;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -12,6 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+
 import Project.Client.Interfaces.IConnectionEvents;
 import Project.Client.Interfaces.IClientEvents;
 import Project.Client.Interfaces.IMessageEvents;
@@ -21,29 +23,18 @@ import Project.Common.FlipPayload;
 import Project.Common.LoggerUtil;
 import Project.Common.Payload;
 import Project.Common.PayloadType;
+import Project.Common.PrivateMessagePayload;
 import Project.Common.RollPayload;
 import Project.Common.RoomResultsPayload;
 import Project.Common.TextFX;
 import Project.Common.TextFX.Color;
-
 /**
  * Demoing bi-directional communication between client and server in a
  * multi-client scenario
  */
 public enum Client {
     INSTANCE;
-
-    {
-        // TODO moved to ClientUI (this repeat doesn't do anything since config is set
-        // only once)
-        // statically initialize the client-side LoggerUtil
-        LoggerUtil.LoggerConfig config = new LoggerUtil.LoggerConfig();
-        config.setFileSizeLimit(2048 * 1024); // 2MB
-        config.setFileCount(1);
-        config.setLogLocation("client.log");
-        // Set the logger configuration
-        LoggerUtil.INSTANCE.setConfig(config);
-    }
+    
     private Socket server = null;
     private ObjectOutputStream out = null;
     private ObjectInputStream in = null;
@@ -53,11 +44,10 @@ public enum Client {
     private volatile boolean isRunning = true; // volatile for thread-safe visibility
     private ConcurrentHashMap<Long, ClientData> knownClients = new ConcurrentHashMap<>();   // - Rev/11/-16-2024
     private ClientData myData;
-    
-    
-    
+    public JPanel chatArea = new JPanel();
+    private JTextArea chatWindow; // Example for Swing
 
-    
+
     // constants (used to reduce potential types when using them in code)
     private final String COMMAND_CHARACTER = "/";
     private final String CREATE_ROOM = "createroom";
@@ -67,16 +57,13 @@ public enum Client {
     private final String LOGOFF = "logoff";
     private final String LOGOUT = "logout";
     private final String SINGLE_SPACE = " ";
-
     // callback that updates the UI
     private static IClientEvents events;
-
     // needs to be private now that the enum logic is handling this
     private Client() {
         LoggerUtil.INSTANCE.info("Client Created");
         myData = new ClientData();
     }
-
     public boolean isConnected() {
         if (server == null) {
             return false;
@@ -87,7 +74,6 @@ public enum Client {
         // and is just for lesson's sake
         return server.isConnected() && !server.isClosed() && !server.isInputShutdown() && !server.isOutputShutdown();
     }
-
     /**
      * Takes an IP address and a port to attempt a socket connection to a server.
      * 
@@ -113,7 +99,6 @@ public enum Client {
         }
         return isConnected();
     }
-
     /**
      * Takes an ip address and a port to attempt a socket connection to a server.
      * 
@@ -143,7 +128,6 @@ public enum Client {
         }
         return isConnected();
     }
-
     /**
      * <p>
      * Check if the string contains the <i>connect</i> command
@@ -165,7 +149,6 @@ public enum Client {
         Matcher localhostMatcher = localhostPattern.matcher(text);
         return ipMatcher.matches() || localhostMatcher.matches();
     }
-
     /**
      * Controller for handling various text commands.
      * <p>
@@ -204,21 +187,21 @@ public enum Client {
         } else if (text.startsWith("/roll")) {  // - Rev/11/-16-2024
             String[] parts = text.split(" ");
             if (parts.length == 2) {
-                String sender = myData.getClientName(); // Assuming a name attribute exists
-                if (parts[1].contains("d")) {
-                    String[] diceParts = parts[1].split("d");
+                if (parts[1].contains(",")) {
+                    String[] diceParts = parts[1].split(",");
                     int dice = Integer.parseInt(diceParts[0]);
                     int sides = Integer.parseInt(diceParts[1]);
                     int total = 0;
                     for (int i = 0; i < dice; i++) {
                         total += (int) (Math.random() * sides) + 1;
                     }
-                    RollPayload rollPayload = new RollPayload(sender, dice, sides, total);
+                    RollPayload rollPayload = new RollPayload(dice, sides, total);
+                    LoggerUtil.INSTANCE.info("Dice rolled: ");
                     System.out.println(rollPayload);
                     return true;
-                } else {
+                    } else {	               
                     int sides = Integer.parseInt(parts[1]);
-                    RollPayload rollPayload = new RollPayload(sender, 1, sides, sides);
+                    RollPayload rollPayload = new RollPayload( 1, sides, sides);
                     System.out.println(rollPayload);
                     return true;
                 }
@@ -227,8 +210,51 @@ public enum Client {
         } else if (text.startsWith("/flip") || text.startsWith("/toss")) {  // - Rev/11/-16-2024
             String sender = myData.getClientName();
             FlipPayload flipPayload = new FlipPayload(sender); // Result will be set server-side
+            LoggerUtil.INSTANCE.info("Coin flipped: ");
             System.out.println(flipPayload);
             return true;
+        } if (text.startsWith("/mute")) {  // Rev/11-23-2024 -  Show the client-side code that processes the text per the requirement
+            String[] parts = text.split(" ");
+            if (parts.length == 2) {
+                Payload payload = new Payload();
+                payload.setPayloadType(PayloadType.MUTE);
+                payload.setMessage(parts[1]); // Username to mute
+                send(payload);
+                LoggerUtil.INSTANCE.info("Client muted: ");
+            } else {
+                chatArea.add(chatArea, "Invalid mute command. Use /mute <username>.");
+            }
+        } if (text.startsWith("/unmute")) {
+            String[] parts = text.split(" ");
+            if (parts.length == 2) {
+                Payload payload = new Payload();
+                payload.setPayloadType(PayloadType.UNMUTE);
+                payload.setMessage(parts[1]); // Username to unmute
+                send(payload);
+                LoggerUtil.INSTANCE.info("Client unmuted: ");
+            } else {
+                chatArea.add(chatArea,"Invalid unmute command. Use /unmute <username>.");
+            }
+        } if (text.startsWith("@")) {
+            text = text.trim(); // Remove leading and trailing spaces
+            String[] parts = text.split(" ", 2); // Split into username and message
+            if (parts.length == 2) {
+                String target = parts[0].substring(1).toLowerCase(); // Remove '@' and convert to lowercase
+                String message = parts[1].trim(); // Trim the message content
+        
+                if (target.isEmpty() || message.isEmpty()) {
+                    chatArea.add(chatArea,"Invalid private message. Username or message cannot be empty.\n");
+                    return isRunning;
+                }
+        
+                Payload payload = new Payload();
+                payload.setPayloadType(PayloadType.MESSAGE);
+                payload.setTarget(target); // Target username
+                payload.setMessage(message);
+                send(payload); // Send the payload to the server
+            } else {
+                chatArea.add(chatArea,"Invalid private message. Use @<username> <message>.\n");
+            }
         } else { // logic previously from Room.java
             // decided to make this as separate block to separate the core client-side items
             // vs the ones that generally are used after connection and that send requests
@@ -338,6 +364,16 @@ public enum Client {
         send(p);
     }
 
+    public void sendPrivateMessage(String targetId, String message) {
+        String privateMessage = "@" + targetId + " " + message;
+        Payload payload = new Payload();
+        payload.setPayloadType(PayloadType.MESSAGE);
+        payload.setMessage(privateMessage);
+        processPayload(payload);
+    }
+    
+
+
     /**
      * Sends chosen client name after socket handshake
      * 
@@ -367,16 +403,51 @@ public enum Client {
             LoggerUtil.INSTANCE.severe("Socket send exception", e);
             throw e;
         }
-
     }
+
+    // Rev 11/26/2024
+    private void sendRollCommand(String command) throws IOException {
+        // Parse the roll details, assuming format "numberOfDice sides"
+        if (command.startsWith("/roll")) {
+            String[] parts = command.split(" ");
+            if (parts.length == 3) {
+                try {
+                    if (parts[1].contains(",")) {
+                    }
+                    int dice = Integer.parseInt(parts[1]);
+                    int sides = Integer.parseInt(parts[2]);
+                    int total = 0;
+                    for (int i = 0; i < dice; i++) {
+                        total += (int) (Math.random() * sides) + 1;
+                    }
+                    RollPayload payload = new RollPayload(dice, sides, total);
+                    chatArea.add(chatArea, payload);
+                    LoggerUtil.INSTANCE.info("Dice rolled: ");
+                } catch (NumberFormatException e) {
+                    chatArea.add(chatArea,"Invalid roll command. Use /roll <dice> <sides>.");
+                }
+            } else {
+                chatArea.add(chatArea,"Invalid roll command. Use /roll <dice> <sides>.");
+            }
+        }
+    }
+
+    private void sendFlipCommand(String command) throws IOException {
+        // Create a payload for the /flip command
+        if (command.equals("/flip")) {
+            Payload payload = new Payload();
+            payload.setPayloadType(PayloadType.FLIP);
+            chatArea.add(chatArea, payload);
+            LoggerUtil.INSTANCE.info("Coin flipped: ");
+        }
+    }
+
     // end send methods
 
     public void start() throws IOException {
         LoggerUtil.INSTANCE.info("Client starting");
-
         // Use CompletableFuture to run listenToInput() in a separate thread
         CompletableFuture<Void> inputFuture = CompletableFuture.runAsync(this::listenToInput);
-
         // Wait for inputFuture to complete to ensure proper termination
         inputFuture.join();
     }
@@ -519,6 +590,10 @@ public enum Client {
                 case PayloadType.MESSAGE: // displays a received message
                     processMessage(payload.getClientId(), payload.getMessage());
                     break;
+                case PRIVATE_MESSAGE:
+                    PrivateMessagePayload pmp = (PrivateMessagePayload) payload;
+                    displayPrivateMessage(pmp.getSenderId(), pmp.getMessage());
+                    break;
                 default:
                     break;
             }
@@ -556,7 +631,6 @@ public enum Client {
         System.out.println(TextFX.colorize("Room Results:", Color.PURPLE));
         System.out.println(
                 String.join("\n", rooms));
-
     }
 
     private void processDisconnect(long clientId, String clientName) {
@@ -572,11 +646,11 @@ public enum Client {
     }
 
     private void processClientData(long clientId, String clientName) {
-
         if (myData.getClientId() == ClientData.DEFAULT_CLIENT_ID) {
             myData.setClientId(clientId);
             myData.setClientName(clientName);
             // invoke onReceiveClientId callback
+            LoggerUtil.INSTANCE.info("ClientId processed: ");
             ((IConnectionEvents) events).onReceiveClientId(clientId);
             // knownClients.put(cp.getClientId(), myData);// <-- this is handled later
         }
@@ -630,6 +704,24 @@ public enum Client {
             }
         }
     }
+
+    // Rev 11/26/2024 - Example command processing logic in Client.java
+    public void processCommand(String command) throws IOException {
+        if (command.startsWith("/roll")) {
+            String rollDetails = command.substring(5).trim(); // Extract the details after "/roll"
+            sendRollCommand(rollDetails);
+        } else if (command.equalsIgnoreCase("/flip")) {
+            sendFlipCommand(command);
+        } else {
+            chatArea.add(chatArea, "Unknown command: " + command);
+        }
+    }
+
+    private void displayPrivateMessage(String senderId, String message) {
+        String formattedMessage = "(Private) " + senderId + ": " + message;
+        chatWindow.append(formattedMessage + "\n"); // Display in the chat UI
+    }
+
     // end payload processors
 
 }

@@ -58,7 +58,7 @@ public class ConnectionPanel extends JPanel {
         // Add Next button
         JButton button = new JButton("Next");
         button.setAlignmentX(JButton.CENTER_ALIGNMENT); // Center the button
-        button.addActionListener((event) -> {
+        button.addActionListener(_ -> {
             SwingUtilities.invokeLater(() -> {
                 boolean isValid = true;
                 try {
@@ -84,7 +84,7 @@ public class ConnectionPanel extends JPanel {
         controls.addPanel(CardView.CONNECT.name(), this); // Add panel to controls
     }
 
-    /**
+     /**
      * Gets the host value entered by the user.
      * 
      * @return the host value.

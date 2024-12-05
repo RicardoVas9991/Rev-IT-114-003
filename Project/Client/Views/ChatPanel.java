@@ -115,7 +115,7 @@ public class ChatPanel extends JPanel {
             }
         });
 
-        button.addActionListener((event) -> {
+        button.addActionListener((_) -> {
             SwingUtilities.invokeLater(() -> {
                 try {
                     String text = textValue.getText().trim();

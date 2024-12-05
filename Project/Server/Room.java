@@ -202,6 +202,7 @@ public class Room implements AutoCloseable{
         // to be sent
         // Note: this uses a lambda expression for each item in the values() collection,
         // it's one way we can safely remove items during iteration
+
         info(String.format("sending message to %s recipients: %s", clientsInRoom.size(), message));
         clientsInRoom.values().removeIf(client -> {
             boolean failedToSend = !client.sendMessage(senderId, message);
@@ -211,6 +212,15 @@ public class Room implements AutoCloseable{
             }
             return failedToSend;
         });
+
+        for (ServerThread client : clients) {
+            // Skip sending messages to clients who have muted the sender
+            if (client.isMuted(sender.getClientName())) {
+                LoggerUtil.INSTANCE.info("Message skipped for " + client.getClientName() + " (muted " + sender.getClientName() + ").");
+                continue;
+            }
+            client.sendMessage(sender.getClientName() + ": " + message);
+        }
     }
     // end send data to client(s)
 
@@ -237,58 +247,144 @@ public class Room implements AutoCloseable{
     protected void clientDisconnect(ServerThread sender) {
         disconnect(sender);
     }
-
-    public void handleRoll(ServerThread sender, int dice, int sides, int total) {   // - Rev/11/-16-2024
-        for (int i = 0; i < dice; i++) {
-            total += (int) (Math.random() * sides) + 1;
-        }
-        String message = sender.getClientName() + " rolled " + dice + "d#" + sides + " and got " + total;
-        broadcastMessage(sender, message);
+    // Rev/11-25-2024 - Show the code on the Room side that changes this format
+    public void handleRoll(ServerThread sender, int dice, int sides, int total) {
+    String formattedResult = String.format("**%s rolled %d dice with %d sides each and got a total of: %d**", sender.getClientName(), dice, sides, total);
+        sendMessage(null, formattedResult);
     }
     
-    public void handleFlip(ServerThread sender) {   // - Rev/11/-16-2024
-        String result = Math.random() < 0.5 ? "heads" : "tails";
-        String message = sender.getClientName() + " flipped a coin and got " + result;
-        broadcastMessage(sender, message);
+    // Rev/11-25-2024 - Show the code on the Room side that changes this format
+    public void handleFlip(ServerThread sender) {
+        String result = Math.random() < 0.5 ? "Heads" : "Tails";
+        String formattedResult = String.format("**%s flipped a coin and got a: %s**", sender.getClientName(), result);
+        sendMessage(null, formattedResult);
+    }
+    
+
+    private ServerThread getClientByName(String name) {
+        for (ServerThread client : clients) {
+            if (client.getClientName().equalsIgnoreCase(name)) {
+                return client;
+            }
+        }
+        return null;
     }
 
-    public String formatMessage(String message) {   // - Rev/11/-16-2024
-        // Bold
-        message = message.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>");
-        // Italics
-        message = message.replaceAll("\\*(.*?)\\*", "<i>$1</i>");
-        // Underline
-        message = message.replaceAll("_(.*?)_", "<u>$1</u>");
-        // Colors (example for red, green, blue)
-        message = message.replaceAll("#r(.*?)r#", "<red>$1</red>");
-        message = message.replaceAll("#g(.*?)g#", "<green>$1</green>");
-        message = message.replaceAll("#b(.*?)b#", "<blue>$1</blue>");
+    public ServerThread getClientById(String clientId) {
+        for (ServerThread client : clients) {
+            if (String.valueOf(client.getClientId()).equals(clientId)) {
+                return client;
+            }
+        }
+        return null; // Return null if not found
+    }
+    
+    
+    public void handlePrivateMessage(ServerThread sender, String targetId, String message) {
+        ServerThread receiver = getClientById(targetId);
+        if (receiver == null) {
+            sender.sendMessage("Error: User with ID " + targetId + " does not exist.");
+            return;
+        }
+    
+        // Check if the sender is muted by the receiver
+        if (receiver.isMuted(sender.getClientName())) {
+            sender.sendMessage("Your message to " + receiver.getClientName() + " was not delivered. You are muted by them.");
+            return;
+        }
+    
+        // Send formatted messages to both sender and receiver
+        String senderMessage = formatMessage("(to " + receiver.getClientName() + "): " + message);
+        String receiverMessage = formatMessage(sender.getClientName() + " (private): " + message);
+    
+        sender.sendMessage(senderMessage);
+        receiver.sendMessage(receiverMessage);
+    }
+
+    public void handleMute(ServerThread sender, String targetName) {
+        ServerThread target = getClientByName(targetName.trim().toLowerCase());
+        if (target == null) {
+            sender.sendMessage("Error: User " + targetName + " does not exist.");
+            return;
+        }
+        sender.mute(targetName);
+        sender.sendMessage("You have muted " + targetName + ".");
+    }
+    
+    public void handleUnmute(ServerThread sender, String targetName) {
+        ServerThread target = getClientByName(targetName.trim().toLowerCase());
+        if (target == null) {
+            sender.sendMessage("Error: User " + targetName + " does not exist.");
+            return;
+        }
+        sender.unmute(targetName);
+        sender.sendMessage("You have unmuted " + targetName + ".");
+    }   
+
+    public String formatMessage(String message) { // Rev/11-23-2024
+        if (message == null || message.isEmpty()) {
+            return message; // Return as-is for empty/null input
+        }
+    
+        // Apply Bold, Italics, and Underline
+        message = applyFormatting(message, "*", "<b>", "</b>");
+        message = applyFormatting(message, "_", "<i>", "</i>");
+        message = applyFormatting(message, "~", "<u>", "</u>");
+    
+        // Apply Color Formatting
+        if (message.contains("#")) {
+            message = applyColorFormatting(message);
+        }
+    
         return message;
     }
     
-    public void broadcastMessage(ServerThread sender, String message) {
-        String formattedMessage = formatMessage(message);
-        for (ServerThread client : clients) {
-            client.sendMessage(formattedMessage);
+    private String applyFormatting(String text, String delimiter, String openTag, String closeTag) {
+        if (!text.contains(delimiter)) return text; // Skip if no delimiter found
+    
+        StringBuilder result = new StringBuilder();
+        boolean isOpen = false; // Track tag state
+        for (char c : text.toCharArray()) {
+            if (String.valueOf(c).equals(delimiter)) {
+                result.append(isOpen ? closeTag : openTag);
+                isOpen = !isOpen;
+            } else {
+                result.append(c);
+            }
         }
-    }    
-
-    public static void main(String[] args) {    // - Rev/11/-16-2024
-        try (Room room = new Room("TestRoom")) {
-            // Test bold
-            System.out.println(room.formatMessage("**Bold text**")); // Should output: <b>Bold text</b>
-   
-            // Test italics
-            System.out.println(room.formatMessage("*Italic text*")); // Should output: <i>Italic text</i>
-   
-            // Test underline
-            System.out.println(room.formatMessage("_Underlined text_")); // Should output: <u>Underlined text</u>
-   
-            // Test colors
-            System.out.println(room.formatMessage("#rRed textr#")); // Should output: <red>Red text</red>
+    
+        // Ensure closing tag is added for unbalanced delimiters
+        if (isOpen) {
+            result.append(closeTag);
         }
+    
+        return result.toString();
     }
     
-
+    private String applyColorFormatting(String text) {
+        StringBuilder result = new StringBuilder();
+        String[] parts = text.split("#");
+        String color = "black"; // Default color
+    
+        for (int i = 0; i < parts.length; i++) {
+            if (i % 2 == 1) { // Odd indices are color codes
+                String potentialColor = parts[i].split(" ")[0].trim(); // Extract potential color code
+                if (isValidColorCode(potentialColor)) {
+                    color = potentialColor; // Update color if valid
+                }
+                parts[i] = parts[i].substring(potentialColor.length()).trim(); // Remove color code
+            }
+            result.append("<font color=\"").append(color).append("\">").append(parts[i]).append("</font>");
+            color = "black"; // Reset to default after each segment
+        }
+    
+        return result.toString();
+    }
+    
+    private boolean isValidColorCode(String color) {
+        // Validate named color or hexadecimal color code
+        return color.matches("^[a-zA-Z]+$") || color.matches("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$");
+    }
+    
     // end receive data from ServerThread
 }

@@ -53,7 +53,7 @@ public class RoomsPanel extends JPanel {
         scroll.setBorder(BorderFactory.createEmptyBorder());
 
         JButton back = new JButton("Go Back");
-        back.addActionListener(event -> controls.previous());
+        back.addActionListener(_ -> controls.previous()); // - Rev/11-23-2024
 
         JPanel search = new JPanel();
         search.setLayout(new BoxLayout(search, BoxLayout.Y_AXIS));
@@ -69,7 +69,7 @@ public class RoomsPanel extends JPanel {
         messageContainer.setBorder(new EmptyBorder(5, 0, 0, 0)); // Add padding
 
         // Search button action
-        searchButton.addActionListener(event -> {
+        searchButton.addActionListener(_ -> {
             SwingUtilities.invokeLater(() -> {
                 try {
                     String query = searchValue.getText().trim();
@@ -88,7 +88,7 @@ public class RoomsPanel extends JPanel {
         });
 
         JButton createButton = new JButton("Create");
-        createButton.addActionListener(event -> {
+        createButton.addActionListener(_ -> { // - Rev/11-23-2024
             SwingUtilities.invokeLater(() -> {
                 try {
                     String query = searchValue.getText().trim();
@@ -106,7 +106,7 @@ public class RoomsPanel extends JPanel {
         });
 
         JButton joinButton = new JButton("Join");
-        joinButton.addActionListener(event -> {
+        joinButton.addActionListener(_ -> { // - Rev/11-23-2024
             SwingUtilities.invokeLater(() -> {
                 try {
                     String query = searchValue.getText().trim();

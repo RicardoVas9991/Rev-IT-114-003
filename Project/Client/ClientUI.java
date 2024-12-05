@@ -27,7 +27,6 @@ import Project.Client.Views.ConnectionPanel;
 import Project.Client.Views.Menu;
 import Project.Client.Views.RoomsPanel;
 import Project.Client.Views.UserDetailsPanel;
-
 import Project.Common.LoggerUtil;
 
 /**
@@ -58,6 +57,8 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
         // Set the logger configuration
         LoggerUtil.INSTANCE.setConfig(config);
     }
+
+    
 
     /**
      * Constructor to create the main application window.
@@ -92,7 +93,7 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
         menu = new Menu(this);
         this.setJMenuBar(menu);
 
-        // Initialize panels
+        // Initialize panels - Rev/11-23-2024
         connectionPanel = new ConnectionPanel(this);
         userDetailsPanel = new UserDetailsPanel(this);
         chatPanel = new ChatPanel(this);
@@ -171,13 +172,14 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
         Client.INSTANCE.connect(host, port, username, this);
     }
 
-    public static void main(String[] args) {
-        // TODO update with your UCID instead of mine
-        SwingUtilities.invokeLater(() -> new ClientUI("MT85-Client"));
+    public static void main(String[] args) { // Rev/11-23-2024
+
+        SwingUtilities.invokeLater(() -> new ClientUI("Rev-Client"));
     }
+    
     // Interface methods start
 
-    @Override
+    @Override // Rev/11-23-2024
     public void onClientDisconnect(long clientId, String clientName) {
         if (currentCard.ordinal() >= CardView.CHAT.ordinal()) {
             chatPanel.removeUserListItem(clientId);
@@ -192,11 +194,12 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
         }
     }
 
-    @Override
+    @Override // Rev/11-23-2024
     public void onMessageReceive(long clientId, String message) {
         if (currentCard.ordinal() >= CardView.CHAT.ordinal()) {
             String clientName = Client.INSTANCE.getClientNameFromId(clientId);
             chatPanel.addText(String.format("%s[%s]: %s", clientName, clientId, message));
+            LoggerUtil.INSTANCE.info(String.format("Test %s[%s]: %s", clientName, clientId, message));
         }
     }
 
@@ -204,6 +207,7 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
     public void onReceiveClientId(long id) {
         show(CardView.CHAT.name());
         chatPanel.addText("*You connected*");
+        LoggerUtil.INSTANCE.info("ClientId Received: ");
     }
 
     @Override
@@ -218,7 +222,7 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
         }
     }
 
-    @Override
+    @Override // Rev/11-23-2024
     public void onReceiveRoomList(List<String> rooms, String message) {
         roomsPanel.removeAllRooms();
         if (message != null && !message.isEmpty()) {
@@ -231,7 +235,7 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
         }
     }
 
-    @Override
+    @Override // Rev/11-23-2024
     public void onRoomAction(long clientId, String clientName, String roomName, boolean isJoin) {
         LoggerUtil.INSTANCE.info("Current card: " + currentCard.name());
         if (currentCard.ordinal() >= CardView.CHAT.ordinal()) {
@@ -248,6 +252,28 @@ public class ClientUI extends JFrame implements IConnectionEvents, IMessageEvent
                 chatPanel.removeUserListItem(clientId);
             }
 
+        }
+    }
+
+    @Override // Rev/11-23-2024
+    public void onMessageSend(String message) {
+        if (message == null || message.trim().isEmpty()) {
+            LoggerUtil.INSTANCE.warning("Attempted to send an empty message.");
+            chatPanel.addText(message); // Directly display the message in ChatPanel
+            return;
+        } try {
+            // Send the message to the server
+            Client.INSTANCE.sendMessage(message);
+
+            // Display the message in the chat panel for the sender
+            long clientId = Client.INSTANCE.getMyClientId();
+            String username = Client.INSTANCE.getClientNameFromId(clientId);
+            System.out.println("Username: " + username);
+            chatPanel.addText(String.format("You[%s]: %s", clientId, message));
+
+        } catch (IOException e) {
+            LoggerUtil.INSTANCE.severe("Failed to send message: " + e.getMessage());
+            chatPanel.addText("*Error: Message not sent.*");
         }
     }
 
