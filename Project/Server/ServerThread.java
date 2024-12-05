@@ -194,7 +194,6 @@ public class ServerThread extends BaseServerThread {
                     break;
                 case MUTE:
                     String muteTarget = payload.getMessage().trim().toLowerCase(); // Extract the target username
-                    currentRoom.handleMute(null, muteTarget);
                     if (muteTarget.isEmpty()) {
                         sendMessage("Error: Mute command requires a valid username."); // Send error if empty
                     } else {
@@ -205,7 +204,6 @@ public class ServerThread extends BaseServerThread {
                     break; // - Rev/11-25-2024
                 case UNMUTE: 
                     String unmuteTarget = payload.getMessage().trim().toLowerCase(); // Extract the target username
-                    currentRoom.handleUnmute(null, unmuteTarget);
                     if (unmuteTarget.isEmpty()) {
                         sendMessage("Error: Unmute command requires a valid username."); // Send error if empty
                     } else {
