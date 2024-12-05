@@ -1,10 +1,6 @@
 package Project.Server;
 
-import java.io.IOException;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -24,7 +20,6 @@ import Project.Common.RollPayload;
  * A server-side representation of a single client.
  * This class is more about the data and abstracted communication
  */
-@SuppressWarnings("unused")
 public class ServerThread extends BaseServerThread {
     public static final long DEFAULT_CLIENT_ID = -1;
     private Room currentRoom;
@@ -90,11 +85,7 @@ public class ServerThread extends BaseServerThread {
     private void sendMessageToClient(String name, String message) {
         // Send a notification to the client (name) with the message
         // Use your existing message-sending logic
-        Payload p = new Payload();
-        p.setClientId(clientId);
-        p.setMessage(message);
-        p.setPayloadType(PayloadType.MESSAGE);
-        return;
+        System.out.println("Notification to " + name + ": " + message);
     }
 
     // private void save() {
@@ -195,11 +186,11 @@ public class ServerThread extends BaseServerThread {
                 case ROLL:
                     RollPayload rollPayload = (RollPayload) payload;
                     currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides(), rollPayload.getTotal()); // - Rev/11-16-2024
-                    LoggerUtil.INSTANCE.info("ROLL: " + rollPayload.getDice() + "," + rollPayload.getSides() + " and got a " + rollPayload.getTotal());
+                    sendMessage("ROLL: " + rollPayload.getDice() + "," + rollPayload.getSides() + " and got a " + rollPayload.getTotal());
                     break;
                 case FLIP:
                     currentRoom.handleFlip(this); // - Rev/11/-16-2024
-                    LoggerUtil.INSTANCE.info("FLIP: ");
+                    sendMessage("FLIP: ");
                     break;
                 case MUTE:
                     String muteTarget = payload.getMessage().trim().toLowerCase(); // Extract the target username
