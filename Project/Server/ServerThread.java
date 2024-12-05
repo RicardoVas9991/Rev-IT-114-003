@@ -23,6 +23,7 @@ import Project.Common.RollPayload;
  * A server-side representation of a single client.
  * This class is more about the data and abstracted communication
  */
+@SuppressWarnings("unused")
 public class ServerThread extends BaseServerThread {
     public static final long DEFAULT_CLIENT_ID = -1;
     private Room currentRoom;
@@ -56,6 +57,7 @@ public class ServerThread extends BaseServerThread {
         this.clientName = name;
         onInitialized();
     }
+
 // Rev/11-23-2024
     List<String> mutedClients = new ArrayList<String>(); 
     
@@ -69,7 +71,7 @@ public class ServerThread extends BaseServerThread {
             mutedClients.add(name);
             // Notify the muted user
             sendMessageToClient(name, "You have been muted by " + this.clientName);
-            save();
+            //save();
         }
     }
     
@@ -79,25 +81,18 @@ public class ServerThread extends BaseServerThread {
             mutedClients.remove(name);
             // Notify the unmuted user
             sendMessageToClient(name, "You have been unmuted by " + this.clientName);
-            save();
+            //save();
         }
     }
-    
 
-    private void sendMessageToClient(String name, String message) {
-        // Send a notification to the client (name) with the message
-        // Use your existing message-sending logic
-        System.out.println("Notification to " + name + ": " + message);
-    }
-
-    private void save() {
-    try {
-        Path filePath = Paths.get(this.clientName + ".txt");
-        Files.write(filePath, mutedClients);
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
-}
+    // private void save() {
+    //     try {
+    //         Path filePath = Paths.get(this.clientName + ".txt");
+    //         Files.write(filePath, mutedClients);
+    //     } catch (IOException e) {
+    //         e.printStackTrace();
+    //     }
+    // }
 
     public boolean isMuted(String name) {
      	name = name.trim().toLowerCase();
@@ -264,6 +259,15 @@ public class ServerThread extends BaseServerThread {
         p.setMessage(message);
         p.setPayloadType(PayloadType.MESSAGE);
         return send(p);
+    }
+
+    private void sendMessageToClient(String name, String message) {
+        // Send a notification to the client (name) with the message
+        Payload p = new Payload();
+        p.setClientId(clientId);
+        p.setMessage(message);
+        p.setPayloadType(PayloadType.MESSAGE);
+        System.out.println("Notification to " + name + ": " + message);
     }
 
     public boolean processMuteCommand(String command) {
