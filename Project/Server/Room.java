@@ -269,9 +269,19 @@ public void handleRoll(ServerThread sender, int dice, int sides, int total) {
         }
         return null;
     }
+
+    public ServerThread getClientById(String clientId) {
+        for (ServerThread client : clients) {
+            if (String.valueOf(client.getClientId()).equals(clientId)) {
+                return client;
+            }
+        }
+        return null; // Return null if not found
+    }
+    
     
     public void handlePrivateMessage(ServerThread sender, String targetId, String message) {
-        ServerThread receiver = getClientByName(targetId);
+        ServerThread receiver = getClientById(targetId);
         if (receiver == null) {
             sender.sendMessage("Error: User with ID " + targetId + " does not exist.");
             return;

@@ -161,13 +161,25 @@ public class ServerThread extends BaseServerThread {
                     ConnectionPayload cp = (ConnectionPayload) payload;
                     setClientName(cp.getClientName());
                     break;
-                    case MESSAGE:
+                case MESSAGE:
                     if (currentRoom == null) {
-                        LoggerUtil.INSTANCE.warning("Client is not in a room. Ignoring message: " + payload.getMessage());
+                        sendMessage("Error: You are not in a room.");
                         return;
                     }
-                    currentRoom.sendMessage(this, payload.getMessage());
-                        break;                
+                    String message = payload.getMessage();
+                    if (message.startsWith("@")) {
+                        int spaceIndex = message.indexOf(' ');
+                        if (spaceIndex > 1) {
+                            String targetId = message.substring(1, spaceIndex).trim(); // Use client ID here
+                            String privateMessage = message.substring(spaceIndex + 1).trim();
+                            currentRoom.handlePrivateMessage(this, targetId, privateMessage);
+                        } else {
+                            sendMessage("Error: Invalid private message format. Use @clientId <message>.");
+                        }
+                    } else {
+                        currentRoom.sendMessage(this, message); // For public messages
+                    }
+                    break;                
                 case ROOM_CREATE:
                     currentRoom.handleCreateRoom(this, payload.getMessage());
                     break;

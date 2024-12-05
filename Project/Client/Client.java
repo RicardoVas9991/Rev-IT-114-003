@@ -364,10 +364,14 @@ public enum Client {
         send(p);
     }
 
-    public void sendPrivateMessage(String clientId, String targetId, String message) {
-        PrivateMessagePayload privateMessagePayload = new PrivateMessagePayload(clientId, targetId, message);
-        processPayload(privateMessagePayload); // Send to the server
+    public void sendPrivateMessage(String targetId, String message) {
+        String privateMessage = "@" + targetId + " " + message;
+        Payload payload = new Payload();
+        payload.setPayloadType(PayloadType.MESSAGE);
+        payload.setMessage(privateMessage);
+        processPayload(payload);
     }
+    
 
 
     /**
