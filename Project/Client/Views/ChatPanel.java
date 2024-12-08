@@ -299,7 +299,6 @@ public class ChatPanel extends JPanel {
     }
 
     // Handle incoming messages
-    @SuppressWarnings("unused")
     private void handleIncomingMessage(String sender, String message) {
         // rev/12/4/2024
         lastSender = sender; // Track the last sender
