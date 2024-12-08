@@ -8,9 +8,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import Project.Common.LoggerUtil;
@@ -19,19 +16,22 @@ public enum Server {
     INSTANCE;
 
     {
-        // statically initialize the server-side LoggerUtil
+        // Initialize LoggerUtil
         LoggerUtil.LoggerConfig config = new LoggerUtil.LoggerConfig();
         config.setFileSizeLimit(2048 * 1024); // 2MB
         config.setFileCount(1);
         config.setLogLocation("server.log");
-        // Set the logger configuration
         LoggerUtil.INSTANCE.setConfig(config);
     }
-    private int port = 3000;
-    // Use ConcurrentHashMap for thread-safe room management
-    private final ConcurrentHashMap<String, Room> rooms = new ConcurrentHashMap<>();
-    private boolean isRunning = true;
-    private long nextClientId = 1;
+
+        private int port = 3000;
+        private final ConcurrentHashMap<String, Room> rooms = new ConcurrentHashMap<>();
+        private boolean isRunning = true;
+        private long nextClientId = 1;
+        @SuppressWarnings("unused")
+        private long serverStartTime; // Tracks server uptime
+        @SuppressWarnings("unused")
+        private ServerSocket serverSocket; // Moved to instance variable for accessibility
 
     private Server() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -42,20 +42,18 @@ public enum Server {
 
     private void start(int port) {
         this.port = port;
-        // server listening
+        serverStartTime = System.currentTimeMillis(); // Initialize start time
         LoggerUtil.INSTANCE.info("Listening on port " + this.port);
-        // Simplified client connection loop
+
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            createRoom(Room.LOBBY);// create the first room
+            this.serverSocket = serverSocket; // Assign to instance variable
+            createRoom(Room.LOBBY); // Create the lobby room
             while (isRunning) {
                 LoggerUtil.INSTANCE.info("Waiting for next client");
-                Socket incomingClient = serverSocket.accept(); // blocking action, waits for a client connection
+                Socket incomingClient = serverSocket.accept();
                 LoggerUtil.INSTANCE.info("Client connected");
-                // wrap socket in a ServerThread, pass a callback to notify the Server they're
-                // initialized
+
                 ServerThread sClient = new ServerThread(incomingClient, this::onClientInitialized);
-                // start the thread (typically an external entity manages the lifecycle and we
-                // don't have the thread start itself)
                 sClient.start();
             }
         } catch (IOException e) {
@@ -66,47 +64,28 @@ public enum Server {
         }
     }
 
-    /**
-     * Gracefully disconnect clients
-     */
-    private void shutdown() {
+    void shutdown() {
         try {
-            // chose removeIf over forEach to avoid potential
-            // ConcurrentModificationException
-            // since empty rooms tell the server to remove themselves
             rooms.values().removeIf(room -> {
                 room.disconnectAll();
                 return true;
             });
         } catch (Exception e) {
-            LoggerUtil.INSTANCE.info("Error cleaning up rooms", e);
+            LoggerUtil.INSTANCE.severe("Error cleaning up rooms", e);
         }
     }
 
-    /**
-     * Callback passed to ServerThread to inform Server they're ready to receive
-     * data
-     * 
-     * @param sClient
-     */
     private void onClientInitialized(ServerThread sClient) {
-        sClient.sendClientId(nextClientId);
-        nextClientId++;
+        sClient.sendClientId(nextClientId++);
         if (nextClientId < 0) {
             nextClientId = 1;
         }
-        // add to lobby room
+
         LoggerUtil.INSTANCE.info(String.format("Server: *%s[%s] initialized*",
                 sClient.getClientName(), sClient.getClientId()));
         joinRoom(Room.LOBBY, sClient);
     }
 
-    /**
-     * Attempts to create a new Room and add it to the tracked rooms collection
-     * 
-     * @param name Unique name of the room
-     * @return true if it was created and false if it wasn't
-     */
     protected boolean createRoom(String name) {
         final String nameCheck = name.toLowerCase();
         if (rooms.containsKey(nameCheck)) {
@@ -118,13 +97,6 @@ public enum Server {
         return true;
     }
 
-    /**
-     * Attempts to move a client (ServerThread) between rooms
-     * 
-     * @param name   the target room to join
-     * @param client the client moving
-     * @return true if the move was successful, false otherwise
-     */
     protected boolean joinRoom(String name, ServerThread client) {
         final String nameCheck = name.toLowerCase();
         if (!rooms.containsKey(nameCheck)) {
@@ -142,9 +114,9 @@ public enum Server {
     protected List<String> listRooms(String roomQuery) {
         final String nameCheck = roomQuery.toLowerCase();
         return rooms.values().stream()
-                .filter(room -> room.getName().toLowerCase().contains(nameCheck))// find partially matched rooms
-                .map(room -> room.getName())// map room to String (name)
-                .collect(Collectors.toList()); // return a mutable list
+                .filter(room -> room.getName().toLowerCase().contains(nameCheck))
+                .map(Room::getName)
+                .collect(Collectors.toList());
     }
 
     protected void removeRoom(Room room) {
@@ -152,53 +124,23 @@ public enum Server {
         LoggerUtil.INSTANCE.info(String.format("Server removed room %s", room.getName()));
     }
 
+    //Extra Credit Features - Milestone4 - rev/12/4/2024
     public static void main(String[] args) {
-        LoggerUtil.INSTANCE.info("Server Starting");
+        boolean headless = Arrays.asList(args).contains("--headless");
         Server server = Server.INSTANCE;
+
+        if (!headless) {
+            SwingUtilities.invokeLater(() -> new ServerUI().setVisible(true)); // Delegate UI to ServerUI
+        }
+
         int port = 3000;
         try {
             port = Integer.parseInt(args[0]);
         } catch (Exception e) {
-            // can ignore, will either be index out of bounds or type mismatch
-            // will default to the defined value prior to the try/catch
+            LoggerUtil.INSTANCE.warning("Invalid port argument. Defaulting to 3000.");
         }
-        server.start(port);
+
+        server.start(port); // Start server
         LoggerUtil.INSTANCE.info("Server Stopped");
     }
-
-    //Extra Credit Features - Milestone4 - rev/12/4/2024
-    // Server stats panel
-    JPanel statsPanel = new JPanel();
-    JLabel uptimeLabel = new JLabel("Uptime: ");
-    JLabel memoryLabel = new JLabel("Memory Usage: ");
-    statsPanel.@add(uptimeLabel);
-    statsPanel.add(memoryLabel);
-
-    // Update stats periodically
-    new Timer(1000, e -> {
-        long uptime = System.currentTimeMillis() - serverStartTime;
-        uptimeLabel.setText("Uptime: " + (uptime / 1000) + " seconds");
-        memoryLabel.setText("Memory Usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / (1024 * 1024) + " MB");
-    }).start();
-
-    JButton stopServerButton = new JButton("Stop Server");
-    stopServerButton.@addActionListener(e -> {
-        try {
-            serverSocket.close();
-            System.exit(0);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    });
-    statsPanel.add(stopServerButton);
-
-    // public static void main(String[] args) {
-    //     boolean headless = Arrays.asList(args).contains("--headless");
-    //     if (!headless) {
-    //         SwingUtilities.invokeLater(() -> new ServerUI().setVisible(true)); // Start server with UI
-    //     }
-    //     new Server().start(); // Start server
-    // }
-
-
 }

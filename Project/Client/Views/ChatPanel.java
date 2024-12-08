@@ -18,7 +18,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.awt.Font;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -49,6 +55,12 @@ public class ChatPanel extends JPanel {
     private JPanel chatArea = null;
     private UserListPanel userListPanel;
     private final float CHAT_SPLIT_PERCENT = 0.7f;
+    private List<String> chatMessages = new ArrayList<>(); // Example
+    private Set<String> mutedUsers = new HashSet<>();
+    private Map<Long, String> connectedUsers = new HashMap<>();
+    private String lastSender = null; // Example initialization
+    
+
 
     /**
      * Constructor to create the ChatPanel UI.
@@ -74,6 +86,12 @@ public class ChatPanel extends JPanel {
         // JSplitPane setup with chat on the left and user list on the right
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scroll, userListPanel);
         splitPane.setResizeWeight(CHAT_SPLIT_PERCENT); // Allocate % space to the chat panel initially
+
+        // Chat History Export (Client-Side) - Milestone4 - rev/12/4/2024
+        // Add this button to the chat UI
+        JButton exportButton = new JButton("Export Chat");
+        exportButton.addActionListener(_ -> exportChatHistory());
+        // Add exportButton to the UI (e.g., a panel)
 
         // Enforce splitPane split
         this.addComponentListener(new ComponentListener() {
@@ -245,13 +263,6 @@ public class ChatPanel extends JPanel {
             });
         });
     }
-
-    // Chat History Export (Client-Side) - Milestone4 - rev/12/4/2024
-    // Add this button to the chat UI
-    JButton exportButton = new JButton("Export Chat");
-    exportButton.addActionListener(e -> exportChatHistory());
-    // Add exportButton to the UI (e.g., a panel)
-
     // Method to export chat history
     private void exportChatHistory() {
         // rev/12/4/2024
@@ -288,11 +299,15 @@ public class ChatPanel extends JPanel {
     }
 
     // Handle incoming messages
+    @SuppressWarnings("unused")
     private void handleIncomingMessage(String sender, String message) {
         // rev/12/4/2024
         lastSender = sender; // Track the last sender
         chatMessages.add(message); // Add to chat history
-        updateUserList(connectedUsers, lastSender); // Update user list
+        // Convert connectedUsers (Map<Long, String>) to Set<String>
+        Set<String> userNames = new HashSet<>(connectedUsers.values());
+        updateUserList(userNames, lastSender); // Update user list
     }
+
 
 }
