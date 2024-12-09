@@ -155,6 +155,7 @@ public class ChatPanel extends JPanel {
         });
 
         input.add(button);
+        input.add(exportButton);
 
         this.add(splitPane, BorderLayout.CENTER);
         this.add(input, BorderLayout.SOUTH);
