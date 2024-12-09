@@ -261,7 +261,7 @@ public class Room implements AutoCloseable{
     }
     
 
-    private ServerThread getClientByName(String name) {
+    ServerThread getClientByName(String name) {
         for (ServerThread client : clients) {
             if (client.getClientName().equalsIgnoreCase(name)) {
                 return client;

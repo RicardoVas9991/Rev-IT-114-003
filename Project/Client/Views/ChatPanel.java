@@ -55,10 +55,10 @@ public class ChatPanel extends JPanel {
     private JPanel chatArea = null;
     private UserListPanel userListPanel;
     private final float CHAT_SPLIT_PERCENT = 0.7f;
-    private List<String> chatMessages = new ArrayList<>(); // Example
+    private List<String> chatMessages = new ArrayList<>(); // rev/12/4/2024
     private Set<String> mutedUsers = new HashSet<>();
     private Map<Long, String> connectedUsers = new HashMap<>();
-    private String lastSender = null; // Example initialization
+    private String lastSender = null; // rev/12/4/2024 - initialization
     
 
 
@@ -268,7 +268,7 @@ public class ChatPanel extends JPanel {
         // rev/12/4/2024
         try {
             StringBuilder chatHistory = new StringBuilder();
-            for (String message : chatMessages) { // Replace 'chatMessages' with your message list
+            for (String message : chatMessages) { // rev/12/4/2024
                 chatHistory.append(message).append("\n");
             }
             // Create unique filename with date-time
@@ -298,12 +298,17 @@ public class ChatPanel extends JPanel {
         userListPanel.repaint();
     }
 
-    // Handle incoming messages
-    private void handleIncomingMessage(String sender, String message) {
+    /**
+     * Handles an incoming message from a server or another client.
+     * This method is invoked externally by the message handling system.
+     * 
+     * @param sender  The sender's name.
+     * @param message The message content.
+     */
+    public void handleIncomingMessage(String sender, String message) { 
         // rev/12/4/2024
         lastSender = sender; // Track the last sender
         chatMessages.add(message); // Add to chat history
-        // Convert connectedUsers (Map<Long, String>) to Set<String>
         Set<String> userNames = new HashSet<>(connectedUsers.values());
         updateUserList(userNames, lastSender); // Update user list
     }

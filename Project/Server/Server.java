@@ -29,7 +29,6 @@ public enum Server {
         private boolean isRunning = true;
         private long nextClientId = 1;
         private long serverStartTime; // Tracks server uptime
-        private ServerSocket serverSocket; // Moved to instance variable for accessibility
 
     private Server() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -42,15 +41,14 @@ public enum Server {
         this.port = port;
         serverStartTime = System.currentTimeMillis(); // Initialize start time
         LoggerUtil.INSTANCE.info("Listening on port " + this.port);
-
+    
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            this.serverSocket = serverSocket; // Assign to instance variable
-            createRoom(Room.LOBBY); // Create the lobby room
+            createRoom(Room.LOBBY);
             while (isRunning) {
                 LoggerUtil.INSTANCE.info("Waiting for next client");
                 Socket incomingClient = serverSocket.accept();
                 LoggerUtil.INSTANCE.info("Client connected");
-
+    
                 ServerThread sClient = new ServerThread(incomingClient, this::onClientInitialized);
                 sClient.start();
             }
@@ -58,12 +56,20 @@ public enum Server {
             LoggerUtil.INSTANCE.severe("Error accepting connection", e);
         } finally {
             shutdown();
-            LoggerUtil.INSTANCE.info("Closing server socket");
+            LoggerUtil.INSTANCE.info("Server stopped");
         }
     }
 
+    // Added method to calculate server uptime
+    public long getServerUptime() {
+        return System.currentTimeMillis() - serverStartTime;
+    }
+
+    // Updated shutdown method to log uptime
     void shutdown() {
         try {
+            long uptime = getServerUptime();
+            LoggerUtil.INSTANCE.info("Server uptime: " + (uptime / 1000) + " seconds");
             rooms.values().removeIf(room -> {
                 room.disconnectAll();
                 return true;

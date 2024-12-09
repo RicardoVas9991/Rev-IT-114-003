@@ -117,9 +117,15 @@ public class ServerThread extends BaseServerThread {
     }
 
     private void sendMessageToClient(String target, String message) {
-        // Implementation to send message to the client (replace with your actual method)
-        System.out.println("Sending to " + target + ": " + message);
+        // Assuming `currentRoom` or server logic has a method to get a ServerThread by name
+        ServerThread targetClient = currentRoom.getClientByName(target);
+        if (targetClient != null) {
+            targetClient.processPayload(new Payload()); // Example usage
+        } else {
+            System.err.println("Target client not found: " + target);
+        }
     }
+    
 
     public String getClientName() {
         return clientName;
