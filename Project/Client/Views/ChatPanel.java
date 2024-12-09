@@ -87,11 +87,6 @@ public class ChatPanel extends JPanel {
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scroll, userListPanel);
         splitPane.setResizeWeight(CHAT_SPLIT_PERCENT); // Allocate % space to the chat panel initially
 
-        // Chat History Export (Client-Side) - Milestone4 - rev/12/4/2024
-        // Add this button to the chat UI
-        JButton exportButton = new JButton("Export Chat");
-        exportButton.addActionListener(_ -> exportChatHistory());
-        // Add exportButton to the UI (e.g., a panel)
 
         // Enforce splitPane split
         this.addComponentListener(new ComponentListener() {
@@ -123,6 +118,11 @@ public class ChatPanel extends JPanel {
 
         JButton button = new JButton("Send");
         // Allows submission with the enter key instead of just the button click
+        // Chat History Export (Client-Side) - Milestone4 - rev/12/4/2024
+        // Add this button to the chat UI
+        JButton exportButton = new JButton("Export Chat");
+        exportButton.addActionListener(_ -> exportChatHistory());
+        // Add exportButton to the UI (e.g., a panel)
         textValue.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
