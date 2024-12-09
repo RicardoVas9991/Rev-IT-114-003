@@ -96,7 +96,7 @@ public class ServerThread extends BaseServerThread {
 
     private void save() {
         try {
-            Path filePath = Paths.get(this.clientName + ".txt");
+            Path filePath = Paths.get(this.clientName + ".html");
             Files.write(filePath, mutedClients);
         } catch (IOException e) {
             e.printStackTrace();
@@ -105,7 +105,7 @@ public class ServerThread extends BaseServerThread {
 
     private void load() {
         try {
-            Path filePath = Paths.get(this.clientName + ".txt");
+            Path filePath = Paths.get(this.clientName + ".html");
             if (Files.exists(filePath)) {
                 mutedClients = Files.readAllLines(filePath).stream()
                                    .map(String::toLowerCase)
