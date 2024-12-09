@@ -121,7 +121,7 @@ public class ChatPanel extends JPanel {
         // Chat History Export (Client-Side) - Milestone4 - rev/12/4/2024
         // Add this button to the chat UI
         JButton exportButton = new JButton("Export Chat");
-        exportButton.addActionListener(_ -> exportChatHistory());
+        exportButton.addActionListener((_) -> exportChatHistory());
         // Add exportButton to the UI (e.g., a panel)
         textValue.addKeyListener(new KeyListener() {
             @Override
