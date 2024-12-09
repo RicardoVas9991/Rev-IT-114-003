@@ -75,8 +75,8 @@ public class ServerThread extends BaseServerThread {
         name = name.trim().toLowerCase();
         if (!isMuted(name)) {
             mutedClients.add(name);
-            save();
             sendMessageToClient(name, "You have been muted by " + this.clientName);
+            save();
         }
     }
 
@@ -84,8 +84,8 @@ public class ServerThread extends BaseServerThread {
         name = name.trim().toLowerCase();
         if (isMuted(name)) {
             mutedClients.remove(name);
-            save();
             sendMessageToClient(name, "You have been unmuted by " + this.clientName);
+            save();
         }
     }
 
@@ -117,7 +117,6 @@ public class ServerThread extends BaseServerThread {
     }
 
     private void sendMessageToClient(String target, String message) {
-        // Assuming `currentRoom` or server logic has a method to get a ServerThread by name
         ServerThread targetClient = currentRoom.getClientByName(target);
         if (targetClient != null) {
             targetClient.processPayload(new Payload()); // Example usage
