@@ -28,9 +28,7 @@ public enum Server {
         private final ConcurrentHashMap<String, Room> rooms = new ConcurrentHashMap<>();
         private boolean isRunning = true;
         private long nextClientId = 1;
-        @SuppressWarnings("unused")
         private long serverStartTime; // Tracks server uptime
-        @SuppressWarnings("unused")
         private ServerSocket serverSocket; // Moved to instance variable for accessibility
 
     private Server() {
