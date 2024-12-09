@@ -273,7 +273,7 @@ public class ChatPanel extends JPanel {
                 chatHistory.append(message).append("\n");
             }
             // Create unique filename with date-time
-            String filename = "chat_export_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".txt";
+            String filename = "chat_export_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".html";
             Files.write(Paths.get(filename), chatHistory.toString().getBytes());
             JOptionPane.showMessageDialog(this, "Chat exported to " + filename, "Export Success", JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException ex) {

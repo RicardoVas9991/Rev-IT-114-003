@@ -96,7 +96,7 @@ public class ServerThread extends BaseServerThread {
 
     private void save() {
         try {
-            Path filePath = Paths.get(this.clientName + ".html");
+            Path filePath = Paths.get(this.clientName + ".txt");
             Files.write(filePath, mutedClients);
         } catch (IOException e) {
             e.printStackTrace();
@@ -105,7 +105,7 @@ public class ServerThread extends BaseServerThread {
 
     private void load() {
         try {
-            Path filePath = Paths.get(this.clientName + ".html");
+            Path filePath = Paths.get(this.clientName + ".txt");
             if (Files.exists(filePath)) {
                 mutedClients = Files.readAllLines(filePath).stream()
                                    .map(String::toLowerCase)
@@ -119,7 +119,7 @@ public class ServerThread extends BaseServerThread {
     private void sendMessageToClient(String target, String message) {
         ServerThread targetClient = currentRoom.getClientByName(target);
         if (targetClient != null) {
-            targetClient.processPayload(new Payload()); // Example usage
+            targetClient.processPayload(new Payload()); //
         } else {
             System.err.println("Target client not found: " + target);
         }
