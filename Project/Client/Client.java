@@ -1,5 +1,4 @@
 package Project.Client;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -12,43 +11,43 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+
+import Project.Client.Interfaces.IConnectionEvents;
+import Project.Client.Interfaces.IClientEvents;
+import Project.Client.Interfaces.IMessageEvents;
+import Project.Client.Interfaces.IRoomEvents;
 import Project.Common.ConnectionPayload;
 import Project.Common.FlipPayload;
 import Project.Common.LoggerUtil;
 import Project.Common.Payload;
 import Project.Common.PayloadType;
+import Project.Common.PrivateMessagePayload;
 import Project.Common.RollPayload;
 import Project.Common.RoomResultsPayload;
 import Project.Common.TextFX;
 import Project.Common.TextFX.Color;
-
 /**
  * Demoing bi-directional communication between client and server in a
  * multi-client scenario
  */
 public enum Client {
     INSTANCE;
-
-    {
-        // statically initialize the client-side LoggerUtil
-        LoggerUtil.LoggerConfig config = new LoggerUtil.LoggerConfig();
-        config.setFileSizeLimit(2048 * 1024); // 2MB
-        config.setFileCount(1);
-        config.setLogLocation("client.log");
-        // Set the logger configuration
-        LoggerUtil.INSTANCE.setConfig(config);
-    }
+    
     private Socket server = null;
     private ObjectOutputStream out = null;
     private ObjectInputStream in = null;
     final Pattern ipAddressPattern = Pattern
-    .compile("/connect\\s+(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{3,5})");
+            .compile("/connect\\s+(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{3,5})");
     final Pattern localhostPattern = Pattern.compile("/connect\\s+(localhost:\\d{3,5})");
     private volatile boolean isRunning = true; // volatile for thread-safe visibility
-    private ConcurrentHashMap<Long, ClientData> knownClients = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Long, ClientData> knownClients = new ConcurrentHashMap<>();   // - Rev/11/-16-2024
     private ClientData myData;
-    
-    
+    public JPanel chatArea = new JPanel();
+    private JTextArea chatWindow; // Example for Swing
+
+
     // constants (used to reduce potential types when using them in code)
     private final String COMMAND_CHARACTER = "/";
     private final String CREATE_ROOM = "createroom";
@@ -58,13 +57,13 @@ public enum Client {
     private final String LOGOFF = "logoff";
     private final String LOGOUT = "logout";
     private final String SINGLE_SPACE = " ";
-
+    // callback that updates the UI
+    private static IClientEvents events;
     // needs to be private now that the enum logic is handling this
     private Client() {
         LoggerUtil.INSTANCE.info("Client Created");
         myData = new ClientData();
     }
-
     public boolean isConnected() {
         if (server == null) {
             return false;
@@ -75,7 +74,6 @@ public enum Client {
         // and is just for lesson's sake
         return server.isConnected() && !server.isClosed() && !server.isInputShutdown() && !server.isOutputShutdown();
     }
-
     /**
      * Takes an IP address and a port to attempt a socket connection to a server.
      * 
@@ -83,6 +81,7 @@ public enum Client {
      * @param port
      * @return true if connection was successful
      */
+    @Deprecated
     private boolean connect(String address, int port) {
         try {
             server = new Socket(address, port);
@@ -100,7 +99,35 @@ public enum Client {
         }
         return isConnected();
     }
-
+    /**
+     * Takes an ip address and a port to attempt a socket connection to a server.
+     * 
+     * @param address
+     * @param port
+     * @param username
+     * @param callback (for triggering UI events)
+     * @return true if connection was successful
+     */
+    public boolean connect(String address, int port, String username, IClientEvents callback) {
+        myData.setClientName(username);
+        Client.events = callback;
+        try {
+            server = new Socket(address, port);
+            // channel to send to server
+            out = new ObjectOutputStream(server.getOutputStream());
+            // channel to listen to server
+            in = new ObjectInputStream(server.getInputStream());
+            LoggerUtil.INSTANCE.info("Client connected");
+            // Use CompletableFuture to run listenToServer() in a separate thread
+            CompletableFuture.runAsync(this::listenToServer);
+            sendClientName();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return isConnected();
+    }
     /**
      * <p>
      * Check if the string contains the <i>connect</i> command
@@ -122,7 +149,6 @@ public enum Client {
         Matcher localhostMatcher = localhostPattern.matcher(text);
         return ipMatcher.matches() || localhostMatcher.matches();
     }
-
     /**
      * Controller for handling various text commands.
      * <p>
@@ -131,8 +157,9 @@ public enum Client {
      * 
      * @param text
      * @return true if the text was a command or triggered a command
+     * @throws IOException
      */
-    private boolean processClientCommand(String text) {
+    private boolean processClientCommand(String text) throws IOException {
         if (isConnection(text)) {
             if (myData.getClientName() == null || myData.getClientName().length() == 0) {
                 System.out.println(TextFX.colorize("Name must be set first via /name command", Color.RED));
@@ -160,21 +187,21 @@ public enum Client {
         } else if (text.startsWith("/roll")) {  // - Rev/11/-16-2024
             String[] parts = text.split(" ");
             if (parts.length == 2) {
-                String sender = myData.getClientName(); // Assuming a name attribute exists
-                if (parts[1].contains("d")) {
-                    String[] diceParts = parts[1].split("d");
+                if (parts[1].contains(",")) {
+                    String[] diceParts = parts[1].split(",");
                     int dice = Integer.parseInt(diceParts[0]);
                     int sides = Integer.parseInt(diceParts[1]);
                     int total = 0;
                     for (int i = 0; i < dice; i++) {
                         total += (int) (Math.random() * sides) + 1;
                     }
-                    RollPayload rollPayload = new RollPayload(sender, dice, sides, total);
+                    RollPayload rollPayload = new RollPayload(dice, sides, total);
+                    LoggerUtil.INSTANCE.info("Dice rolled: ");
                     System.out.println(rollPayload);
                     return true;
-                } else {
+                    } else {	               
                     int sides = Integer.parseInt(parts[1]);
-                    RollPayload rollPayload = new RollPayload(sender, 1, sides, sides);
+                    RollPayload rollPayload = new RollPayload( 1, sides, sides);
                     System.out.println(rollPayload);
                     return true;
                 }
@@ -183,8 +210,51 @@ public enum Client {
         } else if (text.startsWith("/flip") || text.startsWith("/toss")) {  // - Rev/11/-16-2024
             String sender = myData.getClientName();
             FlipPayload flipPayload = new FlipPayload(sender); // Result will be set server-side
+            LoggerUtil.INSTANCE.info("Coin flipped: ");
             System.out.println(flipPayload);
             return true;
+        } if (text.startsWith("/mute")) {  // Rev/11-23-2024 -  Show the client-side code that processes the text per the requirement
+            String[] parts = text.split(" ");
+            if (parts.length == 2) {
+                Payload payload = new Payload();
+                payload.setPayloadType(PayloadType.MUTE);
+                payload.setMessage(parts[1]); // Username to mute
+                send(payload);
+                LoggerUtil.INSTANCE.info("Client muted: ");
+            } else {
+                chatArea.add(chatArea, "Invalid mute command. Use /mute <username>.");
+            }
+        } if (text.startsWith("/unmute")) {
+            String[] parts = text.split(" ");
+            if (parts.length == 2) {
+                Payload payload = new Payload();
+                payload.setPayloadType(PayloadType.UNMUTE);
+                payload.setMessage(parts[1]); // Username to unmute
+                send(payload);
+                LoggerUtil.INSTANCE.info("Client unmuted: ");
+            } else {
+                chatArea.add(chatArea,"Invalid unmute command. Use /unmute <username>.");
+            }
+        } if (text.startsWith("@")) {
+            text = text.trim(); // Remove leading and trailing spaces
+            String[] parts = text.split(" ", 2); // Split into username and message
+            if (parts.length == 2) {
+                String target = parts[0].substring(1).toLowerCase(); // Remove '@' and convert to lowercase
+                String message = parts[1].trim(); // Trim the message content
+        
+                if (target.isEmpty() || message.isEmpty()) {
+                    chatArea.add(chatArea,"Invalid private message. Username or message cannot be empty.\n");
+                    return isRunning;
+                }
+        
+                Payload payload = new Payload();
+                payload.setPayloadType(PayloadType.MESSAGE);
+                payload.setTarget(target); // Target username
+                payload.setMessage(message);
+                send(payload); // Send the payload to the server
+            } else {
+                chatArea.add(chatArea,"Invalid private message. Use @<username> <message>.\n");
+            }
         } else { // logic previously from Room.java
             // decided to make this as separate block to separate the core client-side items
             // vs the ones that generally are used after connection and that send requests
@@ -223,13 +293,18 @@ public enum Client {
         return false;
     }
 
+    public long getMyClientId() {
+        return myData.getClientId();
+    }
     // send methods to pass data to the ServerThread
 
     /**
      * Sends a search to the server-side to get a list of potentially matching Rooms
+     * 
      * @param roomQuery optional partial match search String
+     * @throws IOException
      */
-    private void sendListRooms(String roomQuery) {
+    public void sendListRooms(String roomQuery) throws IOException {
         Payload p = new Payload();
         p.setPayloadType(PayloadType.ROOM_LIST);
         p.setMessage(roomQuery);
@@ -240,8 +315,9 @@ public enum Client {
      * Sends the room name we intend to create
      * 
      * @param room
+     * @throws IOException
      */
-    private void sendCreateRoom(String room) {
+    public void sendCreateRoom(String room) throws IOException {
         Payload p = new Payload();
         p.setPayloadType(PayloadType.ROOM_CREATE);
         p.setMessage(room);
@@ -252,8 +328,9 @@ public enum Client {
      * Sends the room name we intend to join
      * 
      * @param room
+     * @throws IOException
      */
-    private void sendJoinRoom(String room) {
+    public void sendJoinRoom(String room) throws IOException {
         Payload p = new Payload();
         p.setPayloadType(PayloadType.ROOM_JOIN);
         p.setMessage(room);
@@ -262,8 +339,10 @@ public enum Client {
 
     /**
      * Tells the server-side we want to disconnect
+     * 
+     * @throws IOException
      */
-    private void sendDisconnect() {
+    void sendDisconnect() throws IOException {
         Payload p = new Payload();
         p.setPayloadType(PayloadType.DISCONNECT);
         send(p);
@@ -273,18 +352,34 @@ public enum Client {
      * Sends desired message over the socket
      * 
      * @param message
+     * @throws IOException
      */
-    private void sendMessage(String message) {
+    public void sendMessage(String message) throws IOException {
+        if (processClientCommand(message)) {
+            return;
+        }
         Payload p = new Payload();
         p.setPayloadType(PayloadType.MESSAGE);
         p.setMessage(message);
         send(p);
     }
 
+    public void sendPrivateMessage(String targetId, String message) {
+        String privateMessage = "@" + targetId + " " + message;
+        Payload payload = new Payload();
+        payload.setPayloadType(PayloadType.MESSAGE);
+        payload.setMessage(privateMessage);
+        processPayload(payload);
+    }
+    
+
+
     /**
      * Sends chosen client name after socket handshake
+     * 
+     * @throws IOException
      */
-    private void sendClientName() {
+    private void sendClientName() throws IOException {
         if (myData.getClientName() == null || myData.getClientName().length() == 0) {
             System.out.println(TextFX.colorize("Name must be set first via /name command", Color.RED));
             return;
@@ -298,24 +393,61 @@ public enum Client {
      * Generic send that passes any Payload over the socket (to ServerThread)
      * 
      * @param p
+     * @throws IOException
      */
-    private void send(Payload p) {
+    private void send(Payload p) throws IOException {
         try {
             out.writeObject(p);
             out.flush();
         } catch (IOException e) {
             LoggerUtil.INSTANCE.severe("Socket send exception", e);
+            throw e;
         }
-
     }
+
+    // Rev 11/26/2024
+    private void sendRollCommand(String command) throws IOException {
+        // Parse the roll details, assuming format "numberOfDice sides"
+        if (command.startsWith("/roll")) {
+            String[] parts = command.split(" ");
+            if (parts.length == 3) {
+                try {
+                    if (parts[1].contains(",")) {
+                    }
+                    int dice = Integer.parseInt(parts[1]);
+                    int sides = Integer.parseInt(parts[2]);
+                    int total = 0;
+                    for (int i = 0; i < dice; i++) {
+                        total += (int) (Math.random() * sides) + 1;
+                    }
+                    RollPayload payload = new RollPayload(dice, sides, total);
+                    chatArea.add(chatArea, payload);
+                    LoggerUtil.INSTANCE.info("Dice rolled: ");
+                } catch (NumberFormatException e) {
+                    chatArea.add(chatArea,"Invalid roll command. Use /roll <dice> <sides>.");
+                }
+            } else {
+                chatArea.add(chatArea,"Invalid roll command. Use /roll <dice> <sides>.");
+            }
+        }
+    }
+
+    private void sendFlipCommand(String command) throws IOException {
+        // Create a payload for the /flip command
+        if (command.equals("/flip")) {
+            Payload payload = new Payload();
+            payload.setPayloadType(PayloadType.FLIP);
+            chatArea.add(chatArea, payload);
+            LoggerUtil.INSTANCE.info("Coin flipped: ");
+        }
+    }
+
     // end send methods
 
     public void start() throws IOException {
         LoggerUtil.INSTANCE.info("Client starting");
-
         // Use CompletableFuture to run listenToInput() in a separate thread
         CompletableFuture<Void> inputFuture = CompletableFuture.runAsync(this::listenToInput);
-
         // Wait for inputFuture to complete to ensure proper termination
         inputFuture.join();
     }
@@ -350,11 +482,14 @@ public enum Client {
     /**
      * Listens for keyboard input from the user
      */
+    @Deprecated
     private void listenToInput() {
         try (Scanner si = new Scanner(System.in)) {
             System.out.println("Waiting for input"); // moved here to avoid console spam
             while (isRunning) { // Run until isRunning is false
                 String line = si.nextLine();
+                LoggerUtil.INSTANCE.severe(
+                        "You shouldn't be using terminal input for Milestone 3. Interaction should be done through the UI");
                 if (!processClientCommand(line)) {
                     if (isConnected()) {
                         sendMessage(line);
@@ -450,21 +585,43 @@ public enum Client {
                     break;
                 case PayloadType.ROOM_LIST:
                     RoomResultsPayload rrp = (RoomResultsPayload) payload;
-                    processRoomsList(rrp.getRooms());
+                    processRoomsList(rrp.getRooms(), rrp.getMessage());
                     break;
                 case PayloadType.MESSAGE: // displays a received message
                     processMessage(payload.getClientId(), payload.getMessage());
+                    break;
+                case PRIVATE_MESSAGE:
+                    PrivateMessagePayload pmp = (PrivateMessagePayload) payload;
+                    displayPrivateMessage(pmp.getSenderId(), pmp.getMessage());
                     break;
                 default:
                     break;
             }
         } catch (Exception e) {
-            LoggerUtil.INSTANCE.severe("Could not process Payload: " + payload,e);
+            LoggerUtil.INSTANCE.severe("Could not process Payload: " + payload, e);
         }
     }
 
+    /**
+     * Returns the ClientName of a specific Client by ID.
+     * 
+     * @param id
+     * @return the name, or Room if id is -1, or [Unknown] if failed to find
+     */
+    public String getClientNameFromId(long id) {
+        if (id == ClientData.DEFAULT_CLIENT_ID) {
+            return "Room";
+        }
+        if (knownClients.containsKey(id)) {
+            return knownClients.get(id).getClientName();
+        }
+        return "[Unknown]";
+    }
+
     // payload processors
-    private void processRoomsList(List<String> rooms) {
+    private void processRoomsList(List<String> rooms, String message) {
+        // invoke onReceiveRoomList callback
+        ((IRoomEvents) events).onReceiveRoomList(rooms, message);
         if (rooms == null || rooms.size() == 0) {
             System.out.println(
                     TextFX.colorize("No rooms found matching your query",
@@ -477,6 +634,8 @@ public enum Client {
     }
 
     private void processDisconnect(long clientId, String clientName) {
+        // invoke onClientDisconnect callback
+        ((IConnectionEvents) events).onClientDisconnect(clientId, clientName);
         System.out.println(
                 TextFX.colorize(String.format("*%s disconnected*",
                         clientId == myData.getClientId() ? "You" : clientName),
@@ -490,6 +649,9 @@ public enum Client {
         if (myData.getClientId() == ClientData.DEFAULT_CLIENT_ID) {
             myData.setClientId(clientId);
             myData.setClientName(clientName);
+            // invoke onReceiveClientId callback
+            LoggerUtil.INSTANCE.info("ClientId processed: ");
+            ((IConnectionEvents) events).onReceiveClientId(clientId);
             // knownClients.put(cp.getClientId(), myData);// <-- this is handled later
         }
     }
@@ -497,18 +659,24 @@ public enum Client {
     private void processMessage(long clientId, String message) {
         String name = knownClients.containsKey(clientId) ? knownClients.get(clientId).getClientName() : "Room";
         System.out.println(TextFX.colorize(String.format("%s: %s", name, message), Color.BLUE));
+        // invoke onMessageReceive callback
+        ((IMessageEvents) events).onMessageReceive(clientId, message);
     }
 
     private void processClientSync(long clientId, String clientName) {
+
         if (!knownClients.containsKey(clientId)) {
             ClientData cd = new ClientData();
             cd.setClientId(clientId);
             cd.setClientName(clientName);
             knownClients.put(clientId, cd);
+            // invoke onSyncClient callback
+            ((IConnectionEvents) events).onSyncClient(clientId, clientName);
         }
     }
 
     private void processRoomAction(long clientId, String clientName, String message, boolean isJoin) {
+
         if (isJoin && !knownClients.containsKey(clientId)) {
             ClientData cd = new ClientData();
             cd.setClientId(clientId);
@@ -517,19 +685,43 @@ public enum Client {
             System.out.println(TextFX
                     .colorize(String.format("*%s[%s] joined the Room %s*", clientName, clientId, message),
                             Color.GREEN));
+            // invoke onRoomJoin callback
+            ((IRoomEvents) events).onRoomAction(clientId, clientName, message, isJoin);
         } else if (!isJoin) {
             ClientData removed = knownClients.remove(clientId);
             if (removed != null) {
                 System.out.println(
                         TextFX.colorize(String.format("*%s[%s] left the Room %s*", clientName, clientId, message),
                                 Color.YELLOW));
+                // invoke onRoomJoin callback
+                ((IRoomEvents) events).onRoomAction(clientId, clientName, message, isJoin);
             }
             // clear our list
             if (clientId == myData.getClientId()) {
                 knownClients.clear();
+                // invoke onResetUserList()
+                ((IConnectionEvents) events).onResetUserList();
             }
         }
     }
+
+    // Rev 11/26/2024 - Example command processing logic in Client.java
+    public void processCommand(String command) throws IOException {
+        if (command.startsWith("/roll")) {
+            String rollDetails = command.substring(5).trim(); // Extract the details after "/roll"
+            sendRollCommand(rollDetails);
+        } else if (command.equalsIgnoreCase("/flip")) {
+            sendFlipCommand(command);
+        } else {
+            chatArea.add(chatArea, "Unknown command: " + command);
+        }
+    }
+
+    private void displayPrivateMessage(String senderId, String message) {
+        String formattedMessage = "(Private) " + senderId + ": " + message;
+        chatWindow.append(formattedMessage + "\n"); // Display in the chat UI
+    }
+
     // end payload processors
 
 }
