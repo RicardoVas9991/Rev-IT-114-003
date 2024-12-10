@@ -1,7 +1,6 @@
 package Project.Client.Views;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -18,20 +17,15 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.awt.Font;
-
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
@@ -55,7 +49,6 @@ public class ChatPanel extends JPanel {
     private JPanel chatArea = null;
     private UserListPanel userListPanel;
     private final float CHAT_SPLIT_PERCENT = 0.7f;
-    private List<String> chatMessages = new ArrayList<>(); // rev/12/4/2024
     private Set<String> mutedUsers = new HashSet<>();
     private Map<Long, String> connectedUsers = new HashMap<>();
     private String lastSender = null; // rev/12/4/2024 - initialization
@@ -163,6 +156,14 @@ public class ChatPanel extends JPanel {
         this.setName(CardView.CHAT.name());
         controls.addPanel(CardView.CHAT.name(), this);
 
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
+        buttonPanel.add(button);
+        buttonPanel.add(Box.createRigidArea(new Dimension(10, 0))); // Add spacing
+        buttonPanel.add(exportButton);
+
+        input.add(buttonPanel);
+
         chatArea.addContainerListener(new ContainerListener() {
             @Override
             public void componentAdded(ContainerEvent e) {
@@ -229,76 +230,61 @@ public class ChatPanel extends JPanel {
         SwingUtilities.invokeLater(() -> {
             JEditorPane textContainer = new JEditorPane("text/plain", text);
             textContainer.setEditable(false);
-            textContainer.setBorder(BorderFactory.createEmptyBorder());
-
-            // Account for the width of the vertical scrollbar
-            JScrollPane parentScrollPane = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, chatArea);
-            int scrollBarWidth = parentScrollPane.getVerticalScrollBar().getPreferredSize().width;
-
-            // Adjust the width of the text container
-            int availableWidth = chatArea.getWidth() - scrollBarWidth - 10; // Subtract an additional padding
-            textContainer.setSize(new Dimension(availableWidth, Integer.MAX_VALUE));
-            Dimension d = textContainer.getPreferredSize();
-            textContainer.setPreferredSize(new Dimension(availableWidth, d.height));
-            // Remove background and border
             textContainer.setOpaque(false);
             textContainer.setBorder(BorderFactory.createEmptyBorder());
-            textContainer.setBackground(new Color(0, 0, 0, 0));
-
-            // GridBagConstraints settings for each message
+    
+            JScrollPane parentScrollPane = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, chatArea);
+            int availableWidth = chatArea.getWidth() - (parentScrollPane != null
+                    ? parentScrollPane.getVerticalScrollBar().getPreferredSize().width : 0) - 10;
+    
+            textContainer.setSize(new Dimension(availableWidth, Integer.MAX_VALUE));
+            textContainer.setPreferredSize(new Dimension(availableWidth, textContainer.getPreferredSize().height));
+    
             GridBagConstraints gbc = new GridBagConstraints();
-            gbc.gridx = 0; // Column index 0
-            gbc.gridy = GridBagConstraints.RELATIVE; // Automatically move to the next row
-            gbc.weightx = 1; // Let the component grow horizontally to fill the space
-            gbc.fill = GridBagConstraints.HORIZONTAL; // Fill horizontally
-            gbc.insets = new Insets(0, 0, 5, 0); // Add spacing between messages
-
+            gbc.gridx = 0;
+            gbc.gridy = GridBagConstraints.RELATIVE;
+            gbc.weightx = 1;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.insets = new Insets(0, 0, 5, 0);
+    
             chatArea.add(textContainer, gbc);
             chatArea.revalidate();
             chatArea.repaint();
-
-            // Scroll down on new message
-            SwingUtilities.invokeLater(() -> {
-                JScrollBar vertical = parentScrollPane.getVerticalScrollBar();
-                vertical.setValue(vertical.getMaximum());
-            });
+    
+            JScrollPane scrollPane = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, chatArea);
+            if (scrollPane != null) {
+                JScrollBar verticalBar = scrollPane.getVerticalScrollBar();
+                verticalBar.setValue(verticalBar.getMaximum());
+            }
         });
     }
+
     // Method to export chat history
     private void exportChatHistory() {
         // rev/12/4/2024
         try {
             StringBuilder chatHistory = new StringBuilder();
-            for (String message : chatMessages) { // rev/12/4/2024
-                chatHistory.append(message).append("\n");
+            for (Component comp : chatArea.getComponents()) {
+                if (comp instanceof JEditorPane) {
+                    JEditorPane pane = (JEditorPane) comp;
+                    chatHistory.append(pane.getText()).append("\n");
+                }
             }
-            // Create unique filename with date-time
             String filename = "chat_export_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".html";
             Files.write(Paths.get(filename), chatHistory.toString().getBytes());
             JOptionPane.showMessageDialog(this, "Chat exported to " + filename, "Export Success", JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, "Failed to export chat: " + ex.getMessage(), "Export Error", JOptionPane.ERROR_MESSAGE);
         }
-    }
+    }    
 
-    // Update user list UI
-    private void updateUserList(Set<String> users, String lastSender) {
-        // rev/12/4/2024
-        userListPanel.removeAll(); // Assuming userListPanel holds the user list
-        for (String user : users) {
-            JLabel userLabel = new JLabel(user);
-            if (mutedUsers.contains(user)) { // mutedUsers is a client-side list of muted users
-                userLabel.setForeground(Color.GRAY);
-            }
-            if (user.equals(lastSender)) {
-                userLabel.setFont(userLabel.getFont().deriveFont(Font.BOLD));
-            }
-            userListPanel.add(userLabel);
-        }
-        userListPanel.revalidate();
-        userListPanel.repaint();
+    private void updateUserListUI() {
+        SwingUtilities.invokeLater(() -> {
+            Set<String> userNames = new HashSet<>(connectedUsers.values());
+            userListPanel.updateUserList(userNames, lastSender, mutedUsers);
+        });
     }
-
+    
     /**
      * Handles an incoming message from a server or another client.
      * This method is invoked externally by the message handling system.
@@ -306,13 +292,13 @@ public class ChatPanel extends JPanel {
      * @param sender  The sender's name.
      * @param message The message content.
      */
-    public void handleIncomingMessage(String sender, String message) { 
-        // rev/12/4/2024
-        lastSender = sender; // Track the last sender
-        chatMessages.add(message); // Add to chat history
-        Set<String> userNames = new HashSet<>(connectedUsers.values());
-        updateUserList(userNames, lastSender); // Update user list
-    }
+    public void handleIncomingMessage(String sender, String message) {
+        SwingUtilities.invokeLater(() -> {
+            lastSender = sender;
+            addText(sender + ": " + message); // Add message to chat
+            updateUserListUI(); // Refresh the user list
+        });
+    } 
 
 
 }

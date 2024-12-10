@@ -209,12 +209,12 @@ public class ServerThread extends BaseServerThread {
                     break;
                 case ROLL:
                     RollPayload rollPayload = (RollPayload) payload;
-                    currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides(), rollPayload.getTotal()); // - Rev/11-16-2024
                     sendMessage("ROLL: " + rollPayload.getDice() + "," + rollPayload.getSides() + " and got a " + rollPayload.getTotal());
+                    currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides(), rollPayload.getTotal()); // - Rev/11-16-2024
                     break;
                 case FLIP:
-                    currentRoom.handleFlip(this); // - Rev/11/-16-2024
                     sendMessage("FLIP: ");
+                    currentRoom.handleFlip(this); // - Rev/11/-16-2024
                     break;
                 case MUTE:
                     String muteTarget = payload.getMessage().trim().toLowerCase(); // Extract the target username
