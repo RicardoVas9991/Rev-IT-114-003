@@ -1,10 +1,15 @@
 package Project.Server;
 
+import java.io.IOException;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import Project.Common.PayloadType;
 import Project.Common.PrivateMessagePayload;
@@ -56,52 +61,71 @@ public class ServerThread extends BaseServerThread {
     }
 
 // Rev/11-23-2024
-    List<String> mutedClients = new ArrayList<String>(); 
+    private List<String> mutedClients = new ArrayList<>();
     
+    public void MuteManager(String clientName) {
+        this.clientName = clientName.toLowerCase().trim();
+        load(); // Load the mute list during initialization
+    }
+
     public List<String> getMutedClients() {
-    	 return this.mutedClients;
-     }
-     
-     public void mute(String name) {
+        return this.mutedClients;
+    }
+
+    public void mute(String name) {
         name = name.trim().toLowerCase();
         if (!isMuted(name)) {
             mutedClients.add(name);
-            // Notify the muted user
             sendMessageToClient(name, "You have been muted by " + this.clientName);
-            //save();
+            save();
         }
     }
-    
+
     public void unmute(String name) {
         name = name.trim().toLowerCase();
         if (isMuted(name)) {
             mutedClients.remove(name);
-            // Notify the unmuted user
             sendMessageToClient(name, "You have been unmuted by " + this.clientName);
-            //save();
+            save();
+        }
+    }
+
+    public boolean isMuted(String name) {
+        name = name.trim().toLowerCase();
+        return mutedClients.contains(name);
+    }
+
+    private void save() {
+        try {
+            Path filePath = Paths.get(this.clientName + ".txt");
+            Files.write(filePath, mutedClients);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void load() {
+        try {
+            Path filePath = Paths.get(this.clientName + ".txt");
+            if (Files.exists(filePath)) {
+                mutedClients = Files.readAllLines(filePath).stream()
+                                   .map(String::toLowerCase)
+                                   .collect(Collectors.toList());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendMessageToClient(String target, String message) {
+        ServerThread targetClient = currentRoom.getClientByName(target);
+        if (targetClient != null) {
+            targetClient.processPayload(new Payload()); //
+        } else {
+            System.err.println("Target client not found: " + target);
         }
     }
     
-
-    private void sendMessageToClient(String name, String message) {
-        // Send a notification to the client (name) with the message
-        // Use your existing message-sending logic
-        System.out.println("Notification to " + name + ": " + message);
-    }
-
-    // private void save() {
-    //     try {
-    //         Path filePath = Paths.get(this.clientName + ".txt");
-    //         Files.write(filePath, mutedClients);
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    // }
-
-    public boolean isMuted(String name) {
-     	name = name.trim().toLowerCase();
-     	return mutedClients.contains(name);
-   	}
 
     public String getClientName() {
         return clientName;
@@ -186,11 +210,40 @@ public class ServerThread extends BaseServerThread {
                     break;
                 case ROLL:  // - Rev/11/-16-2024
                     RollPayload rollPayload = (RollPayload) payload;
-                    currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides(), rollPayload.getTotal()); // - Rev/11-16-2024
                     sendMessage("ROLL: " + rollPayload.getDice() + "," + rollPayload.getSides() + " and got a " + rollPayload.getTotal());
+                    currentRoom.handleRoll(this, rollPayload.getDice(), rollPayload.getSides(), rollPayload.getTotal()); // - Rev/11-16-2024
                     break;
                 case FLIP:
-                    currentRoom.handleFlip(this);
+                    sendMessage("FLIP: ");
+                    currentRoom.handleFlip(this); // - Rev/11/-16-2024
+                    break;
+                case MUTE:
+                    String muteTarget = payload.getMessage().trim().toLowerCase(); // Extract the target username
+                    if (muteTarget.isEmpty()) {
+                        sendMessage("Error: Mute command requires a valid username."); // Send error if empty
+                    } else {
+                        mute(muteTarget);
+                        sendMessage("You have muted: " + muteTarget); // Confirmation message
+                        LoggerUtil.INSTANCE.info("User " + getClientName() + " muted " + muteTarget); // Log the action
+                    }
+                    break; // - Rev/11-25-2024
+                case UNMUTE: 
+                    String unmuteTarget = payload.getMessage().trim().toLowerCase(); // Extract the target username
+                    if (unmuteTarget.isEmpty()) {
+                        sendMessage("Error: Unmute command requires a valid username."); // Send error if empty
+                    } else {
+                        unmute(unmuteTarget);
+                        sendMessage("You have unmuted: " + unmuteTarget); // Confirmation message
+                        LoggerUtil.INSTANCE.info("User " + getClientName() + " unmuted " + unmuteTarget); // Log the action
+                    }
+                    break; // - Rev/11-25-2024
+                case PRIVATE_MESSAGE:
+                    PrivateMessagePayload pmp = (PrivateMessagePayload) payload;
+                    if (currentRoom != null) {
+                        currentRoom.handlePrivateMessage(this, pmp.getTargetId(), pmp.getMessage());
+                    } else {
+                        sendMessage("Error: You are not in a room.");
+                    }
                     break;
                 default:
                     currentRoom.sendMessage(this, payload.toString());
@@ -245,25 +298,18 @@ public class ServerThread extends BaseServerThread {
         return send(p);
     }
 
-    public boolean processMuteCommand(String command) {
+    public void processMuteCommands(String command) {
         String[] parts = command.split(" ", 2);
-        if (parts.length < 2) return isRunning;
-    
         String action = parts[0].toLowerCase();
-        String target = parts[1].trim();
+        String target = parts.length > 1 ? parts[1].trim() : null;
     
-        switch (action) {
-            case "/mute":
-                mute(target);
-                break;
-            case "/unmute":
-                unmute(target);
-                break;
-            default:
-                System.out.println("Unknown command: " + command);
+        if (action.equals("/mute") && target != null) {
+            mute(target);
+        } else if (action.equals("/unmute") && target != null) {
+            unmute(target);
         }
-                return isRunning;
     }
+    
 
     /**
      * Tells the client information about a client joining/leaving a room
