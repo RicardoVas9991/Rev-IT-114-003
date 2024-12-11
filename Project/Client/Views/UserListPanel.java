@@ -10,8 +10,12 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.util.HashMap;
+import java.util.Set;
+import java.awt.Color;
+import java.awt.Font;
 
 import javax.swing.Box;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
@@ -27,7 +31,7 @@ public class UserListPanel extends JPanel {
     private JPanel userListArea;
     private GridBagConstraints lastConstraints; // Keep track of the last constraints for the glue
     private HashMap<Long, UserListItem> userItemsMap; // Maintain a map of client IDs to UserListItems
-
+    
     /**
      * Constructor to create the UserListPanel UI.
      */
@@ -174,4 +178,23 @@ public class UserListPanel extends JPanel {
             userListArea.repaint();
         });
     }
+
+    // Update user list UI
+    public void updateUserList(Set<String> users, String lastSender, Set<String> mutedUsers) {
+        // rev/12/4/2024
+        removeAll();
+        for (String user : users) {
+            JLabel userLabel = new JLabel(user);
+            if (mutedUsers.contains(user)) {
+                userLabel.setForeground(Color.YELLOW);
+            }
+            if (user.equals(lastSender)) {
+                userLabel.setFont(userLabel.getFont().deriveFont(Font.BOLD));
+            }
+            add(userLabel);
+        }
+        revalidate();
+        repaint();
+    }
+
 }

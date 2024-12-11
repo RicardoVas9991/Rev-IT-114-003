@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+
 import Project.Common.LoggerUtil;
 
 public class Room implements AutoCloseable{
@@ -194,6 +195,14 @@ public class Room implements AutoCloseable{
         if (!isRunning) { // block action if Room isn't running
             return;
         }
+        // Rev/12-09-2024
+        String formatting = message.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>")    
+                            .replaceAll("\\*(.*?)\\*", "<i>$1</i>")        
+                            .replaceAll("_(.*?)_", "<u>$1</u>")              
+                            .replaceAll("#r(.*?)r#", "<font color='#FF0000'>$1</font>")        
+                            .replaceAll("#b(.*?)b#", "<font color='#0000FF'>$1</font>")
+                            .replaceAll("#g(.*?)g#", "<font color='#008000'>$1</font>"); 
+
 
         // Note: any desired changes to the message must be done before this section
         long senderId = sender == null ? ServerThread.DEFAULT_CLIENT_ID : sender.getClientId();
@@ -203,9 +212,9 @@ public class Room implements AutoCloseable{
         // Note: this uses a lambda expression for each item in the values() collection,
         // it's one way we can safely remove items during iteration
 
-        info(String.format("sending message to %s recipients: %s", clientsInRoom.size(), message));
+        info(String.format("sending message to %s recipients: %s", clientsInRoom.size(), formatting));
         clientsInRoom.values().removeIf(client -> {
-            boolean failedToSend = !client.sendMessage(senderId, message);
+            boolean failedToSend = !client.sendMessage(senderId, formatting);
             if (failedToSend) {
                 info(String.format("Removing disconnected client[%s] from list", client.getClientId()));
                 disconnect(client);
@@ -249,19 +258,19 @@ public class Room implements AutoCloseable{
     }
     // Rev/11-25-2024 - Show the code on the Room side that changes this format
     public void handleRoll(ServerThread sender, int dice, int sides, int total) {
-    String formattedResult = String.format("**%s rolled %d dice with %d sides each and got a total of: %d**", sender.getClientName(), dice, sides, total);
-        sendMessage(null, formattedResult);
+        String formattedResult = String.format("**%s rolled %d dice with %d sides each and got a total of: %d**", sender.getClientName(), dice, sides, total);
+        sender.sendMessage(formattedResult);
     }
     
     // Rev/11-25-2024 - Show the code on the Room side that changes this format
     public void handleFlip(ServerThread sender) {
         String result = Math.random() < 0.5 ? "Heads" : "Tails";
         String formattedResult = String.format("**%s flipped a coin and got a: %s**", sender.getClientName(), result);
-        sendMessage(null, formattedResult);
+        sender.sendMessage(formattedResult);
     }
     
 
-    private ServerThread getClientByName(String name) {
+    ServerThread getClientByName(String name) {
         for (ServerThread client : clients) {
             if (client.getClientName().equalsIgnoreCase(name)) {
                 return client;
@@ -309,6 +318,7 @@ public class Room implements AutoCloseable{
         }
         sender.mute(targetName);
         sender.sendMessage("You have muted " + targetName + ".");
+        sendMessage(target, "You have been muted by " + sender);
     }
     
     public void handleUnmute(ServerThread sender, String targetName) {
@@ -319,6 +329,7 @@ public class Room implements AutoCloseable{
         }
         sender.unmute(targetName);
         sender.sendMessage("You have unmuted " + targetName + ".");
+        sendMessage(target, "You have been unmuted by " + sender);
     }   
 
     public String formatMessage(String message) { // Rev/11-23-2024

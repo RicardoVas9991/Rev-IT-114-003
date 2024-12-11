@@ -1,7 +1,6 @@
 package Project.Client.Views;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -14,12 +13,20 @@ import java.awt.event.ContainerListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
-
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -42,6 +49,11 @@ public class ChatPanel extends JPanel {
     private JPanel chatArea = null;
     private UserListPanel userListPanel;
     private final float CHAT_SPLIT_PERCENT = 0.7f;
+    private Set<String> mutedUsers = new HashSet<>();
+    private Map<Long, String> connectedUsers = new HashMap<>();
+    private String lastSender = null; // rev/12/4/2024 - initialization
+    
+
 
     /**
      * Constructor to create the ChatPanel UI.
@@ -67,6 +79,7 @@ public class ChatPanel extends JPanel {
         // JSplitPane setup with chat on the left and user list on the right
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scroll, userListPanel);
         splitPane.setResizeWeight(CHAT_SPLIT_PERCENT); // Allocate % space to the chat panel initially
+
 
         // Enforce splitPane split
         this.addComponentListener(new ComponentListener() {
@@ -98,6 +111,11 @@ public class ChatPanel extends JPanel {
 
         JButton button = new JButton("Send");
         // Allows submission with the enter key instead of just the button click
+        // Chat History Export (Client-Side) - Milestone4 - rev/12/4/2024
+        // Add this button to the chat UI
+        JButton exportButton = new JButton("Export Chat");
+        exportButton.addActionListener((_) -> exportChatHistory());
+        // Add exportButton to the UI (e.g., a panel)
         textValue.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -130,12 +148,21 @@ public class ChatPanel extends JPanel {
         });
 
         input.add(button);
+        input.add(exportButton);
 
         this.add(splitPane, BorderLayout.CENTER);
         this.add(input, BorderLayout.SOUTH);
 
         this.setName(CardView.CHAT.name());
         controls.addPanel(CardView.CHAT.name(), this);
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
+        buttonPanel.add(button);
+        buttonPanel.add(Box.createRigidArea(new Dimension(10, 0))); // Add spacing
+        buttonPanel.add(exportButton);
+
+        input.add(buttonPanel);
 
         chatArea.addContainerListener(new ContainerListener() {
             @Override
@@ -203,39 +230,75 @@ public class ChatPanel extends JPanel {
         SwingUtilities.invokeLater(() -> {
             JEditorPane textContainer = new JEditorPane("text/plain", text);
             textContainer.setEditable(false);
-            textContainer.setBorder(BorderFactory.createEmptyBorder());
-
-            // Account for the width of the vertical scrollbar
-            JScrollPane parentScrollPane = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, chatArea);
-            int scrollBarWidth = parentScrollPane.getVerticalScrollBar().getPreferredSize().width;
-
-            // Adjust the width of the text container
-            int availableWidth = chatArea.getWidth() - scrollBarWidth - 10; // Subtract an additional padding
-            textContainer.setSize(new Dimension(availableWidth, Integer.MAX_VALUE));
-            Dimension d = textContainer.getPreferredSize();
-            textContainer.setPreferredSize(new Dimension(availableWidth, d.height));
-            // Remove background and border
             textContainer.setOpaque(false);
             textContainer.setBorder(BorderFactory.createEmptyBorder());
-            textContainer.setBackground(new Color(0, 0, 0, 0));
-
-            // GridBagConstraints settings for each message
+    
+            JScrollPane parentScrollPane = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, chatArea);
+            int availableWidth = chatArea.getWidth() - (parentScrollPane != null
+                    ? parentScrollPane.getVerticalScrollBar().getPreferredSize().width : 0) - 10;
+    
+            textContainer.setSize(new Dimension(availableWidth, Integer.MAX_VALUE));
+            textContainer.setPreferredSize(new Dimension(availableWidth, textContainer.getPreferredSize().height));
+    
             GridBagConstraints gbc = new GridBagConstraints();
-            gbc.gridx = 0; // Column index 0
-            gbc.gridy = GridBagConstraints.RELATIVE; // Automatically move to the next row
-            gbc.weightx = 1; // Let the component grow horizontally to fill the space
-            gbc.fill = GridBagConstraints.HORIZONTAL; // Fill horizontally
-            gbc.insets = new Insets(0, 0, 5, 0); // Add spacing between messages
-
+            gbc.gridx = 0;
+            gbc.gridy = GridBagConstraints.RELATIVE;
+            gbc.weightx = 1;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.insets = new Insets(0, 0, 5, 0);
+    
             chatArea.add(textContainer, gbc);
             chatArea.revalidate();
             chatArea.repaint();
-
-            // Scroll down on new message
-            SwingUtilities.invokeLater(() -> {
-                JScrollBar vertical = parentScrollPane.getVerticalScrollBar();
-                vertical.setValue(vertical.getMaximum());
-            });
+    
+            JScrollPane scrollPane = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, chatArea);
+            if (scrollPane != null) {
+                JScrollBar verticalBar = scrollPane.getVerticalScrollBar();
+                verticalBar.setValue(verticalBar.getMaximum());
+            }
         });
     }
+
+    // Method to export chat history
+    private void exportChatHistory() {
+        // rev/12/4/2024
+        try {
+            StringBuilder chatHistory = new StringBuilder();
+            for (Component comp : chatArea.getComponents()) {
+                if (comp instanceof JEditorPane) {
+                    JEditorPane pane = (JEditorPane) comp;
+                    chatHistory.append(pane.getText()).append("\n");
+                }
+            }
+            String filename = "chat_export_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".html";
+            Files.write(Paths.get(filename), chatHistory.toString().getBytes());
+            JOptionPane.showMessageDialog(this, "Chat exported to " + filename, "Export Success", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Failed to export chat: " + ex.getMessage(), "Export Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }    
+
+    private void updateUserListUI() {
+        SwingUtilities.invokeLater(() -> {
+            Set<String> userNames = new HashSet<>(connectedUsers.values());
+            userListPanel.updateUserList(userNames, lastSender, mutedUsers);
+        });
+    }
+    
+    /**
+     * Handles an incoming message from a server or another client.
+     * This method is invoked externally by the message handling system.
+     * 
+     * @param sender  The sender's name.
+     * @param message The message content.
+     */
+    public void handleIncomingMessage(String sender, String message) {
+        SwingUtilities.invokeLater(() -> {
+            lastSender = sender;
+            addText(sender + ": " + message); // Add message to chat
+            updateUserListUI(); // Refresh the user list
+        });
+    } 
+
+
 }
