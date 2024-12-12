@@ -25,7 +25,6 @@ import Project.Common.RollPayload;
  * A server-side representation of a single client.
  * This class is more about the data and abstracted communication
  */
-@SuppressWarnings("unused")
 public class ServerThread extends BaseServerThread {
     public static final long DEFAULT_CLIENT_ID = -1;
     private Room currentRoom;
