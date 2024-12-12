@@ -3,7 +3,7 @@
 ### Project: Chatroom Final Demo
 
 ### Video Demo
-[![Watch the Video](https://img.youtube.com/vi/[VIDEO_ID]/0.jpg)](https://www.youtube.com/watch?v=[VIDEO_ID])
+[![Watch the Video](https://www.youtube.com/watch?v=YaPLG4HTkyI)](https://youtu.be/YaPLG4HTkyI)
 
 ### Milestone Submissions
 - [Milestone 1] https://github.com/RicardoVas9991/Rev-IT-114-003/tree/Milestone1
